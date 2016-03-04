@@ -1,6 +1,6 @@
 XLSX I/O
 ========
-Cross-platform C library for reading and writing .xlsx files
+Cross-platform C library for reading values from and writing values to .xlsx files.
 
 Description
 -----------
@@ -27,9 +27,9 @@ Reading .xlsx files:
 Writing .xlsx files:
 - intended for writing data tables as .xlsx files, which assumes the following:
   + only support for writing data (no support for formulas, layout, graphics, charts, ...)
-- no support for multiple worksheets (only one worksheet per file)
-- no support for shared strings
+  + no support for multiple worksheets (only one worksheet per file)
 - on the fly file generation without the need to buffer data in memory
+- no support for shared strings (all values are written as inline strings)
 
 License
 -------
