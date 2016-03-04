@@ -53,6 +53,14 @@ typedef int (*xlsxioread_list_sheets_callback_fn)(const char* name, void* callba
  */
 DLL_EXPORT_XLSXIO void xlsxioread_list_sheets (xlsxioreadhandle handle, xlsxioread_list_sheets_callback_fn callback, void* callbackdata);
 
+/*! \brief possible values for the flags parameter of xlsxioread_process_sheet()
+ * \sa     xlsxioread_process_sheet()
+ */
+#define XLSXIOREAD_SKIP_EMPTY_ROWS      0x0001
+#define XLSXIOREAD_SKIP_EMPTY_CELLS     0x0002
+#define XLSXIOREAD_SKIP_NONE            0
+#define XLSXIOREAD_SKIP_ALL             (XLSXIOREAD_SKIP_EMPTY_ROWS | XLSXIOREAD_SKIP_EMPTY_CELLS)
+
 /*! \brief type of pointer to callback function for processing a worksheet cell value
  * \param  row           row number (first row is 1)
  * \param  col           column number (first column is 1)
@@ -77,13 +85,14 @@ typedef int (*xlsxioread_process_sheet_row_callback_fn)(size_t row, size_t maxco
 /*! \brief process all rows and columns of a worksheet in an .xlsx file
  * \param  handle        read handle for .xlsx object
  * \param  sheetname     worksheet name (NULL for first sheet)
+ * \param  flags         XLSXIOREAD_SKIP_ flag(s) to determine how data is processed
  * \param  cell_callback callback function called for each cell
  * \param  row_callback  callback function called after each row
  * \param  callbackdata  callback data passed to xlsxioread_process_sheet
  * \sa     xlsxioread_process_sheet_row_callback_fn
  * \sa     xlsxioread_process_sheet_cell_callback_fn
  */
-DLL_EXPORT_XLSXIO void xlsxioread_process_sheet (xlsxioreadhandle handle, const char* sheetname, xlsxioread_process_sheet_cell_callback_fn cell_callback, xlsxioread_process_sheet_row_callback_fn row_callback, void* callbackdata);
+DLL_EXPORT_XLSXIO void xlsxioread_process_sheet (xlsxioreadhandle handle, const char* sheetname, unsigned int flags, xlsxioread_process_sheet_cell_callback_fn cell_callback, xlsxioread_process_sheet_row_callback_fn row_callback, void* callbackdata);
 
 #ifdef __cplusplus
 }

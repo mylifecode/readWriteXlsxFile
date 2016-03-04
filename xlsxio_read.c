@@ -33,6 +33,8 @@ int expat_process_zip_file (zip_t* zip, const char* filename, XML_StartElementHa
     if ((status = XML_Parse(parser, buf, buflen, (buflen < sizeof(buf) ? 1 : 0))) == XML_STATUS_ERROR)
       break;
   }
+  if (status != XML_STATUS_ERROR)
+    status = XML_Parse(parser, NULL, 0, 1);
   XML_ParserFree(parser);
   zip_fclose(zipfile);
   return (status == XML_STATUS_ERROR ? 1 : 0);
@@ -523,8 +525,7 @@ struct data_sheet_callback_data {
   char* celldata;
   size_t celldatalen;
   cell_string_type_enum cell_string_type;
-  int skip_empty_rows;
-  int skip_empty_cols;
+  unsigned int flags;
   xlsxioread_process_sheet_row_callback_fn sheet_row_callback;
   xlsxioread_process_sheet_cell_callback_fn sheet_cell_callback;
   void* callbackdata;
@@ -594,7 +595,7 @@ void data_sheet_expat_callback_find_row_end (void* callbackdata, const XML_Char*
     if (data->rownr == 1 && data->cols == 0)
       data->cols = data->colnr - 1;
     //add empty columns if needed
-    if (!data->skip_empty_cols && data->sheet_cell_callback) {
+    if (!(data->flags | XLSXIOREAD_SKIP_EMPTY_CELLS) && data->sheet_cell_callback) {
       while (data->colnr <= data->cols) {
         if ((*data->sheet_cell_callback)(data->rownr, data->colnr, NULL, data->callbackdata)) {
           XML_StopParser(data->xmlparser, XML_FALSE);
@@ -625,12 +626,12 @@ void data_sheet_expat_callback_find_cell_start (void* callbackdata, const XML_Ch
     //insert empty rows if needed
     if (data->colnr == 1) {
       size_t cellrownr = get_row_nr(t);
-      if (data->skip_empty_rows) {
+      if (data->flags | XLSXIOREAD_SKIP_EMPTY_ROWS) {
         data->rownr = cellrownr;
       } else {
         while (data->rownr < cellrownr) {
           //insert empty columns
-          if (!data->skip_empty_cols && data->sheet_cell_callback) {
+          if (!(data->flags | XLSXIOREAD_SKIP_EMPTY_CELLS) && data->sheet_cell_callback) {
             while (data->colnr <= data->cols) {
               if ((*data->sheet_cell_callback)(data->rownr, data->colnr, NULL, data->callbackdata)) {
                 XML_StopParser(data->xmlparser, XML_FALSE);
@@ -652,7 +653,7 @@ void data_sheet_expat_callback_find_cell_start (void* callbackdata, const XML_Ch
       }
     }
     //insert empty columns if needed
-    if (data->skip_empty_cols) {
+    if (data->flags | XLSXIOREAD_SKIP_EMPTY_CELLS) {
       data->colnr = cellcolnr;
     } else {
       while (data->colnr < cellcolnr) {
@@ -756,7 +757,7 @@ void data_sheet_expat_callback_value_data (void* callbackdata, const XML_Char* b
 
 ////////////////////////////////////////////////////////////////////////
 
-DLL_EXPORT_XLSXIO void xlsxioread_process_sheet (xlsxioreadhandle handle, const char* sheetname, xlsxioread_process_sheet_cell_callback_fn cell_callback, xlsxioread_process_sheet_row_callback_fn row_callback, void* callbackdata)
+DLL_EXPORT_XLSXIO void xlsxioread_process_sheet (xlsxioreadhandle handle, const char* sheetname, unsigned int flags, xlsxioread_process_sheet_cell_callback_fn cell_callback, xlsxioread_process_sheet_row_callback_fn row_callback, void* callbackdata)
 {
   //determine sheet file name
   struct main_sheet_get_rels_callback_data getrelscallbackdata = {
@@ -783,15 +784,6 @@ DLL_EXPORT_XLSXIO void xlsxioread_process_sheet (xlsxioreadhandle handle, const 
   };
   expat_process_zip_file(handle->zip, getrelscallbackdata.sharedstringsfile, shared_strings_callback_find_sharedstringtable_start, NULL, NULL, &sharedstringsdata, &sharedstringsdata.xmlparser);
   free(sharedstringsdata.text);
-/*
-  //show shared strings
-  size_t i;
-  size_t n;
-  n = sharedstringlist_size(sharedstrings);
-  for (i = 0; i < n; i++) {
-    printf("%5li: %s\n", (long)i, sharedstringlist_get(sharedstrings, i));
-  }
-*/
 
   //process sheet
   struct data_sheet_callback_data processcallbackdata = {
@@ -803,8 +795,7 @@ DLL_EXPORT_XLSXIO void xlsxioread_process_sheet (xlsxioreadhandle handle, const 
     .celldata = NULL,
     .celldatalen = 0,
     .cell_string_type = none,
-    .skip_empty_rows = 1,
-    .skip_empty_cols = 0,
+    .flags = flags,
     .sheet_row_callback = row_callback,
     .sheet_cell_callback = cell_callback,
     .callbackdata = callbackdata
@@ -819,26 +810,3 @@ DLL_EXPORT_XLSXIO void xlsxioread_process_sheet (xlsxioreadhandle handle, const 
   free(getrelscallbackdata.sheetfile);
   free(getrelscallbackdata.sharedstringsfile);
 }
-
-
-
-
-
-/*
-String
-<c>
-<f>SUM(A2,A3)</f>
-<v>1234</v>
-</c>
-
-Inline String
-<c r=”A1″>
-<is><t> Test String </t></is>
-</c>
-
-Shared String
-<c r=”A1″ t=”s”>
-<v>0</v>
-</c>
-
-*/

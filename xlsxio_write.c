@@ -25,8 +25,6 @@
 #define fdopen _fdopen
 #endif
 
-#define DLL_EXPORT_XLSXIO
-
 ////////////////////////////////////////////////////////////////////////
 
 int zip_add_static_content_buffer (zip_t* zip, const char* filename, const char* buf, size_t buflen)

@@ -50,7 +50,7 @@ int main (int argc, char* argv[])
       printf("Sheets found: %i\n", sheetdata.index);
 
       //perform tests
-      xlsxioread_process_sheet(xlsxioread, sheetdata.firstsheet, sheet_cell_callback, sheet_row_callback, NULL);
+      xlsxioread_process_sheet(xlsxioread, NULL, XLSXIOREAD_SKIP_EMPTY_ROWS, sheet_cell_callback, sheet_row_callback, NULL);
 
       //clean up
       free(sheetdata.firstsheet);
