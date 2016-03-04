@@ -33,4 +33,4 @@ Writing .xlsx files:
 
 License
 -------
-XLSX I/O is released under the terms of the GNU Lesser General Public License version 2.1.
+XLSX I/O is released under the terms of the MIT License (MIT), see LICENSE.txt.
