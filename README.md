@@ -12,7 +12,7 @@ Goal
 The library was written with the following goals in mind:
 - written in standard C, but allows being used by C++
 - simple interface
-- spall footprint
+- small footprint
 - portable across different platforms (Windows, *nix)
 - minimal dependancies: only depends on expat and libzip (which in turn depends on zlib)
 - seperate library for reading and writing .xlsx files
@@ -33,4 +33,4 @@ Writing .xlsx files:
 
 License
 -------
-(to be decided)
+XLSX I/O is released under the terms of the GNU Lesser General Public License version 2.1.
