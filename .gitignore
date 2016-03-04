@@ -1,2 +1,9 @@
 .DS_Store
-.svn
+.svn/
+*.xlsx
+*.7z
+*.layout
+*.depend
+*.URL
+obj/
+bin/
