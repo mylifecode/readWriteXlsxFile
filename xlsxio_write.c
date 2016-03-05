@@ -155,7 +155,7 @@ const char* worksheet_xml_end =
 #define PIPEFD_READ   0
 #define PIPEFD_WRITE  1
 
-struct xlsxio_write_data {
+struct xlsxio_write_struct {
   char* filename;
   zip_t* zip;
 #ifdef USE_WINTHREADS
@@ -174,7 +174,7 @@ DWORD WINAPI thread_proc (LPVOID arg)
 void* thread_proc (void* arg)
 #endif
 {
-  xlsxiowritehandle handle = (xlsxiowritehandle)arg;
+  xlsxiowriter handle = (xlsxiowriter)arg;
   //initialize zip file object
   if ((handle->zip = zip_open(handle->filename, ZIP_CREATE, NULL)) == NULL) {
     free(handle);
@@ -222,12 +222,12 @@ void* thread_proc (void* arg)
 #endif
 }
 
-DLL_EXPORT_XLSXIO xlsxiowritehandle xlsxiowrite_open (const char* filename)
+DLL_EXPORT_XLSXIO xlsxiowriter xlsxiowrite_open (const char* filename)
 {
-  struct xlsxio_write_data* handle;
+  xlsxiowriter handle;
   if (!filename)
     return NULL;
-  if ((handle = (struct xlsxio_write_data*)malloc(sizeof(struct xlsxio_write_data))) != NULL) {
+  if ((handle = (xlsxiowriter)malloc(sizeof(struct xlsxio_write_struct))) != NULL) {
     //initialize
     handle->filename = strdup(filename);
     handle->zip = NULL;
@@ -253,7 +253,7 @@ DLL_EXPORT_XLSXIO xlsxiowritehandle xlsxiowrite_open (const char* filename)
   return handle;
 }
 
-DLL_EXPORT_XLSXIO int xlsxiowrite_close (xlsxiowritehandle handle)
+DLL_EXPORT_XLSXIO int xlsxiowrite_close (xlsxiowriter handle)
 {
   if (!handle)
     return -1;
@@ -283,7 +283,7 @@ DLL_EXPORT_XLSXIO int xlsxiowrite_close (xlsxiowritehandle handle)
   return 0;
 }
 
-DLL_EXPORT_XLSXIO void xlsxiowrite_add_cell_string (xlsxiowritehandle handle, const char* value)
+DLL_EXPORT_XLSXIO void xlsxiowrite_add_cell_string (xlsxiowriter handle, const char* value)
 {
   if (!handle->rowopen) {
     write(handle->pipefd[PIPEFD_WRITE], "<row>", 5);
@@ -298,7 +298,7 @@ DLL_EXPORT_XLSXIO void xlsxiowrite_add_cell_string (xlsxiowritehandle handle, co
   }
 }
 
-DLL_EXPORT_XLSXIO void xlsxiowrite_next_row (xlsxiowritehandle handle)
+DLL_EXPORT_XLSXIO void xlsxiowrite_next_row (xlsxiowriter handle)
 {
   if (handle->rowopen)
     write(handle->pipefd[PIPEFD_WRITE], "</row>", 6);

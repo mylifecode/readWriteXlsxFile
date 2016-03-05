@@ -22,34 +22,34 @@ extern "C" {
 #endif
 
 /*! \brief write handle for .xlsx object */
-typedef struct xlsxio_write_data* xlsxiowritehandle;
+typedef struct xlsxio_write_struct* xlsxiowriter;
 
 /*! \brief open .xlsx file
  * \param  filename      path of .xlsx file to open
  * \return write handle for .xlsx object or NULL on error
  * \sa     xlsxiowrite_close()
  */
-DLL_EXPORT_XLSXIO xlsxiowritehandle xlsxiowrite_open (const char* filename);
+DLL_EXPORT_XLSXIO xlsxiowriter xlsxiowrite_open (const char* filename);
 
 /*! \brief close .xlsx file
  * \param  handle        write handle for .xlsx object
  * \return zero on success, non-zero on error
  * \sa     xlsxiowrite_open()
  */
-DLL_EXPORT_XLSXIO int xlsxiowrite_close (xlsxiowritehandle handle);
+DLL_EXPORT_XLSXIO int xlsxiowrite_close (xlsxiowriter handle);
 
 /*! \brief add a cell with string data
  * \param  handle        write handle for .xlsx object
  * \param  value         string value
  * \sa     xlsxiowrite_next_row()
  */
-DLL_EXPORT_XLSXIO void xlsxiowrite_add_cell_string (xlsxiowritehandle handle, const char* value);
+DLL_EXPORT_XLSXIO void xlsxiowrite_add_cell_string (xlsxiowriter handle, const char* value);
 
 /*! \brief mark the end of a row (next cell will start on a new row)
  * \param  handle        write handle for .xlsx object
  * \sa     xlsxiowrite_add_cell_string()
  */
-DLL_EXPORT_XLSXIO void xlsxiowrite_next_row (xlsxiowritehandle handle);
+DLL_EXPORT_XLSXIO void xlsxiowrite_next_row (xlsxiowriter handle);
 
 #ifdef __cplusplus
 }

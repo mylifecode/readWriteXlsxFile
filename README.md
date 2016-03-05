@@ -22,7 +22,11 @@ Reading .xlsx files:
   + assumes the first row contains header names
   + assumes the next rows contain values in the same columns as where the header names are supplied
   + only values are processed, anything else is ignored (formulas, layout, graphics, charts, ...)
-- the entire shared string table is loaded in memory (can be large for big spreadsheets with a lot of different values)
+- the entire shared string table is loaded in memory (warning: could be large for big spreadsheets with a lot of different values)
+- worksheet data itself is read on the fly without the need to buffer data in memory
+- 2 methods are provided
+  + a simple method that allows the application to iterate trough rows and cells
+  + an advanced method (with less overhead) which calls callback functions for each cell and after each row
 
 Writing .xlsx files:
 - intended for writing data tables as .xlsx files, which assumes the following:

@@ -4,7 +4,7 @@
 
 int main (int argc, char* argv[])
 {
-  xlsxiowritehandle handle;
+  xlsxiowriter handle;
   if (argc <= 1)
     return 0;
   unlink(argv[1]);
