@@ -38,8 +38,9 @@ Writing .xlsx files:
 
 Dependancies
 ------------
-[libzip](http://www.nih.at/libzip/)
-[expat](http://www.libexpat.org/)
+This project has the following depencancies:
+- [libzip](http://www.nih.at/libzip/) (libxlsxio_read and libxlsxio_write)
+- [expat](http://www.libexpat.org/) (only for libxlsxio_read)
 
 License
 -------
