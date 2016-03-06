@@ -7,6 +7,16 @@
 #include <zip.h>
 #include <expat.h>
 
+#ifndef ZIP_RDONLY
+typedef struct zip zip_t;
+typedef struct zip_file zip_file_t;
+#define ZIP_RDONLY 0
+#endif
+
+#ifndef _WIN32
+#define stricmp strcasecmp
+#endif
+
 ////////////////////////////////////////////////////////////////////////
 
 #define BUFFER_SIZE 256

@@ -16,6 +16,11 @@
 #include <pthread.h>
 #endif
 
+#ifndef ZIP_RDONLY
+typedef struct zip zip_t;
+typedef struct zip_source zip_source_t;
+#endif
+
 #ifdef _WIN32
 #define pipe(fds) _pipe(fds, 4096, _O_BINARY)
 #define read _read
@@ -23,6 +28,8 @@
 #define write _write
 #define close _close
 #define fdopen _fdopen
+#else
+#define _fdopen(f) f
 #endif
 
 ////////////////////////////////////////////////////////////////////////
@@ -198,19 +205,25 @@ void* thread_proc (void* arg)
 //  zip_add_static_content_string(handle->zip, "xl/worksheets/sheet1.xml", worksheet_xml);
 
   //add sheet content with pipe data as source
-  zip_source_t* zipsrc = zip_source_filep(handle->zip, _fdopen(handle->pipefd[PIPEFD_READ], "rb"), 0, -1);
+  zip_source_t* zipsrc = zip_source_filep(handle->zip, fdopen(handle->pipefd[PIPEFD_READ], "rb"), 0, -1);
   if (zip_file_add(handle->zip, "xl/worksheets/sheet1.xml", zipsrc, ZIP_FL_OVERWRITE | ZIP_FL_ENC_UTF_8) < 0) {
     zip_source_free(zipsrc);
     fprintf(stdout, "Error adding file");
   }
+#ifdef ZIP_RDONLY
   zip_file_set_mtime(handle->zip, zip_get_num_entries(handle->zip, 0) - 1, time(NULL), 0);
+#endif
 
   //close zip file (processes all data, will block until pipe is closed)
   if (zip_close(handle->zip) != 0) {
     int ze, se;
-    zip_error_t* error = zip_get_error(handle->zip);
+#ifdef ZIP_RDONLY
+    zip_error_t* error = zip_get_error(handle->zip);    
     ze = zip_error_code_zip(error);
     se = zip_error_code_system(error);
+#else
+    zip_error_get(handle->zip, &ze, &se);
+#endif
     fprintf(stderr, "zip_close failed (%i,%i)\n", ze, se);/////
     fprintf(stderr, "can't close zip archive : %s\n", zip_strerror(handle->zip));
   }
