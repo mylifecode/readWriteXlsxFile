@@ -159,6 +159,8 @@ void sharedstringlist_destroy (struct sharedstringlist* sharedstrings)
 
 size_t sharedstringlist_size (struct sharedstringlist* sharedstrings)
 {
+  if (!sharedstrings)
+    return 0;
   return sharedstrings->count;
 }
 
@@ -875,9 +877,10 @@ DLL_EXPORT_XLSXIO int xlsxioread_process (xlsxioreader handle, const char* sheet
     .textlen = 0
   };
   if (expat_process_zip_file(handle->zip, getrelscallbackdata.sharedstringsfile, shared_strings_callback_find_sharedstringtable_start, NULL, NULL, &sharedstringsdata, &sharedstringsdata.xmlparser) != 0) {
+    //no shared strings found
     free(sharedstringsdata.text);
     sharedstringlist_destroy(sharedstrings);
-    return 1;
+    sharedstrings = NULL;
   }
   free(sharedstringsdata.text);
 
