@@ -36,6 +36,11 @@ Writing .xlsx files:
 - on the fly file generation without the need to buffer data in memory
 - no support for shared strings (all values are written as inline strings)
 
+Dependancies
+------------
+[libzip](http://www.nih.at/libzip/)
+[expat](http://www.libexpat.org/)
+
 License
 -------
 XLSX I/O is released under the terms of the MIT License (MIT), see LICENSE.txt.
