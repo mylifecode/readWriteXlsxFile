@@ -3,7 +3,9 @@
 #include <string.h>
 #include "xlsxio_read.h"
 
-const char* filename = "example.xlsx";
+//const char* filename = "example.xlsx";
+//const char* filename = "1424345137-Sample.xlsx";
+const char* filename = "mytest.xlsx";
 
 int main (int argc, char* argv[])
 {
@@ -14,10 +16,10 @@ int main (int argc, char* argv[])
     return 1;
   }
   char* value;
-  xlsxioreadersheet sheet = xlsxioread_sheet_open(xlsxioread, NULL, XLSXIOREAD_SKIP_EMPTY_ROWS);
+  xlsxioreadersheet sheet = xlsxioread_sheet_open(xlsxioread, NULL, XLSXIOREAD_SKIP_EMPTY_ROWS | XLSXIOREAD_SKIP_EXTRA_CELLS);
   while (xlsxioread_sheet_next_row(sheet)) {
     while ((value = xlsxioread_sheet_next_cell(sheet)) != NULL) {
-      printf("%s\t", value);
+      printf("[%s]\t", value);
       free(value);
     }
     printf("\n");

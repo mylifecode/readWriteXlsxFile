@@ -613,8 +613,9 @@ void data_sheet_expat_callback_find_row_start (void* callbackdata, const XML_Cha
     data->colnr = 0;
     XML_SetElementHandler(data->xmlparser, data_sheet_expat_callback_find_cell_start, data_sheet_expat_callback_find_row_end);
     //for non-calback method suspend here on new row
-    if (data->flags & XLSXIOREAD_NO_CALLBACK)
+    if (data->flags & XLSXIOREAD_NO_CALLBACK) {
       XML_StopParser(data->xmlparser, XML_TRUE);
+    }
   }
 }
 
@@ -626,7 +627,7 @@ void data_sheet_expat_callback_find_row_end (void* callbackdata, const XML_Char*
     if (data->rownr == 1 && data->cols == 0)
       data->cols = data->colnr;
     //add empty columns if needed
-    if (!(data->flags & XLSXIOREAD_NO_CALLBACK) && !(data->flags & XLSXIOREAD_SKIP_EMPTY_CELLS) && data->sheet_cell_callback) {
+    if (!(data->flags & XLSXIOREAD_NO_CALLBACK) && data->sheet_cell_callback && !(data->flags & XLSXIOREAD_SKIP_EMPTY_CELLS)) {
       while (data->colnr < data->cols) {
         if ((*data->sheet_cell_callback)(data->rownr, data->colnr + 1, NULL, data->callbackdata)) {
           XML_StopParser(data->xmlparser, XML_FALSE);
@@ -635,6 +636,8 @@ void data_sheet_expat_callback_find_row_end (void* callbackdata, const XML_Char*
         data->colnr++;
       }
     }
+    free(data->celldata);
+    data->celldata = NULL;
     XML_SetElementHandler(data->xmlparser, data_sheet_expat_callback_find_row_start, data_sheet_expat_callback_find_sheetdata_end);
     //process end of row
     if (!(data->flags & XLSXIOREAD_NO_CALLBACK)) {
@@ -646,8 +649,9 @@ void data_sheet_expat_callback_find_row_end (void* callbackdata, const XML_Char*
       }
     } else {
       //for non-calback method suspend here on end of row
-      if (data->flags & XLSXIOREAD_NO_CALLBACK)
+      if (data->flags & XLSXIOREAD_NO_CALLBACK) {
         XML_StopParser(data->xmlparser, XML_TRUE);
+      }
     }
   } else {
     data_sheet_expat_callback_find_sheetdata_end(callbackdata, name);
@@ -659,41 +663,47 @@ void data_sheet_expat_callback_find_cell_start (void* callbackdata, const XML_Ch
   struct data_sheet_callback_data* data = (struct data_sheet_callback_data*)callbackdata;
   if (stricmp(name, "c") == 0) {
     const XML_Char* t = get_expat_attr_by_name(atts, "r");
-    size_t cellcolnr = get_col_nr(t) - 1;
+    size_t cellcolnr = get_col_nr(t);
+    //skip everything when out of bounds
+    if (cellcolnr && data->cols && (data->flags & XLSXIOREAD_SKIP_EXTRA_CELLS) && cellcolnr > data->cols) {
+      data->colnr = cellcolnr - 1;
+      return;
+    }
     //insert empty rows if needed
     if (data->colnr == 0) {
       size_t cellrownr = get_row_nr(t);
-      if (data->flags & XLSXIOREAD_SKIP_EMPTY_ROWS) {
-        data->rownr = cellrownr;
-      } else if (!(data->flags & XLSXIOREAD_NO_CALLBACK)) {
-        while (data->rownr < cellrownr) {
-          //insert empty columns
-          if (!(data->flags & XLSXIOREAD_SKIP_EMPTY_CELLS) && data->sheet_cell_callback) {
-            while (data->colnr < data->cols) {
-              if ((*data->sheet_cell_callback)(data->rownr, data->colnr + 1, NULL, data->callbackdata)) {
+      if (cellrownr) {
+        if (!(data->flags & XLSXIOREAD_SKIP_EMPTY_ROWS) && !(data->flags & XLSXIOREAD_NO_CALLBACK)) {
+          while (data->rownr < cellrownr) {
+            //insert empty columns
+            if (!(data->flags & XLSXIOREAD_SKIP_EMPTY_CELLS) && data->sheet_cell_callback) {
+              while (data->colnr < data->cols) {
+                if ((*data->sheet_cell_callback)(data->rownr, data->colnr + 1, NULL, data->callbackdata)) {
+                  XML_StopParser(data->xmlparser, XML_FALSE);
+                  return;
+                }
+                data->colnr++;
+              }
+            }
+            //finish empty row
+            if (data->sheet_row_callback) {
+              if ((*data->sheet_row_callback)(data->rownr, data->cols, callbackdata)) {
                 XML_StopParser(data->xmlparser, XML_FALSE);
                 return;
               }
-              data->colnr++;
             }
+            data->rownr++;
+            data->colnr = 0;
           }
-          //finish empty row
-          if (data->sheet_row_callback) {
-            if ((*data->sheet_row_callback)(data->rownr, data->cols, callbackdata)) {
-              XML_StopParser(data->xmlparser, XML_FALSE);
-              return;
-            }
-          }
-          data->rownr++;
-          data->colnr = 0;
+        } else {
+          data->rownr = cellrownr;
         }
-      } else {
-        data->rownr = cellrownr;
       }
     }
     //insert empty columns if needed
     if (data->flags & XLSXIOREAD_SKIP_EMPTY_CELLS || data->flags & XLSXIOREAD_NO_CALLBACK) {
-      data->colnr = cellcolnr;
+      if (cellcolnr)
+        data->colnr = cellcolnr - 1;
     } else {
       while (data->colnr < cellcolnr) {
         if (data->sheet_cell_callback) {
@@ -722,10 +732,12 @@ void data_sheet_expat_callback_find_cell_end (void* callbackdata, const XML_Char
 {
   struct data_sheet_callback_data* data = (struct data_sheet_callback_data*)callbackdata;
   if (stricmp(name, "c") == 0) {
+    //determine value
     if (data->celldata) {
       const char* s = NULL;
       data->celldata[data->celldatalen] = 0;
       if (data->cell_string_type == shared_string) {
+        //get shared string
         char* p = NULL;
         long num = strtol(data->celldata, &p, 10);
         if (!p || (p != data->celldata && *p == 0)) {
@@ -734,6 +746,7 @@ void data_sheet_expat_callback_find_cell_end (void* callbackdata, const XML_Char
           data->celldata = (s ? strdup(s) : NULL);
         }
       } else if (data->cell_string_type == none) {
+        //unknown value type
         free(data->celldata);
         data->celldata = NULL;
       }
@@ -741,25 +754,25 @@ void data_sheet_expat_callback_find_cell_end (void* callbackdata, const XML_Char
     //reset data
     data->colnr++;
     data->cell_string_type = none;
-//    free(data->celldata);
-//    data->celldata = NULL;
-////////TO DO: FIX THIS
     data->celldatalen = 0;
     XML_SetElementHandler(data->xmlparser, data_sheet_expat_callback_find_cell_start, data_sheet_expat_callback_find_row_end);
     XML_SetCharacterDataHandler(data->xmlparser, NULL);
-    //process data
-    if (!(data->flags & XLSXIOREAD_NO_CALLBACK)) {
-      if (data->sheet_cell_callback) {
-        if ((*data->sheet_cell_callback)(data->rownr, data->colnr, data->celldata, data->callbackdata)) {
-          XML_StopParser(data->xmlparser, XML_FALSE);
-          return;
+    //process data if needed
+    if (!(data->cols && (data->flags & XLSXIOREAD_SKIP_EXTRA_CELLS) && data->colnr > data->cols)) {
+      //process data
+      if (!(data->flags & XLSXIOREAD_NO_CALLBACK)) {
+        if (data->sheet_cell_callback) {
+          if ((*data->sheet_cell_callback)(data->rownr, data->colnr, data->celldata, data->callbackdata)) {
+            XML_StopParser(data->xmlparser, XML_FALSE);
+            return;
+          }
         }
+      } else {
+        //for non-calback method suspend here with cell data
+        if (!data->celldata)
+          data->celldata = strdup("");
+        XML_StopParser(data->xmlparser, XML_TRUE);
       }
-    } else {
-      //for non-calback method suspend here with cell data
-      if (!data->celldata)
-        data->celldata = strdup("");
-      XML_StopParser(data->xmlparser, XML_TRUE);
     }
   } else {
     data_sheet_expat_callback_find_row_end(callbackdata, name);
@@ -967,7 +980,7 @@ DLL_EXPORT_XLSXIO char* xlsxioread_sheet_next_cell (xlsxioreadersheet sheethandl
     } else {
       //add another empty column
       sheethandle->paddingcol++;
-      return strdup("");
+      return strdup(":");
     }
   }
   //get value
@@ -981,12 +994,14 @@ DLL_EXPORT_XLSXIO char* xlsxioread_sheet_next_cell (xlsxioreadersheet sheethandl
     return xlsxioread_sheet_next_cell(sheethandle);
   }
   //insert empty column before if needed
-  if (!(sheethandle->processcallbackdata.flags & XLSXIOREAD_SKIP_EMPTY_CELLS)) {
-    if (sheethandle->lastcolnr + 1 < sheethandle->processcallbackdata.colnr) {
-      sheethandle->lastcolnr++;
-      return strdup("");
+  //if (!(sheethandle->processcallbackdata.cols && (sheethandle->processcallbackdata.flags & XLSXIOREAD_SKIP_EXTRA_CELLS) && sheethandle->processcallbackdata.colnr >= sheethandle->processcallbackdata.cols)) {
+    if (!(sheethandle->processcallbackdata.flags & XLSXIOREAD_SKIP_EMPTY_CELLS)) {
+      if (sheethandle->lastcolnr + 1 < sheethandle->processcallbackdata.colnr) {
+        sheethandle->lastcolnr++;
+        return strdup(".");
+      }
     }
-  }
+  //}
   result = sheethandle->processcallbackdata.celldata;
   sheethandle->processcallbackdata.celldata = NULL;
   //end of row
