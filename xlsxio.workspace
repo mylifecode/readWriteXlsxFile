@@ -1,13 +1,18 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <CodeBlocks_workspace_file>
 	<Workspace title="Workspace">
-		<Project filename="xlsxio_write.cbp" />
-		<Project filename="xlsxio_read.cbp" />
 		<Project filename="libxlsxio_write.cbp" />
-		<Project filename="libxlsxio_read.cbp" />
 		<Project filename="libxlsxio_write_shared.cbp" />
+		<Project filename="libxlsxio_read.cbp" />
 		<Project filename="libxlsxio_read_shared.cbp" />
-		<Project filename="example_xlsxio_write.cbp" />
-		<Project filename="example_xlsxio_read.cbp" />
+		<Project filename="example_xlsxio_write.cbp">
+			<Depends filename="libxlsxio_write_shared.cbp" />
+		</Project>
+		<Project filename="example_xlsxio_read.cbp">
+			<Depends filename="libxlsxio_read_shared.cbp" />
+		</Project>
+		<Project filename="example_xlsxio_read_advanced.cbp">
+			<Depends filename="libxlsxio_read_shared.cbp" />
+		</Project>
 	</Workspace>
 </CodeBlocks_workspace_file>

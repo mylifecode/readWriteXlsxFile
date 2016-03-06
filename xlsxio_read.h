@@ -60,10 +60,15 @@ DLL_EXPORT_XLSXIO void xlsxioread_list_sheets (xlsxioreader handle, xlsxioread_l
 /*! \brief possible values for the flags parameter of xlsxioread_process()
  * \sa     xlsxioread_process()
  */
+/*! \brief don't skip any rows or cells */
 #define XLSXIOREAD_SKIP_NONE            0
+/*! \brief skip empty rows (note: cells may appear empty while they actually contain data) */
 #define XLSXIOREAD_SKIP_EMPTY_ROWS      0x01
+/*! \brief skip empty cells */
 #define XLSXIOREAD_SKIP_EMPTY_CELLS     0x02
+/*! \brief skip empty rows and cells */
 #define XLSXIOREAD_SKIP_ALL_EMPTY       (XLSXIOREAD_SKIP_EMPTY_ROWS | XLSXIOREAD_SKIP_EMPTY_CELLS)
+/*! \brief skip extra cells to the right of the rightmost header cell */
 #define XLSXIOREAD_SKIP_EXTRA_CELLS     0x04
 
 /*! \brief type of pointer to callback function for processing a worksheet cell value

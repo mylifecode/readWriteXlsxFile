@@ -29,6 +29,7 @@
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
+					<Add library="bin/Release/libxlsxio_read.dll.a" />
 					<Add directory="bin/Release" />
 				</Linker>
 			</Target>
@@ -55,6 +56,7 @@
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
+					<Add library="bin/Release64/libxlsxio_read.dll.a" />
 					<Add directory="bin/Release64" />
 				</Linker>
 			</Target>
@@ -81,6 +83,7 @@
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
+					<Add library="bin/Release32/libxlsxio_read.dll.a" />
 					<Add directory="bin/Release32" />
 				</Linker>
 			</Target>

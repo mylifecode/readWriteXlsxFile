@@ -701,18 +701,20 @@ void data_sheet_expat_callback_find_cell_start (void* callbackdata, const XML_Ch
       }
     }
     //insert empty columns if needed
-    if (data->flags & XLSXIOREAD_SKIP_EMPTY_CELLS || data->flags & XLSXIOREAD_NO_CALLBACK) {
-      if (cellcolnr)
-        data->colnr = cellcolnr - 1;
-    } else {
-      while (data->colnr < cellcolnr) {
-        if (data->sheet_cell_callback) {
-          if ((*data->sheet_cell_callback)(data->rownr, data->colnr + 1, NULL, data->callbackdata)) {
-            XML_StopParser(data->xmlparser, XML_FALSE);
-            return;
+    if (cellcolnr) {
+      cellcolnr--;
+      if (data->flags & XLSXIOREAD_SKIP_EMPTY_CELLS || data->flags & XLSXIOREAD_NO_CALLBACK) {
+        data->colnr = cellcolnr;
+      } else {
+        while (data->colnr < cellcolnr) {
+          if (data->sheet_cell_callback) {
+            if ((*data->sheet_cell_callback)(data->rownr, data->colnr + 1, NULL, data->callbackdata)) {
+              XML_StopParser(data->xmlparser, XML_FALSE);
+              return;
+            }
           }
+          data->colnr++;
         }
-        data->colnr++;
       }
     }
     //determing value type
@@ -820,7 +822,6 @@ void data_sheet_expat_callback_value_data (void* callbackdata, const XML_Char* b
 
 ////////////////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////////////////
 struct xlsxio_read_sheet_struct {
   xlsxioreader handle;
   zip_file_t* zipfile;
@@ -920,6 +921,7 @@ DLL_EXPORT_XLSXIO int xlsxioread_process (xlsxioreader handle, const char* sheet
 }
 
 ////////////////////////////////////////////////////////////////////////
+
 DLL_EXPORT_XLSXIO xlsxioreadersheet xlsxioread_sheet_open (xlsxioreader handle, const char* sheetname, unsigned int flags)
 {
   xlsxioreadersheet result;
@@ -980,7 +982,7 @@ DLL_EXPORT_XLSXIO char* xlsxioread_sheet_next_cell (xlsxioreadersheet sheethandl
     } else {
       //add another empty column
       sheethandle->paddingcol++;
-      return strdup(":");
+      return strdup("");
     }
   }
   //get value
@@ -994,14 +996,12 @@ DLL_EXPORT_XLSXIO char* xlsxioread_sheet_next_cell (xlsxioreadersheet sheethandl
     return xlsxioread_sheet_next_cell(sheethandle);
   }
   //insert empty column before if needed
-  //if (!(sheethandle->processcallbackdata.cols && (sheethandle->processcallbackdata.flags & XLSXIOREAD_SKIP_EXTRA_CELLS) && sheethandle->processcallbackdata.colnr >= sheethandle->processcallbackdata.cols)) {
-    if (!(sheethandle->processcallbackdata.flags & XLSXIOREAD_SKIP_EMPTY_CELLS)) {
-      if (sheethandle->lastcolnr + 1 < sheethandle->processcallbackdata.colnr) {
-        sheethandle->lastcolnr++;
-        return strdup(".");
-      }
+  if (!(sheethandle->processcallbackdata.flags & XLSXIOREAD_SKIP_EMPTY_CELLS)) {
+    if (sheethandle->lastcolnr + 1 < sheethandle->processcallbackdata.colnr) {
+      sheethandle->lastcolnr++;
+      return strdup("");
     }
-  //}
+  }
   result = sheethandle->processcallbackdata.celldata;
   sheethandle->processcallbackdata.celldata = NULL;
   //end of row
