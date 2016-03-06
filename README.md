@@ -14,7 +14,7 @@ The library was written with the following goals in mind:
 - simple interface
 - small footprint
 - portable across different platforms (Windows, *nix)
-- minimal dependancies: only depends on expat and libzip (which in turn depends on zlib)
+- minimal dependancies: only depends on expat (only for reading) and libzip (which in turn depends on zlib)
 - seperate library for reading and writing .xlsx files
 
 Reading .xlsx files:

@@ -3,5 +3,11 @@
 	<Workspace title="Workspace">
 		<Project filename="xlsxio_write.cbp" />
 		<Project filename="xlsxio_read.cbp" />
+		<Project filename="libxlsxio_write.cbp" />
+		<Project filename="libxlsxio_read.cbp" />
+		<Project filename="libxlsxio_write_shared.cbp" />
+		<Project filename="libxlsxio_read_shared.cbp" />
+		<Project filename="example_xlsxio_write.cbp" />
+		<Project filename="example_xlsxio_read.cbp" />
 	</Workspace>
 </CodeBlocks_workspace_file>
