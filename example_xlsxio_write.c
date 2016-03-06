@@ -2,15 +2,16 @@
 #include <stdio.h>
 #include "xlsxio_write.h"
 
+const char* filename = "example.xlsx";
+
 int main (int argc, char* argv[])
 {
-  const char* filename = "example.xlsx";
   xlsxiowriter handle;
   //remove the destination file first if it exists
   unlink(filename);
   //open .xlsx file for writing
   if ((handle = xlsxiowrite_open(filename)) == NULL) {
-    fprintf(stderr, "Error creating zip file\n");
+    fprintf(stderr, "Error creating .xlsx file\n");
     return 1;
   }
   //write data
