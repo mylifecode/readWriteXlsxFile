@@ -1,11 +1,11 @@
-OUTPUT_DIRECTORY       = doxygen
+OUTPUT_DIRECTORY       = doc
 INPUT                  =
 EXTRACT_ALL            = NO
 EXTRACT_PRIVATE        = NO
 EXTRACT_STATIC         = NO
 FILE_PATTERNS          = README.md xlsxio*.h
 USE_MDFILE_AS_MAINPAGE = README.md
-RECURSIVE              = NO
+RECURSIVE              = YES
 GENERATE_LATEX         = NO
 GENERATE_HTML          = YES
 GENERATE_MAN           = YES

@@ -90,8 +90,9 @@
 		</Build>
 		<Compiler>
 			<Add option="-Wall" />
+			<Add directory="include" />
 		</Compiler>
-		<Unit filename="example_xlsxio_read_advanced.c">
+		<Unit filename="examples/example_xlsxio_read_advanced.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Extensions>

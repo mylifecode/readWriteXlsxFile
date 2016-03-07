@@ -78,6 +78,7 @@
 		</Build>
 		<Compiler>
 			<Add option="-Wall" />
+			<Add directory="include" />
 			<Add option="`pkg-config --cflags libzip`" />
 			<Add option="-DBUILD_XLSXIO_STATIC" />
 		</Compiler>
@@ -86,11 +87,11 @@
 			<Add option="--static" />
 			<Add library="expat" />
 		</Linker>
-		<Unit filename="xlsxio_read.c">
+		<Unit filename="lib/xlsxio_read.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="xlsxio_read.h" />
-		<Unit filename="xlsxio_read_main.c">
+		<Unit filename="include/xlsxio_read.h" />
+		<Unit filename="src/xlsxio_read_main.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Extensions>

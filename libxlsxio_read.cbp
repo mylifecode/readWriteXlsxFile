@@ -89,6 +89,7 @@
 			</Target>
 		</Build>
 		<Compiler>
+			<Add directory="include" />
 			<Add option="-DBUILD_XLSXIO_STATIC" />
 		</Compiler>
 		<Linker>
@@ -96,10 +97,10 @@
 			<Add option="--static" />
 			<Add library="expat" />
 		</Linker>
-		<Unit filename="xlsxio_read.c">
+		<Unit filename="lib/xlsxio_read.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="xlsxio_read.h" />
+		<Unit filename="include/xlsxio_read.h" />
 		<Extensions>
 			<code_completion />
 			<envvars />

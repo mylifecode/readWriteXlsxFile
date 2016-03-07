@@ -89,16 +89,17 @@
 			</Target>
 		</Build>
 		<Compiler>
+			<Add directory="include" />
 			<Add option="-DBUILD_XLSXIO_STATIC" />
 		</Compiler>
 		<Linker>
 			<Add option="`pkg-config --static --libs libzip`" />
 			<Add option="--static" />
 		</Linker>
-		<Unit filename="xlsxio_write.c">
+		<Unit filename="lib/xlsxio_write.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="xlsxio_write.h" />
+		<Unit filename="include/xlsxio_write.h" />
 		<Extensions>
 			<code_completion />
 			<envvars />

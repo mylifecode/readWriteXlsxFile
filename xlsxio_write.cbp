@@ -78,6 +78,7 @@
 		</Build>
 		<Compiler>
 			<Add option="-Wall" />
+			<Add directory="include" />
 			<Add option="`pkg-config --cflags libzip`" />
 			<Add option="-DBUILD_XLSXIO_STATIC" />
 		</Compiler>
@@ -85,11 +86,11 @@
 			<Add option="`pkg-config --static --libs libzip`" />
 			<Add option="--static" />
 		</Linker>
-		<Unit filename="xlsxio_write.c">
+		<Unit filename="lib/xlsxio_write.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="xlsxio_write.h" />
-		<Unit filename="xlsxio_write_main.c">
+		<Unit filename="include/xlsxio_write.h" />
+		<Unit filename="src/xlsxio_write_main.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Extensions>

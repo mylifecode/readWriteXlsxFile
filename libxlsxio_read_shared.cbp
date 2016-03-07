@@ -84,16 +84,17 @@
 		</Build>
 		<Compiler>
 			<Add option="-Wall" />
+			<Add directory="include" />
 			<Add option="-DBUILD_XLSXIO_DLL" />
 		</Compiler>
 		<Linker>
 			<Add library="expat" />
 			<Add library="zip" />
 		</Linker>
-		<Unit filename="xlsxio_read.c">
+		<Unit filename="lib/xlsxio_read.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="xlsxio_read.h" />
+		<Unit filename="include/xlsxio_read.h" />
 		<Extensions>
 			<code_completion />
 			<envvars />
