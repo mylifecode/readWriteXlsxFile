@@ -52,6 +52,20 @@ THE SOFTWARE.
 extern "C" {
 #endif
 
+/*! \brief get xlsxio_write version string
+ * \param  major         pointer to integer that will receive major version number
+ * \param  minor         pointer to integer that will receive minor version number
+ * \param  micro         pointer to integer that will receive micro version number
+ * \sa     xlsxiowrite_get_version_string()
+ */
+DLL_EXPORT_XLSXIO void xlsxiowrite_get_version (int* major, int* minor, int* micro);
+
+/*! \brief get xlsxio_write version string
+ * \return version string
+ * \sa     xlsxiowrite_get_version()
+ */
+DLL_EXPORT_XLSXIO const char* xlsxiowrite_get_version_string ();
+
 /*! \brief write handle for .xlsx object */
 typedef struct xlsxio_write_struct* xlsxiowriter;
 

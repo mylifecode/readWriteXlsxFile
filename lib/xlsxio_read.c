@@ -1,4 +1,5 @@
 #include "xlsxio_read.h"
+#include "xlsxio_version.h"
 #include <stdlib.h>
 #include <string.h>
 #ifdef BUILD_XLSXIO_STATIC
@@ -16,6 +17,21 @@ typedef struct zip_file zip_file_t;
 #ifndef _WIN32
 #define stricmp strcasecmp
 #endif
+
+DLL_EXPORT_XLSXIO void xlsxioread_get_version (int* major, int* minor, int* micro)
+{
+  if (major)
+    *major = XLSXIO_VERSION_MAJOR;
+  if (minor)
+    *minor = XLSXIO_VERSION_MINOR;
+  if (micro)
+    *micro = XLSXIO_VERSION_MICRO;
+}
+
+DLL_EXPORT_XLSXIO const char* xlsxioread_get_version_string ()
+{
+  return XLSXIO_VERSION_STRING;
+}
 
 ////////////////////////////////////////////////////////////////////////
 

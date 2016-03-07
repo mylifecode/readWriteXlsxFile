@@ -98,6 +98,7 @@
 			<Add library="expat" />
 		</Linker>
 		<Unit filename="../include/xlsxio_read.h" />
+		<Unit filename="../lib/xlsxio_version.h" />
 		<Unit filename="../lib/xlsxio_read.c">
 			<Option compilerVar="CC" />
 		</Unit>

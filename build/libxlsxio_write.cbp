@@ -97,6 +97,7 @@
 			<Add option="--static" />
 		</Linker>
 		<Unit filename="../include/xlsxio_write.h" />
+		<Unit filename="../lib/xlsxio_version.h" />
 		<Unit filename="../lib/xlsxio_write.c">
 			<Option compilerVar="CC" />
 		</Unit>

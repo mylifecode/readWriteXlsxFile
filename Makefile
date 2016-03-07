@@ -14,7 +14,7 @@ else
 BINEXT =
 SOEXT = .so
 endif
-INCS =  -Iinclude
+INCS =  -Iinclude -Ilib
 CFLAGS = $(INCS) -fexpensive-optimizations -Os
 CPPFLAGS = $(INCS) -fexpensive-optimizations -Os
 STATIC_CFLAGS = -DBUILD_XLSXIO_STATIC
@@ -22,9 +22,12 @@ SHARED_CFLAGS = -DBUILD_XLSXIO_DLL
 LIBS =
 LDFLAGS =
 STRIPFLAG = -s
+MKDIR = mkdir -p
 RM = rm -f
 RMDIR = rm -rf
 CP = cp -f
+CPDIR = cp -rf
+DOXYGEN := $(shell which doxygen)
 
 XLSXIOREAD_OBJ = lib/xlsxio_read.o
 XLSXIOREAD_LDFLAGS = -lzip -lexpat
@@ -44,7 +47,7 @@ EXAMPLES_BIN = example_xlsxio_write$(BINEXT) example_xlsxio_read$(BINEXT) exampl
 
 default: all
 
-all: static-lib shared-lib
+all: static-lib shared-lib doc
 
 %.o: %.c
 	$(CC) -c -o $@ $< $(CFLAGS) 
@@ -84,20 +87,25 @@ examples: $(EXAMPLES_BIN)
 
 .PHONY: doc
 doc:
-	doxygen doc/Doxyfile
+ifdef DOXYGEN
+	$(DOXYGEN) doc/Doxyfile
+endif
 
 .PHONY: clean
 clean:
 	$(RM) lib/*.o examples/*.o src/*.o *$(LIBEXT) *$(SOEXT) $(EXAMPLES_BIN)
 	$(RMDIR) doc/html doc/man
 
-install: all
-	mkdir -p $(PREFIX)/include $(PREFIX)/lib
-	cp -f include/*.h $(PREFIX)/include
-	cp -f *$(LIBEXT) $(PREFIX)/lib
+install: all doc
+	$(MKDIR) $(PREFIX)/include $(PREFIX)/lib
+	$(CP) include/*.h $(PREFIX)/include/
+	$(CP) *$(LIBEXT) $(PREFIX)/lib/
 ifeq ($(OS),Windows_NT)
-	mkdir -p $(PREFIX)/bin
-	cp -f *$(SOEXT) $(PREFIX)/bin
+	$(MKDIR) $(PREFIX)/bin
+	$(CP) *$(SOEXT) $(PREFIX)/bin/
 else
-	cp -f *$(SOEXT) $(PREFIX)/lib
+	$(CP) *$(SOEXT) $(PREFIX)/lib/
+endif
+ifdef DOXYGEN
+	$(CPDIR) doc/man $(PREFIX)/
 endif

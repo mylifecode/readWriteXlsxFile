@@ -1,4 +1,5 @@
 #include "xlsxio_write.h"
+#include "xlsxio_version.h"
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
@@ -31,6 +32,21 @@ typedef struct zip_source zip_source_t;
 #else
 #define _fdopen(f) f
 #endif
+
+DLL_EXPORT_XLSXIO void xlsxiowrite_get_version (int* major, int* minor, int* micro)
+{
+  if (major)
+    *major = XLSXIO_VERSION_MAJOR;
+  if (minor)
+    *minor = XLSXIO_VERSION_MINOR;
+  if (micro)
+    *micro = XLSXIO_VERSION_MICRO;
+}
+
+DLL_EXPORT_XLSXIO const char* xlsxiowrite_get_version_string ()
+{
+  return XLSXIO_VERSION_STRING;
+}
 
 ////////////////////////////////////////////////////////////////////////
 
@@ -218,7 +234,7 @@ void* thread_proc (void* arg)
   if (zip_close(handle->zip) != 0) {
     int ze, se;
 #ifdef ZIP_RDONLY
-    zip_error_t* error = zip_get_error(handle->zip);    
+    zip_error_t* error = zip_get_error(handle->zip);
     ze = zip_error_code_zip(error);
     se = zip_error_code_system(error);
 #else
