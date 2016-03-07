@@ -93,7 +93,7 @@ clean:
 
 install: all
 	mkdir -p $(PREFIX)/include $(PREFIX)/lib
-	cp -f *.h $(PREFIX)/include
+	cp -f include/*.h $(PREFIX)/include
 	cp -f *$(LIBEXT) $(PREFIX)/lib
 ifeq ($(OS),Windows_NT)
 	mkdir -p $(PREFIX)/bin
