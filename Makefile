@@ -23,6 +23,7 @@ LIBS =
 LDFLAGS =
 STRIPFLAG = -s
 RM = rm -f
+RMDIR = rm -rf
 CP = cp -f
 
 XLSXIOREAD_OBJ = lib/xlsxio_read.o
@@ -81,12 +82,14 @@ example_xlsxio_read_advanced$(BINEXT): $(LIBPREFIX)xlsxio_read$(LIBEXT) examples
 
 examples: $(EXAMPLES_BIN)
 
+.PHONY: doc
 doc:
-	doxygen Doxyfile
+	doxygen doc/Doxyfile
 
 .PHONY: clean
 clean:
 	$(RM) lib/*.o examples/*.o src/*.o *$(LIBEXT) *$(SOEXT) $(EXAMPLES_BIN)
+	$(RMDIR) doc/html doc/man
 
 install: all
 	mkdir -p $(PREFIX)/include $(PREFIX)/lib
