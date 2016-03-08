@@ -4,8 +4,6 @@
 #include "xlsxio_read.h"
 
 const char* filename = "example.xlsx";
-//const char* filename = "1424345137-Sample.xlsx";
-//const char* filename = "mytest.xlsx";
 
 int main (int argc, char* argv[])
 {
