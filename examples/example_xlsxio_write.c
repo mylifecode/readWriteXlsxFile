@@ -19,9 +19,9 @@ int main (int argc, char* argv[])
   for (i = 0; i < 1000; i++) {
     xlsxiowrite_add_cell_string(handle, "Test");
     xlsxiowrite_add_cell_string(handle, NULL);
-    xlsxiowrite_add_cell_string(handle, "1");
-    xlsxiowrite_add_cell_string(handle, "2");
-    xlsxiowrite_add_cell_string(handle, "3");
+    xlsxiowrite_add_cell_int(handle, i);
+    xlsxiowrite_add_cell_datetime(handle, time(NULL));
+    xlsxiowrite_add_cell_float(handle, 3.1415926);
     xlsxiowrite_next_row(handle);
   }
   //close .xlsx file

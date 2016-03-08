@@ -1,3 +1,10 @@
+0.1.1
+
+2016-03-08  Brecht Sanders  https://github.com/brechtsanders/
+
+	* add support for reading next row without having read all columns
+	* additional functions for writing cells (integer, floating point, date/time)
+
 0.1.0
 
 2016-03-08  Brecht Sanders  https://github.com/brechtsanders/

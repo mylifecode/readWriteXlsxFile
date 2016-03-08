@@ -974,6 +974,7 @@ DLL_EXPORT_XLSXIO void xlsxioread_sheet_close (xlsxioreadersheet sheethandle)
 
 DLL_EXPORT_XLSXIO int xlsxioread_sheet_next_row (xlsxioreadersheet sheethandle)
 {
+  enum XML_Status status;
   sheethandle->lastcolnr = 0;
   //when padding rows don't retrieve new data
   if (sheethandle->paddingrow) {
@@ -985,7 +986,10 @@ DLL_EXPORT_XLSXIO int xlsxioread_sheet_next_row (xlsxioreadersheet sheethandle)
     }
   }
   sheethandle->paddingcol = 0;
-  return (expat_process_zip_file_resume(sheethandle) == XML_STATUS_SUSPENDED ? 1 : 0);
+  //go to beginning of next row
+  while ((status = expat_process_zip_file_resume(sheethandle)) == XML_STATUS_SUSPENDED && sheethandle->processcallbackdata.colnr != 0) {
+  }
+  return (status == XML_STATUS_SUSPENDED ? 1 : 0);
 }
 
 DLL_EXPORT_XLSXIO char* xlsxioread_sheet_next_cell (xlsxioreadersheet sheethandle)

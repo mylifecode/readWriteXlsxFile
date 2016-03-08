@@ -327,6 +327,30 @@ DLL_EXPORT_XLSXIO void xlsxiowrite_add_cell_string (xlsxiowriter handle, const c
   }
 }
 
+DLL_EXPORT_XLSXIO void xlsxiowrite_add_cell_int (xlsxiowriter handle, long long value)
+{
+	char buf[21];
+	xlsxiowrite_add_cell_string(handle, lltoa(value, buf, 10));
+}
+
+DLL_EXPORT_XLSXIO void xlsxiowrite_add_cell_float (xlsxiowriter handle, double value)
+{
+	char* buf;
+	int buflen = snprintf(NULL, 0, "%.32G", value);
+	if (buflen <= 0 || (buf = (char*)malloc(buflen + 1)) == NULL)
+    xlsxiowrite_add_cell_string(handle, NULL);
+	snprintf(buf, buflen, "%.32G", value);
+  xlsxiowrite_add_cell_string(handle, buf);
+  free(buf);
+}
+
+DLL_EXPORT_XLSXIO void xlsxiowrite_add_cell_datetime (xlsxiowriter handle, time_t value)
+{
+	char buf[20];
+	strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", gmtime(&value));
+  xlsxiowrite_add_cell_string(handle, buf);
+}
+
 DLL_EXPORT_XLSXIO void xlsxiowrite_next_row (xlsxiowriter handle)
 {
   if (handle->rowopen)

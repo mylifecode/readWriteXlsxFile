@@ -33,6 +33,7 @@ THE SOFTWARE.
 #define INCLUDED_XLSXIO_WRITE_H
 
 #include <stdlib.h>
+#include <time.h>
 
 #ifndef DLL_EXPORT_XLSXIO
 #ifdef _WIN32
@@ -89,6 +90,27 @@ DLL_EXPORT_XLSXIO int xlsxiowrite_close (xlsxiowriter handle);
  * \sa     xlsxiowrite_next_row()
  */
 DLL_EXPORT_XLSXIO void xlsxiowrite_add_cell_string (xlsxiowriter handle, const char* value);
+
+/*! \brief add a cell with integer data
+ * \param  handle        write handle for .xlsx object
+ * \param  value         integer value
+ * \sa     xlsxiowrite_next_row()
+ */
+DLL_EXPORT_XLSXIO void xlsxiowrite_add_cell_int (xlsxiowriter handle, long long value);
+
+/*! \brief add a cell with floating point data
+ * \param  handle        write handle for .xlsx object
+ * \param  value         floating point value
+ * \sa     xlsxiowrite_next_row()
+ */
+DLL_EXPORT_XLSXIO void xlsxiowrite_add_cell_float (xlsxiowriter handle, double value);
+
+/*! \brief add a cell with date and time data
+ * \param  handle        write handle for .xlsx object
+ * \param  value         date and time value
+ * \sa     xlsxiowrite_next_row()
+ */
+DLL_EXPORT_XLSXIO void xlsxiowrite_add_cell_datetime (xlsxiowriter handle, time_t value);
 
 /*! \brief mark the end of a row (next cell will start on a new row)
  * \param  handle        write handle for .xlsx object
