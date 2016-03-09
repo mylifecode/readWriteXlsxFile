@@ -441,6 +441,8 @@ void xlsxioread_list_sheets_callback (zip_t* zip, const char* filename, const ch
 //list all worksheets
 DLL_EXPORT_XLSXIO void xlsxioread_list_sheets (xlsxioreader handle, xlsxioread_list_sheets_callback_fn callback, void* callbackdata)
 {
+  if (!handle)
+    return;
   //process contents of main sheet
   struct main_sheet_list_callback_data sheetcallbackdata = {
     .xmlparser = NULL,
@@ -965,6 +967,8 @@ DLL_EXPORT_XLSXIO xlsxioreadersheet xlsxioread_sheet_open (xlsxioreader handle, 
 
 DLL_EXPORT_XLSXIO void xlsxioread_sheet_close (xlsxioreadersheet sheethandle)
 {
+  if (!sheethandle)
+    return;
   if (sheethandle->processcallbackdata.xmlparser)
     XML_ParserFree(sheethandle->processcallbackdata.xmlparser);
   data_sheet_callback_data_cleanup(&sheethandle->processcallbackdata);
@@ -975,6 +979,8 @@ DLL_EXPORT_XLSXIO void xlsxioread_sheet_close (xlsxioreadersheet sheethandle)
 DLL_EXPORT_XLSXIO int xlsxioread_sheet_next_row (xlsxioreadersheet sheethandle)
 {
   enum XML_Status status;
+  if (!sheethandle)
+    return 0;
   sheethandle->lastcolnr = 0;
   //when padding rows don't retrieve new data
   if (sheethandle->paddingrow) {
@@ -995,6 +1001,8 @@ DLL_EXPORT_XLSXIO int xlsxioread_sheet_next_row (xlsxioreadersheet sheethandle)
 DLL_EXPORT_XLSXIO char* xlsxioread_sheet_next_cell (xlsxioreadersheet sheethandle)
 {
   char* result;
+  if (!sheethandle)
+    return NULL;
   //append empty column if needed
   if (sheethandle->paddingcol) {
     if (sheethandle->paddingcol > sheethandle->processcallbackdata.cols) {

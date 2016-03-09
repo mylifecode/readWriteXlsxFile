@@ -314,6 +314,8 @@ DLL_EXPORT_XLSXIO int xlsxiowrite_close (xlsxiowriter handle)
 
 DLL_EXPORT_XLSXIO void xlsxiowrite_add_cell_string (xlsxiowriter handle, const char* value)
 {
+  if (!handle)
+    return;
   if (!handle->rowopen) {
     write(handle->pipefd[PIPEFD_WRITE], "<row>", 5);
     handle->rowopen = 1;
@@ -353,6 +355,8 @@ DLL_EXPORT_XLSXIO void xlsxiowrite_add_cell_datetime (xlsxiowriter handle, time_
 
 DLL_EXPORT_XLSXIO void xlsxiowrite_next_row (xlsxiowriter handle)
 {
+  if (!handle)
+    return;
   if (handle->rowopen)
     write(handle->pipefd[PIPEFD_WRITE], "</row>", 6);
   handle->rowopen = 0;
