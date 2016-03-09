@@ -18,6 +18,8 @@ int main (int argc, char* argv[])
   int i;
   for (i = 0; i < 1000; i++) {
     xlsxiowrite_add_cell_string(handle, "Test");
+    xlsxiowrite_add_cell_string(handle, "A b  c   d    e     f");
+    xlsxiowrite_add_cell_string(handle, "&% <test> \"'");
     xlsxiowrite_add_cell_string(handle, NULL);
     xlsxiowrite_add_cell_int(handle, i);
     xlsxiowrite_add_cell_datetime(handle, time(NULL));
