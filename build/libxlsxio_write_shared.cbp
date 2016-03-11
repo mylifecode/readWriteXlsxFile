@@ -11,6 +11,7 @@
 				<Option object_output="obj/Debug/" />
 				<Option type="3" />
 				<Option compiler="gcc" />
+				<Option host_application="bin/Debug/example_xlsxio_write.exe" />
 				<Option createDefFile="1" />
 				<Option createStaticLib="1" />
 				<Compiler>
@@ -22,6 +23,7 @@
 				<Option object_output="obj/Release/" />
 				<Option type="3" />
 				<Option compiler="gcc" />
+				<Option host_application="bin/Release/example_xlsxio_write.exe" />
 				<Option createDefFile="1" />
 				<Option createStaticLib="1" />
 				<Compiler>
@@ -36,6 +38,7 @@
 				<Option object_output="obj/Debug64/" />
 				<Option type="3" />
 				<Option compiler="MINGW64" />
+				<Option host_application="bin/Debug64/example_xlsxio_write.exe" />
 				<Option createDefFile="1" />
 				<Option createStaticLib="1" />
 				<Compiler>
@@ -47,6 +50,7 @@
 				<Option object_output="obj/Release64/" />
 				<Option type="3" />
 				<Option compiler="MINGW64" />
+				<Option host_application="bin/Release64/example_xlsxio_write.exe" />
 				<Option createDefFile="1" />
 				<Option createStaticLib="1" />
 				<Compiler>
@@ -61,6 +65,7 @@
 				<Option object_output="obj/Debug32/" />
 				<Option type="3" />
 				<Option compiler="MINGW32" />
+				<Option host_application="bin/Debug32/example_xlsxio_write.exe" />
 				<Option createDefFile="1" />
 				<Option createStaticLib="1" />
 				<Compiler>
@@ -72,6 +77,7 @@
 				<Option object_output="obj/Release32/" />
 				<Option type="3" />
 				<Option compiler="MINGW32" />
+				<Option host_application="bin/Release32/example_xlsxio_write.exe" />
 				<Option createDefFile="1" />
 				<Option createStaticLib="1" />
 				<Compiler>

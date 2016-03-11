@@ -113,6 +113,68 @@ const char* rels_xml =
 
 #ifdef WITH_XLSX_STYLES
 const char* styles_xml =
+  "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\r\n"
+  "<styleSheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\">\r\n"
+  "  <fonts count=\"1\">\r\n"
+  "    <font>\r\n"
+  //"      <sz val=\"11\"/>\r\n"
+  //"      <color theme=\"1\"/>\r\n"
+  //"      <name val=\"Calibri\"/>\r\n"
+  //"      <family val=\"2\"/>\r\n"
+  //"      <scheme val=\"minor\"/>\r\n"
+  "    </font>\r\n"
+  "  </fonts>\r\n"
+  "  <fills count=\"1\">\r\n"
+  "    <fill>\r\n"
+  //"      <patternFill patternType=\"none\"/>\r\n"
+  "    </fill>\r\n"
+  "  </fills>\r\n"
+  "  <borders count=\"1\">\r\n"
+  "    <border>\r\n"
+  //"      <left/>\r\n"
+  //"      <right/>\r\n"
+  //"      <top/>\r\n"
+  //"      <bottom/>\r\n"
+  //"      <diagonal/>\r\n"
+  "    </border>\r\n"
+  "  </borders>\r\n"
+  "  <cellStyleXfs count=\"1\">\r\n"
+  "    <xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\"/>\r\n"
+  "  </cellStyleXfs>\r\n"
+  "  <cellXfs count=\"1\">\r\n"
+  "    <xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\"/>\r\n"
+  "    <xf numFmtId=\"22\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\" applyNumberFormat=\"1\" />"
+  "  </cellXfs>\r\n"
+  //"  <cellStyles count=\"1\">\r\n"
+  //"    <cellStyle name=\"Normal\" xfId=\"0\" builtinId=\"0\"/>\r\n"
+  //"  </cellStyles>\r\n"
+  //"  <dxfs count=\"0\"/>\r\n"
+  //"  <tableStyles count=\"0\" defaultTableStyle=\"TableStyleMedium9\" defaultPivotStyle=\"PivotStyleLight16\"/>\r\n"
+  "</styleSheet>\r\n";
+  //http://www.docx4java.org/forums/xlsx-java-f15/adding-style-information-crashes-excel-t647.html
+
+const char* ___styles_xml =
+  "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\r\n"
+  "<styleSheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\">\r\n"
+  "<numFmts/>\r\n"
+  //"<fonts/>\r\n"
+  "<fonts count=\"1\"><font/></fonts>\r\n"
+  //"<fills/>\r\n"
+  "<fills count=\"1\"><fill/></fills>\r\n"
+  //"<borders/>\r\n"
+  "<borders count=\"1\"><border/></borders>\r\n"
+  //"<cellStyleXfs/>\r\n"
+  //"<cellStyles/>\r\n"
+  "<dxfs/>\r\n"
+  "<tableStyles/>\r\n"
+  "<cellXfs count=\"2\">\r\n"
+  "<xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\"/>\r\n"
+  "<xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\"/>\r\n"
+  "</cellXfs>\r\n"
+
+  "</styleSheet>\r\n";
+
+const char* __styles_xml =
   "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n"
   "<styleSheet xmlns:x=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\">"
 /**/
@@ -143,10 +205,12 @@ const char* styles_xml =
   //"<numFmt numFmtId=\"164\" formatCode=\"yyyy\\-mm\\-dd\\ hh:mm:ss\"/>"
   //"</numFmts>"
 
+  "<cellStyleXfs count=\"1\"><xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\"><alignment vertical=\"top\"/></xf></cellStyleXfs>"
+
   "    <cellXfs count=\"2\">"
   "        <xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\" />"
-  //"        <xf numFmtId=\"14\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\" applyNumberFormat=\"1\" />"
-  "        <xf numFmtId=\"22\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\" applyNumberFormat=\"1\" />"
+  "        <xf numFmtId=\"14\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\" applyNumberFormat=\"1\" />"
+  //"        <xf numFmtId=\"22\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\" applyNumberFormat=\"1\" />"
   //"        <xf numFmtId=\"164\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\" applyNumberFormat=\"1\" />"
   "    </cellXfs>"
   "</styleSheet>";
