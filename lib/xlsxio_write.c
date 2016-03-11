@@ -75,6 +75,7 @@ int zip_add_static_content_string (zip_t* zip, const char* filename, const char*
 #define WITH_XLSX_STYLES 1
 //See also: http://stackoverflow.com/questions/4655565/reading-dates-from-openxml-excel-files
 //See also: http://openxmldeveloper.org/blog/b/openxmldeveloper/archive/2012/02/16/dates-in-spreadsheetml.aspx
+//See also: http://openxmldeveloper.org/discussions/formats/f/14/t/242.aspx
 
 const char* content_types_xml =
   "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\r\n"
