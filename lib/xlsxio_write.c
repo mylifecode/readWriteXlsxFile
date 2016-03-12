@@ -33,6 +33,9 @@ typedef struct zip_source zip_source_t;
 #define _fdopen(f) f
 #endif
 
+#define STR_HELPER(x) #x
+#define STR(x) STR_HELPER(x)
+
 DLL_EXPORT_XLSXIO void xlsxiowrite_get_version (int* major, int* minor, int* micro)
 {
   if (major)
@@ -117,10 +120,10 @@ const char* styles_xml =
   "<styleSheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\">\r\n"
   "  <fonts count=\"1\">\r\n"
   "    <font>\r\n"
-  //"      <sz val=\"11\"/>\r\n"
+  "      <sz val=\"10\"/>\r\n"
   //"      <color theme=\"1\"/>\r\n"
-  //"      <name val=\"Calibri\"/>\r\n"
-  //"      <family val=\"2\"/>\r\n"
+  "      <name val=\"Consolas\"/>\r\n"
+  "      <family val=\"2\"/>\r\n"
   //"      <scheme val=\"minor\"/>\r\n"
   "    </font>\r\n"
   "  </fonts>\r\n"
@@ -143,119 +146,20 @@ const char* styles_xml =
   "  </cellStyleXfs>\r\n"
   "  <cellXfs count=\"1\">\r\n"
   "    <xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\"/>\r\n"
-  "    <xf numFmtId=\"22\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\" applyNumberFormat=\"1\" />"
+#define STYLE_GENERAL 1
+  "    <xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\" applyAlignment=\"1\"><alignment vertical=\"top\"/></xf>\r\n"
+#define STYLE_TEXT 2
+  "    <xf numFmtId=\"49\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\" applyNumberFormat=\"1\" applyAlignment=\"1\"><alignment vertical=\"top\" wrapText=\"1\"/></xf>\r\n"
+#define STYLE_DATETIME 3
+  "    <xf numFmtId=\"22\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\" applyNumberFormat=\"1\" applyAlignment=\"1\"><alignment horizontal=\"center\" vertical=\"top\"/></xf>\r\n"
+#define STYLE_INTEGER 4
+  "    <xf numFmtId=\"1\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\" applyNumberFormat=\"1\" applyAlignment=\"1\"><alignment vertical=\"top\"/></xf>\r\n"
   "  </cellXfs>\r\n"
   //"  <cellStyles count=\"1\">\r\n"
   //"    <cellStyle name=\"Normal\" xfId=\"0\" builtinId=\"0\"/>\r\n"
   //"  </cellStyles>\r\n"
   //"  <dxfs count=\"0\"/>\r\n"
   //"  <tableStyles count=\"0\" defaultTableStyle=\"TableStyleMedium9\" defaultPivotStyle=\"PivotStyleLight16\"/>\r\n"
-  "</styleSheet>\r\n";
-  //http://www.docx4java.org/forums/xlsx-java-f15/adding-style-information-crashes-excel-t647.html
-
-const char* ___styles_xml =
-  "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\r\n"
-  "<styleSheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\">\r\n"
-  "<numFmts/>\r\n"
-  //"<fonts/>\r\n"
-  "<fonts count=\"1\"><font/></fonts>\r\n"
-  //"<fills/>\r\n"
-  "<fills count=\"1\"><fill/></fills>\r\n"
-  //"<borders/>\r\n"
-  "<borders count=\"1\"><border/></borders>\r\n"
-  //"<cellStyleXfs/>\r\n"
-  //"<cellStyles/>\r\n"
-  "<dxfs/>\r\n"
-  "<tableStyles/>\r\n"
-  "<cellXfs count=\"2\">\r\n"
-  "<xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\"/>\r\n"
-  "<xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\"/>\r\n"
-  "</cellXfs>\r\n"
-
-  "</styleSheet>\r\n";
-
-const char* __styles_xml =
-  "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n"
-  "<styleSheet xmlns:x=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\">"
-/**/
-  "    <fonts count=\"1\">"
-  "        <font>"
-  "            <sz val=\"11\" />"
-  "            <name val=\"Calibri\" />"
-  "            <family val=\"2\" />"
-  "            <scheme val=\"minor\" />"
-  "        </font>"
-  "    </fonts>"
-  "    <fills count=\"1\">"
-  "        <fill>"
-  "            <patternFill patternType=\"none\" />"
-  "        </fill>"
-  "    </fills>"
-  "    <borders count=\"1\">"
-  "        <border>"
-  "            <left />"
-  "            <right />"
-  "            <top />"
-  "            <bottom />"
-  "            <diagonal />"
-  "        </border>"
-  "    </borders>"
-/**/
-  //"<numFmts count=\"1\">"
-  //"<numFmt numFmtId=\"164\" formatCode=\"yyyy\\-mm\\-dd\\ hh:mm:ss\"/>"
-  //"</numFmts>"
-
-  "<cellStyleXfs count=\"1\"><xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\"><alignment vertical=\"top\"/></xf></cellStyleXfs>"
-
-  "    <cellXfs count=\"2\">"
-  "        <xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\" />"
-  "        <xf numFmtId=\"14\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\" applyNumberFormat=\"1\" />"
-  //"        <xf numFmtId=\"22\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\" applyNumberFormat=\"1\" />"
-  //"        <xf numFmtId=\"164\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\" applyNumberFormat=\"1\" />"
-  "    </cellXfs>"
-  "</styleSheet>";
-
-const char* _styles_xml =
-  "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\r\n"
-  "<styleSheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\">"
-
-  //"<numFmts count=\"1\">"
-  //"<numFmt numFmtId=\"1\" formatCode=\"yyyy\\-mm\\-dd\\ hh:mm:ss\"/>"
-  //"</numFmts>"
-
-  //"<fonts count=\"19\"><font><sz val=\"10\"/><name val=\"Courier New\"/><family val=\"2\"/></font><font><sz val=\"11\"/><color theme=\"1\"/><name val=\"Calibri\"/><family val=\"2\"/><scheme val=\"minor\"/></font><font><b/><sz val=\"18\"/><color theme=\"3\"/><name val=\"Cambria\"/><family val=\"2\"/><scheme val=\"major\"/></font><font><b/><sz val=\"15\"/><color theme=\"3\"/><name val=\"Calibri\"/><family val=\"2\"/><scheme val=\"minor\"/></font><font><b/><sz val=\"13\"/><color theme=\"3\"/><name val=\"Calibri\"/><family val=\"2\"/><scheme val=\"minor\"/></font><font><b/><sz val=\"11\"/><color theme=\"3\"/><name val=\"Calibri\"/><family val=\"2\"/><scheme val=\"minor\"/></font><font><sz val=\"11\"/><color rgb=\"FF006100\"/><name val=\"Calibri\"/><family val=\"2\"/><scheme val=\"minor\"/></font><font><sz val=\"11\"/><color rgb=\"FF9C0006\"/><name val=\"Calibri\"/><family val=\"2\"/><scheme val=\"minor\"/></font><font><sz val=\"11\"/><color rgb=\"FF9C6500\"/><name val=\"Calibri\"/><family val=\"2\"/><scheme val=\"minor\"/></font><font><sz val=\"11\"/><color rgb=\"FF3F3F76\"/><name val=\"Calibri\"/><family val=\"2\"/><scheme val=\"minor\"/></font><font><b/><sz val=\"11\"/><color rgb=\"FF3F3F3F\"/><name val=\"Calibri\"/><family val=\"2\"/><scheme val=\"minor\"/></font><font><b/><sz val=\"11\"/><color rgb=\"FFFA7D00\"/><name val=\"Calibri\"/><family val=\"2\"/><scheme val=\"minor\"/></font><font><sz val=\"11\"/><color rgb=\"FFFA7D00\"/><name val=\"Calibri\"/><family val=\"2\"/><scheme val=\"minor\"/></font><font><b/><sz val=\"11\"/><color theme=\"0\"/><name val=\"Calibri\"/><family val=\"2\"/><scheme val=\"minor\"/></font><font><sz val=\"11\"/><color rgb=\"FFFF0000\"/><name val=\"Calibri\"/><family val=\"2\"/><scheme val=\"minor\"/></font><font><i/><sz val=\"11\"/><color rgb=\"FF7F7F7F\"/><name val=\"Calibri\"/><family val=\"2\"/><scheme val=\"minor\"/></font><font><b/><sz val=\"11\"/><color theme=\"1\"/><name val=\"Calibri\"/><family val=\"2\"/><scheme val=\"minor\"/></font><font><sz val=\"11\"/><color theme=\"0\"/><name val=\"Calibri\"/><family val=\"2\"/><scheme val=\"minor\"/></font><font><b/><sz val=\"10\"/><name val=\"Courier New\"/><family val=\"2\"/></font></fonts>"
-  //"<fonts count=\"1\"><font><sz val=\"10\"/><name val=\"Courier New\"/><family val=\"2\"/></font></fonts>"
-  //"<fonts count=\"1\"><font/></fonts>"
-
-  //"<fills count=\"33\"><fill><patternFill patternType=\"none\"/></fill><fill><patternFill patternType=\"gray125\"/></fill><fill><patternFill patternType=\"solid\"><fgColor rgb=\"FFC6EFCE\"/></patternFill></fill><fill><patternFill patternType=\"solid\"><fgColor rgb=\"FFFFC7CE\"/></patternFill></fill><fill><patternFill patternType=\"solid\"><fgColor rgb=\"FFFFEB9C\"/></patternFill></fill><fill><patternFill patternType=\"solid\"><fgColor rgb=\"FFFFCC99\"/></patternFill></fill><fill><patternFill patternType=\"solid\"><fgColor rgb=\"FFF2F2F2\"/></patternFill></fill><fill><patternFill patternType=\"solid\"><fgColor rgb=\"FFA5A5A5\"/></patternFill></fill><fill><patternFill patternType=\"solid\"><fgColor rgb=\"FFFFFFCC\"/></patternFill></fill><fill><patternFill patternType=\"solid\"><fgColor theme=\"4\"/></patternFill></fill><fill><patternFill patternType=\"solid\"><fgColor theme=\"4\" tint=\"0.79998168889431442\"/><bgColor indexed=\"65\"/></patternFill></fill><fill><patternFill patternType=\"solid\"><fgColor theme=\"4\" tint=\"0.59999389629810485\"/><bgColor indexed=\"65\"/></patternFill></fill><fill><patternFill patternType=\"solid\"><fgColor theme=\"4\" tint=\"0.39997558519241921\"/><bgColor indexed=\"65\"/></patternFill></fill><fill><patternFill patternType=\"solid\"><fgColor theme=\"5\"/></patternFill></fill><fill><patternFill patternType=\"solid\"><fgColor theme=\"5\" tint=\"0.79998168889431442\"/><bgColor indexed=\"65\"/></patternFill></fill><fill><patternFill patternType=\"solid\"><fgColor theme=\"5\" tint=\"0.59999389629810485\"/><bgColor indexed=\"65\"/></patternFill></fill><fill><patternFill patternType=\"solid\"><fgColor theme=\"5\" tint=\"0.39997558519241921\"/><bgColor indexed=\"65\"/></patternFill></fill><fill><patternFill patternType=\"solid\"><fgColor theme=\"6\"/></patternFill></fill><fill><patternFill patternType=\"solid\"><fgColor theme=\"6\" tint=\"0.79998168889431442\"/><bgColor indexed=\"65\"/></patternFill></fill><fill><patternFill patternType=\"solid\"><fgColor theme=\"6\" tint=\"0.59999389629810485\"/><bgColor indexed=\"65\"/></patternFill></fill><fill><patternFill patternType=\"solid\"><fgColor theme=\"6\" tint=\"0.39997558519241921\"/><bgColor indexed=\"65\"/></patternFill></fill><fill><patternFill patternType=\"solid\"><fgColor theme=\"7\"/></patternFill></fill><fill><patternFill patternType=\"solid\"><fgColor theme=\"7\" tint=\"0.79998168889431442\"/><bgColor indexed=\"65\"/></patternFill></fill><fill><patternFill patternType=\"solid\"><fgColor theme=\"7\" tint=\"0.59999389629810485\"/><bgColor indexed=\"65\"/></patternFill></fill><fill><patternFill patternType=\"solid\"><fgColor theme=\"7\" tint=\"0.39997558519241921\"/><bgColor indexed=\"65\"/></patternFill></fill><fill><patternFill patternType=\"solid\"><fgColor theme=\"8\"/></patternFill></fill><fill><patternFill patternType=\"solid\"><fgColor theme=\"8\" tint=\"0.79998168889431442\"/><bgColor indexed=\"65\"/></patternFill></fill><fill><patternFill patternType=\"solid\"><fgColor theme=\"8\" tint=\"0.59999389629810485\"/><bgColor indexed=\"65\"/></patternFill></fill><fill><patternFill patternType=\"solid\"><fgColor theme=\"8\" tint=\"0.39997558519241921\"/><bgColor indexed=\"65\"/></patternFill></fill><fill><patternFill patternType=\"solid\"><fgColor theme=\"9\"/></patternFill></fill><fill><patternFill patternType=\"solid\"><fgColor theme=\"9\" tint=\"0.79998168889431442\"/><bgColor indexed=\"65\"/></patternFill></fill><fill><patternFill patternType=\"solid\"><fgColor theme=\"9\" tint=\"0.59999389629810485\"/><bgColor indexed=\"65\"/></patternFill></fill><fill><patternFill patternType=\"solid\"><fgColor theme=\"9\" tint=\"0.39997558519241921\"/><bgColor indexed=\"65\"/></patternFill></fill></fills>"
-  //"<fills count=\"1\"><fill><patternFill patternType=\"none\"/></fill></fills>"
-  //"<fills count=\"1\"><fill/></fills>"
-
-  //"<borders count=\"10\"><border><left/><right/><top/><bottom/><diagonal/></border><border><left/><right/><top/><bottom style=\"thick\"><color theme=\"4\"/></bottom><diagonal/></border><border><left/><right/><top/><bottom style=\"thick\"><color theme=\"4\" tint=\"0.499984740745262\"/></bottom><diagonal/></border><border><left/><right/><top/><bottom style=\"medium\"><color theme=\"4\" tint=\"0.39997558519241921\"/></bottom><diagonal/></border><border><left style=\"thin\"><color rgb=\"FF7F7F7F\"/></left><right style=\"thin\"><color rgb=\"FF7F7F7F\"/></right><top style=\"thin\"><color rgb=\"FF7F7F7F\"/></top><bottom style=\"thin\"><color rgb=\"FF7F7F7F\"/></bottom><diagonal/></border><border><left style=\"thin\"><color rgb=\"FF3F3F3F\"/></left><right style=\"thin\"><color rgb=\"FF3F3F3F\"/></right><top style=\"thin\"><color rgb=\"FF3F3F3F\"/></top><bottom style=\"thin\"><color rgb=\"FF3F3F3F\"/></bottom><diagonal/></border><border><left/><right/><top/><bottom style=\"double\"><color rgb=\"FFFF8001\"/></bottom><diagonal/></border><border><left style=\"double\"><color rgb=\"FF3F3F3F\"/></left><right style=\"double\"><color rgb=\"FF3F3F3F\"/></right><top style=\"double\"><color rgb=\"FF3F3F3F\"/></top><bottom style=\"double\"><color rgb=\"FF3F3F3F\"/></bottom><diagonal/></border><border><left style=\"thin\"><color rgb=\"FFB2B2B2\"/></left><right style=\"thin\"><color rgb=\"FFB2B2B2\"/></right><top style=\"thin\"><color rgb=\"FFB2B2B2\"/></top><bottom style=\"thin\"><color rgb=\"FFB2B2B2\"/></bottom><diagonal/></border><border><left/><right/><top style=\"thin\"><color theme=\"4\"/></top><bottom style=\"double\"><color theme=\"4\"/></bottom><diagonal/></border></borders>"
-  //"<borders count=\"1\"><border><left/><right/><top/><bottom/><diagonal/></border></borders>"
-  //"<borders count=\"1\"><border/></borders>"
-
-  //"<cellStyleXfs count=\"42\"><xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\"><alignment vertical=\"top\"/></xf><xf numFmtId=\"0\" fontId=\"2\" fillId=\"0\" borderId=\"0\" applyNumberFormat=\"0\" applyFill=\"0\" applyBorder=\"0\" applyAlignment=\"0\" applyProtection=\"0\"/><xf numFmtId=\"0\" fontId=\"3\" fillId=\"0\" borderId=\"1\" applyNumberFormat=\"0\" applyFill=\"0\" applyAlignment=\"0\" applyProtection=\"0\"/><xf numFmtId=\"0\" fontId=\"4\" fillId=\"0\" borderId=\"2\" applyNumberFormat=\"0\" applyFill=\"0\" applyAlignment=\"0\" applyProtection=\"0\"/><xf numFmtId=\"0\" fontId=\"5\" fillId=\"0\" borderId=\"3\" applyNumberFormat=\"0\" applyFill=\"0\" applyAlignment=\"0\" applyProtection=\"0\"/><xf numFmtId=\"0\" fontId=\"5\" fillId=\"0\" borderId=\"0\" applyNumberFormat=\"0\" applyFill=\"0\" applyBorder=\"0\" applyAlignment=\"0\" applyProtection=\"0\"/><xf numFmtId=\"0\" fontId=\"6\" fillId=\"2\" borderId=\"0\" applyNumberFormat=\"0\" applyBorder=\"0\" applyAlignment=\"0\" applyProtection=\"0\"/><xf numFmtId=\"0\" fontId=\"7\" fillId=\"3\" borderId=\"0\" applyNumberFormat=\"0\" applyBorder=\"0\" applyAlignment=\"0\" applyProtection=\"0\"/><xf numFmtId=\"0\" fontId=\"8\" fillId=\"4\" borderId=\"0\" applyNumberFormat=\"0\" applyBorder=\"0\" applyAlignment=\"0\" applyProtection=\"0\"/><xf numFmtId=\"0\" fontId=\"9\" fillId=\"5\" borderId=\"4\" applyNumberFormat=\"0\" applyAlignment=\"0\" applyProtection=\"0\"/><xf numFmtId=\"0\" fontId=\"10\" fillId=\"6\" borderId=\"5\" applyNumberFormat=\"0\" applyAlignment=\"0\" applyProtection=\"0\"/><xf numFmtId=\"0\" fontId=\"11\" fillId=\"6\" borderId=\"4\" applyNumberFormat=\"0\" applyAlignment=\"0\" applyProtection=\"0\"/><xf numFmtId=\"0\" fontId=\"12\" fillId=\"0\" borderId=\"6\" applyNumberFormat=\"0\" applyFill=\"0\" applyAlignment=\"0\" applyProtection=\"0\"/><xf numFmtId=\"0\" fontId=\"13\" fillId=\"7\" borderId=\"7\" applyNumberFormat=\"0\" applyAlignment=\"0\" applyProtection=\"0\"/><xf numFmtId=\"0\" fontId=\"14\" fillId=\"0\" borderId=\"0\" applyNumberFormat=\"0\" applyFill=\"0\" applyBorder=\"0\" applyAlignment=\"0\" applyProtection=\"0\"/><xf numFmtId=\"0\" fontId=\"1\" fillId=\"8\" borderId=\"8\" applyNumberFormat=\"0\" applyFont=\"0\" applyAlignment=\"0\" applyProtection=\"0\"/><xf numFmtId=\"0\" fontId=\"15\" fillId=\"0\" borderId=\"0\" applyNumberFormat=\"0\" applyFill=\"0\" applyBorder=\"0\" applyAlignment=\"0\" applyProtection=\"0\"/><xf numFmtId=\"0\" fontId=\"16\" fillId=\"0\" borderId=\"9\" applyNumberFormat=\"0\" applyFill=\"0\" applyAlignment=\"0\" applyProtection=\"0\"/><xf numFmtId=\"0\" fontId=\"17\" fillId=\"9\" borderId=\"0\" applyNumberFormat=\"0\" applyBorder=\"0\" applyAlignment=\"0\" applyProtection=\"0\"/><xf numFmtId=\"0\" fontId=\"1\" fillId=\"10\" borderId=\"0\" applyNumberFormat=\"0\" applyBorder=\"0\" applyAlignment=\"0\" applyProtection=\"0\"/><xf numFmtId=\"0\" fontId=\"1\" fillId=\"11\" borderId=\"0\" applyNumberFormat=\"0\" applyBorder=\"0\" applyAlignment=\"0\" applyProtection=\"0\"/><xf numFmtId=\"0\" fontId=\"17\" fillId=\"12\" borderId=\"0\" applyNumberFormat=\"0\" applyBorder=\"0\" applyAlignment=\"0\" applyProtection=\"0\"/><xf numFmtId=\"0\" fontId=\"17\" fillId=\"13\" borderId=\"0\" applyNumberFormat=\"0\" applyBorder=\"0\" applyAlignment=\"0\" applyProtection=\"0\"/><xf numFmtId=\"0\" fontId=\"1\" fillId=\"14\" borderId=\"0\" applyNumberFormat=\"0\" applyBorder=\"0\" applyAlignment=\"0\" applyProtection=\"0\"/><xf numFmtId=\"0\" fontId=\"1\" fillId=\"15\" borderId=\"0\" applyNumberFormat=\"0\" applyBorder=\"0\" applyAlignment=\"0\" applyProtection=\"0\"/><xf numFmtId=\"0\" fontId=\"17\" fillId=\"16\" borderId=\"0\" applyNumberFormat=\"0\" applyBorder=\"0\" applyAlignment=\"0\" applyProtection=\"0\"/><xf numFmtId=\"0\" fontId=\"17\" fillId=\"17\" borderId=\"0\" applyNumberFormat=\"0\" applyBorder=\"0\" applyAlignment=\"0\" applyProtection=\"0\"/><xf numFmtId=\"0\" fontId=\"1\" fillId=\"18\" borderId=\"0\" applyNumberFormat=\"0\" applyBorder=\"0\" applyAlignment=\"0\" applyProtection=\"0\"/><xf numFmtId=\"0\" fontId=\"1\" fillId=\"19\" borderId=\"0\" applyNumberFormat=\"0\" applyBorder=\"0\" applyAlignment=\"0\" applyProtection=\"0\"/><xf numFmtId=\"0\" fontId=\"17\" fillId=\"20\" borderId=\"0\" applyNumberFormat=\"0\" applyBorder=\"0\" applyAlignment=\"0\" applyProtection=\"0\"/><xf numFmtId=\"0\" fontId=\"17\" fillId=\"21\" borderId=\"0\" applyNumberFormat=\"0\" applyBorder=\"0\" applyAlignment=\"0\" applyProtection=\"0\"/><xf numFmtId=\"0\" fontId=\"1\" fillId=\"22\" borderId=\"0\" applyNumberFormat=\"0\" applyBorder=\"0\" applyAlignment=\"0\" applyProtection=\"0\"/><xf numFmtId=\"0\" fontId=\"1\" fillId=\"23\" borderId=\"0\" applyNumberFormat=\"0\" applyBorder=\"0\" applyAlignment=\"0\" applyProtection=\"0\"/><xf numFmtId=\"0\" fontId=\"17\" fillId=\"24\" borderId=\"0\" applyNumberFormat=\"0\" applyBorder=\"0\" applyAlignment=\"0\" applyProtection=\"0\"/><xf numFmtId=\"0\" fontId=\"17\" fillId=\"25\" borderId=\"0\" applyNumberFormat=\"0\" applyBorder=\"0\" applyAlignment=\"0\" applyProtection=\"0\"/><xf numFmtId=\"0\" fontId=\"1\" fillId=\"26\" borderId=\"0\" applyNumberFormat=\"0\" applyBorder=\"0\" applyAlignment=\"0\" applyProtection=\"0\"/><xf numFmtId=\"0\" fontId=\"1\" fillId=\"27\" borderId=\"0\" applyNumberFormat=\"0\" applyBorder=\"0\" applyAlignment=\"0\" applyProtection=\"0\"/><xf numFmtId=\"0\" fontId=\"17\" fillId=\"28\" borderId=\"0\" applyNumberFormat=\"0\" applyBorder=\"0\" applyAlignment=\"0\" applyProtection=\"0\"/><xf numFmtId=\"0\" fontId=\"17\" fillId=\"29\" borderId=\"0\" applyNumberFormat=\"0\" applyBorder=\"0\" applyAlignment=\"0\" applyProtection=\"0\"/><xf numFmtId=\"0\" fontId=\"1\" fillId=\"30\" borderId=\"0\" applyNumberFormat=\"0\" applyBorder=\"0\" applyAlignment=\"0\" applyProtection=\"0\"/><xf numFmtId=\"0\" fontId=\"1\" fillId=\"31\" borderId=\"0\" applyNumberFormat=\"0\" applyBorder=\"0\" applyAlignment=\"0\" applyProtection=\"0\"/><xf numFmtId=\"0\" fontId=\"17\" fillId=\"32\" borderId=\"0\" applyNumberFormat=\"0\" applyBorder=\"0\" applyAlignment=\"0\" applyProtection=\"0\"/></cellStyleXfs>"
-  //"<cellStyleXfs count=\"1\"><xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\"><alignment vertical=\"top\"/></xf></cellStyleXfs>"
-  //"<cellStyleXfs count=\"1\"><xf/></cellStyleXfs>"
-
-  //"<cellXfs count=\"2\">"
-  //"<xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\"/>"
-  //"<xf numFmtId=\"14\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\"/>"
-  //"</cellXfs>"
-
-  //"<cellXfs count=\"2\"><xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\"><alignment vertical=\"top\"/></xf><xf numFmtId=\"0\" fontId=\"18\" fillId=\"0\" borderId=\"0\" xfId=\"0\" applyFont=\"1\" applyAlignment=\"1\"/></cellXfs>"
-  //"<cellXfs count=\"1\"><xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\"><alignment vertical=\"top\"/></xf></cellXfs>"
-  //"<cellXfs count=\"1\">"
-  ////"<xf numFmtId=\"1\"/>"
-  //"<xf/>"
-  //"</cellXfs>"
-
-  //"<cellStyles count=\"42\"><cellStyle name=\"20% - Accent1\" xfId=\"19\" builtinId=\"30\" customBuiltin=\"1\"/><cellStyle name=\"20% - Accent2\" xfId=\"23\" builtinId=\"34\" customBuiltin=\"1\"/><cellStyle name=\"20% - Accent3\" xfId=\"27\" builtinId=\"38\" customBuiltin=\"1\"/><cellStyle name=\"20% - Accent4\" xfId=\"31\" builtinId=\"42\" customBuiltin=\"1\"/><cellStyle name=\"20% - Accent5\" xfId=\"35\" builtinId=\"46\" customBuiltin=\"1\"/><cellStyle name=\"20% - Accent6\" xfId=\"39\" builtinId=\"50\" customBuiltin=\"1\"/><cellStyle name=\"40% - Accent1\" xfId=\"20\" builtinId=\"31\" customBuiltin=\"1\"/><cellStyle name=\"40% - Accent2\" xfId=\"24\" builtinId=\"35\" customBuiltin=\"1\"/><cellStyle name=\"40% - Accent3\" xfId=\"28\" builtinId=\"39\" customBuiltin=\"1\"/><cellStyle name=\"40% - Accent4\" xfId=\"32\" builtinId=\"43\" customBuiltin=\"1\"/><cellStyle name=\"40% - Accent5\" xfId=\"36\" builtinId=\"47\" customBuiltin=\"1\"/><cellStyle name=\"40% - Accent6\" xfId=\"40\" builtinId=\"51\" customBuiltin=\"1\"/><cellStyle name=\"60% - Accent1\" xfId=\"21\" builtinId=\"32\" customBuiltin=\"1\"/><cellStyle name=\"60% - Accent2\" xfId=\"25\" builtinId=\"36\" customBuiltin=\"1\"/><cellStyle name=\"60% - Accent3\" xfId=\"29\" builtinId=\"40\" customBuiltin=\"1\"/><cellStyle name=\"60% - Accent4\" xfId=\"33\" builtinId=\"44\" customBuiltin=\"1\"/><cellStyle name=\"60% - Accent5\" xfId=\"37\" builtinId=\"48\" customBuiltin=\"1\"/><cellStyle name=\"60% - Accent6\" xfId=\"41\" builtinId=\"52\" customBuiltin=\"1\"/><cellStyle name=\"Accent1\" xfId=\"18\" builtinId=\"29\" customBuiltin=\"1\"/><cellStyle name=\"Accent2\" xfId=\"22\" builtinId=\"33\" customBuiltin=\"1\"/><cellStyle name=\"Accent3\" xfId=\"26\" builtinId=\"37\" customBuiltin=\"1\"/><cellStyle name=\"Accent4\" xfId=\"30\" builtinId=\"41\" customBuiltin=\"1\"/><cellStyle name=\"Accent5\" xfId=\"34\" builtinId=\"45\" customBuiltin=\"1\"/><cellStyle name=\"Accent6\" xfId=\"38\" builtinId=\"49\" customBuiltin=\"1\"/><cellStyle name=\"Bad\" xfId=\"7\" builtinId=\"27\" customBuiltin=\"1\"/><cellStyle name=\"Calculation\" xfId=\"11\" builtinId=\"22\" customBuiltin=\"1\"/><cellStyle name=\"Check Cell\" xfId=\"13\" builtinId=\"23\" customBuiltin=\"1\"/><cellStyle name=\"Explanatory Text\" xfId=\"16\" builtinId=\"53\" customBuiltin=\"1\"/><cellStyle name=\"Good\" xfId=\"6\" builtinId=\"26\" customBuiltin=\"1\"/><cellStyle name=\"Heading 1\" xfId=\"2\" builtinId=\"16\" customBuiltin=\"1\"/><cellStyle name=\"Heading 2\" xfId=\"3\" builtinId=\"17\" customBuiltin=\"1\"/><cellStyle name=\"Heading 3\" xfId=\"4\" builtinId=\"18\" customBuiltin=\"1\"/><cellStyle name=\"Heading 4\" xfId=\"5\" builtinId=\"19\" customBuiltin=\"1\"/><cellStyle name=\"Input\" xfId=\"9\" builtinId=\"20\" customBuiltin=\"1\"/><cellStyle name=\"Linked Cell\" xfId=\"12\" builtinId=\"24\" customBuiltin=\"1\"/><cellStyle name=\"Neutral\" xfId=\"8\" builtinId=\"28\" customBuiltin=\"1\"/><cellStyle name=\"Normal\" xfId=\"0\" builtinId=\"0\" customBuiltin=\"1\"/><cellStyle name=\"Note\" xfId=\"15\" builtinId=\"10\" customBuiltin=\"1\"/><cellStyle name=\"Output\" xfId=\"10\" builtinId=\"21\" customBuiltin=\"1\"/><cellStyle name=\"Title\" xfId=\"1\" builtinId=\"15\" customBuiltin=\"1\"/><cellStyle name=\"Total\" xfId=\"17\" builtinId=\"25\" customBuiltin=\"1\"/><cellStyle name=\"Warning Text\" xfId=\"14\" builtinId=\"11\" customBuiltin=\"1\"/></cellStyles>"
-  //"<cellStyles count=\"1\"><cellStyle name=\"20% - Accent1\" xfId=\"19\" builtinId=\"30\" customBuiltin=\"1\"/></cellStyles>"
-
-  //"<dxfs count=\"0\"/>"
-  //"<tableStyles count=\"0\" defaultTableStyle=\"TableStyleMedium9\" defaultPivotStyle=\"PivotStyleLight16\"/>\r\n"
   "</styleSheet>\r\n";
 #endif
 
@@ -360,6 +264,9 @@ char* fix_xml_special_chars (char** s)
 			case '>' :
 				str_replace(s, pos, 1, "&gt;");
 				pos += 4;
+				break;
+			case '\r' :
+				str_replace(s, pos, 1, "");
 				break;
 			default:
 				pos++;
@@ -520,7 +427,11 @@ DLL_EXPORT_XLSXIO void xlsxiowrite_add_cell_string (xlsxiowriter handle, const c
   if (value) {
     char* xmlvalue = strdup(value);
     fix_xml_special_chars(&xmlvalue);
+#ifdef WITH_XLSX_STYLES
+    write(handle->pipefd[PIPEFD_WRITE], "<c t=\"inlineStr\" s=\"" STR(STYLE_TEXT) "\"><is><t>", 30);
+#else
     write(handle->pipefd[PIPEFD_WRITE], "<c t=\"inlineStr\"><is><t>", 24);
+#endif
     write(handle->pipefd[PIPEFD_WRITE], xmlvalue, strlen(xmlvalue));
     write(handle->pipefd[PIPEFD_WRITE], "</t></is></c>", 13);
     free(xmlvalue);
@@ -535,7 +446,11 @@ DLL_EXPORT_XLSXIO void xlsxiowrite_add_cell_int (xlsxiowriter handle, long long 
     return;
 	char buf[21];
 	lltoa(value, buf, 10);
+#ifdef WITH_XLSX_STYLES
+  write(handle->pipefd[PIPEFD_WRITE], "<c s=\"" STR(STYLE_INTEGER) "\"><v>", 12);
+#else
   write(handle->pipefd[PIPEFD_WRITE], "<c><v>", 6);
+#endif
   write(handle->pipefd[PIPEFD_WRITE], buf, strlen(buf));
   write(handle->pipefd[PIPEFD_WRITE], "</v></c>", 8);
 }
@@ -549,7 +464,11 @@ DLL_EXPORT_XLSXIO void xlsxiowrite_add_cell_float (xlsxiowriter handle, double v
 	if (buflen <= 0 || (buf = (char*)malloc(buflen + 1)) == NULL)
     xlsxiowrite_add_cell_string(handle, NULL);
 	snprintf(buf, buflen + 1, "%.32G", value);
+#ifdef WITH_XLSX_STYLES
+  write(handle->pipefd[PIPEFD_WRITE], "<c s=\"" STR(STYLE_GENERAL) "\"><v>", 12);
+#else
   write(handle->pipefd[PIPEFD_WRITE], "<c><v>", 6);
+#endif
   write(handle->pipefd[PIPEFD_WRITE], buf, strlen(buf));
   write(handle->pipefd[PIPEFD_WRITE], "</v></c>", 8);
   free(buf);
@@ -571,7 +490,7 @@ DLL_EXPORT_XLSXIO void xlsxiowrite_add_cell_datetime (xlsxiowriter handle, time_
     xlsxiowrite_add_cell_string(handle, NULL);
 	snprintf(buf, buflen + 1, "%.32G", timestamp);
 #ifdef WITH_XLSX_STYLES
-  write(handle->pipefd[PIPEFD_WRITE], "<c s=\"1\"><v>", 12);
+  write(handle->pipefd[PIPEFD_WRITE], "<c s=\"" STR(STYLE_DATETIME) "\"><v>", 12);
 #else
   write(handle->pipefd[PIPEFD_WRITE], "<c><v>", 6);
 #endif

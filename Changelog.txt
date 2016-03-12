@@ -1,5 +1,9 @@
 0.1.1
 
+2016-03-12  Brecht Sanders  https://github.com/brechtsanders/
+
+	* add support multiline text fields
+
 2016-03-09  Brecht Sanders  https://github.com/brechtsanders/
 
 	* add support for reading next row without having read all columns
