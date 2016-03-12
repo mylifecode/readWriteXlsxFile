@@ -141,24 +141,24 @@ const char* styles_xml =
   //"      <diagonal/>\r\n"
   "    </border>\r\n"
   "  </borders>\r\n"
-  "  <cellStyleXfs count=\"1\">\r\n"
-  "    <xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\"/>\r\n"
-  "  </cellStyleXfs>\r\n"
+  //"  <cellStyleXfs count=\"1\">\r\n"
+  //"    <xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\"/>\r\n"
+  //"  </cellStyleXfs>\r\n"
   "  <cellXfs count=\"1\">\r\n"
   "    <xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\"/>\r\n"
 #define STYLE_GENERAL 1
   "    <xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\" applyAlignment=\"1\"><alignment vertical=\"top\"/></xf>\r\n"
 #define STYLE_TEXT 2
   "    <xf numFmtId=\"49\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\" applyNumberFormat=\"1\" applyAlignment=\"1\"><alignment vertical=\"top\" wrapText=\"1\"/></xf>\r\n"
-#define STYLE_DATETIME 3
-  "    <xf numFmtId=\"22\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\" applyNumberFormat=\"1\" applyAlignment=\"1\"><alignment horizontal=\"center\" vertical=\"top\"/></xf>\r\n"
-#define STYLE_INTEGER 4
+#define STYLE_INTEGER 3
   "    <xf numFmtId=\"1\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\" applyNumberFormat=\"1\" applyAlignment=\"1\"><alignment vertical=\"top\"/></xf>\r\n"
+#define STYLE_DATETIME 4
+  "    <xf numFmtId=\"22\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\" applyNumberFormat=\"1\" applyAlignment=\"1\"><alignment horizontal=\"center\" vertical=\"top\"/></xf>\r\n"
   "  </cellXfs>\r\n"
-  //"  <cellStyles count=\"1\">\r\n"
+  //"  <cellStyles count=\"2\">\r\n"
   //"    <cellStyle name=\"Normal\" xfId=\"0\" builtinId=\"0\"/>\r\n"
   //"  </cellStyles>\r\n"
-  //"  <dxfs count=\"0\"/>\r\n"
+  "  <dxfs count=\"0\"/>\r\n"
   //"  <tableStyles count=\"0\" defaultTableStyle=\"TableStyleMedium9\" defaultPivotStyle=\"PivotStyleLight16\"/>\r\n"
   "</styleSheet>\r\n";
 #endif

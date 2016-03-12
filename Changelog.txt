@@ -3,11 +3,13 @@
 2016-03-12  Brecht Sanders  https://github.com/brechtsanders/
 
 	* add support multiline text fields
+	* set date/time value to proper display format
 
 2016-03-09  Brecht Sanders  https://github.com/brechtsanders/
 
 	* add support for reading next row without having read all columns
 	* additional functions for writing cells (integer, floating point, date/time)
+	* added encoding of special XML characters in string data
 
 0.1.0
 
