@@ -13,6 +13,7 @@
 				<Option type="2" />
 				<Option compiler="gcc" />
 				<Option host_application="bin/Debug/example_xlsxio_write.exe" />
+				<Option run_host_application_in_terminal="0" />
 				<Option createDefFile="1" />
 				<Compiler>
 					<Add option="-Wall" />
@@ -26,6 +27,7 @@
 				<Option type="2" />
 				<Option compiler="gcc" />
 				<Option host_application="bin/Release/example_xlsxio_write.exe" />
+				<Option run_host_application_in_terminal="0" />
 				<Option createDefFile="1" />
 				<Compiler>
 					<Add option="-Wall" />
@@ -56,6 +58,7 @@
 				<Option type="2" />
 				<Option compiler="MINGW64" />
 				<Option host_application="bin/Release64/example_xlsxio_write.exe" />
+				<Option run_host_application_in_terminal="0" />
 				<Option createDefFile="1" />
 				<Compiler>
 					<Add option="-Wall" />
@@ -72,6 +75,7 @@
 				<Option type="2" />
 				<Option compiler="MINGW32" />
 				<Option host_application="bin/Debug32/example_xlsxio_write.exe" />
+				<Option run_host_application_in_terminal="0" />
 				<Option createDefFile="1" />
 				<Compiler>
 					<Add option="-Wall" />
@@ -85,6 +89,7 @@
 				<Option type="2" />
 				<Option compiler="MINGW32" />
 				<Option host_application="bin/Release32/example_xlsxio_write.exe" />
+				<Option run_host_application_in_terminal="0" />
 				<Option createDefFile="1" />
 				<Compiler>
 					<Add option="-Wall" />
@@ -103,8 +108,8 @@
 			<Add option="`pkg-config --static --libs libzip`" />
 			<Add option="--static" />
 		</Linker>
+		<Unit filename="../include/xlsxio_version.h" />
 		<Unit filename="../include/xlsxio_write.h" />
-		<Unit filename="../lib/xlsxio_version.h" />
 		<Unit filename="../lib/xlsxio_write.c">
 			<Option compilerVar="CC" />
 		</Unit>
