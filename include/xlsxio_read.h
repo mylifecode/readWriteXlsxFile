@@ -185,7 +185,7 @@ DLL_EXPORT_XLSXIO int xlsxioread_sheet_next_row (xlsxioreadersheet sheethandle);
 
 /*! \brief get next cell from worksheet
  * \param  handle        read handle for worksheet object
- * \return value (caller must free the result) or NULL of no more cells ara available in the current row
+ * \return value (caller must free the result) or NULL if no more cells are available in the current row
  * \sa     xlsxioread_sheet_open()
  */
 DLL_EXPORT_XLSXIO char* xlsxioread_sheet_next_cell (xlsxioreadersheet sheethandle);
