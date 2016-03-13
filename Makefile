@@ -124,6 +124,6 @@ binarypackage: version
 
 .PHONY: clean
 clean:
-	$(RM) lib/*.o examples/*.o src/*.o *$(LIBEXT) *$(SOEXT) $(EXAMPLES_BIN) version xlsxio-*.tar.xz
+	$(RM) lib/*.o examples/*.o src/*.o *$(LIBEXT) *$(SOEXT) $(EXAMPLES_BIN) version xlsxio-*.tar.xz doc/doxygen_sqlite3.db
 	$(RMDIR) doc/html doc/man
 
