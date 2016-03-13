@@ -3,6 +3,7 @@
 2016-03-13  Brecht Sanders  https://github.com/brechtsanders/
 
 	* added header file with version information
+	* additional functions for reading cells (integer, floating point, date/time)
 	
 2016-03-12  Brecht Sanders  https://github.com/brechtsanders/
 
