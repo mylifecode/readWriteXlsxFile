@@ -36,14 +36,14 @@ typedef struct zip_source zip_source_t;
 #define STR_HELPER(x) #x
 #define STR(x) STR_HELPER(x)
 
-DLL_EXPORT_XLSXIO void xlsxiowrite_get_version (int* major, int* minor, int* micro)
+DLL_EXPORT_XLSXIO void xlsxiowrite_get_version (int* pmajor, int* pminor, int* pmicro)
 {
-  if (major)
-    *major = XLSXIO_VERSION_MAJOR;
-  if (minor)
-    *minor = XLSXIO_VERSION_MINOR;
-  if (micro)
-    *micro = XLSXIO_VERSION_MICRO;
+  if (pmajor)
+    *pmajor = XLSXIO_VERSION_MAJOR;
+  if (pminor)
+    *pminor = XLSXIO_VERSION_MINOR;
+  if (pmicro)
+    *pmicro = XLSXIO_VERSION_MICRO;
 }
 
 DLL_EXPORT_XLSXIO const char* xlsxiowrite_get_version_string ()
@@ -440,17 +440,17 @@ DLL_EXPORT_XLSXIO void xlsxiowrite_add_cell_string (xlsxiowriter handle, const c
   }
 }
 
-DLL_EXPORT_XLSXIO void xlsxiowrite_add_cell_int (xlsxiowriter handle, long long value)
+DLL_EXPORT_XLSXIO void xlsxiowrite_add_cell_int (xlsxiowriter handle, long value)
 {
   if (!handle)
     return;
 	char* buf;
-	int buflen = snprintf(NULL, 0, "%lli", value);
+	int buflen = snprintf(NULL, 0, "%li", value);
 	if (buflen <= 0 || (buf = (char*)malloc(buflen + 1)) == NULL) {
     xlsxiowrite_add_cell_string(handle, NULL);
     return;
 	}
-	snprintf(buf, buflen + 1, "%lli", value);
+	snprintf(buf, buflen + 1, "%li", value);
 #ifdef WITH_XLSX_STYLES
   write(handle->pipefd[PIPEFD_WRITE], "<c s=\"" STR(STYLE_INTEGER) "\"><v>", 12);
 #else
@@ -491,14 +491,14 @@ DLL_EXPORT_XLSXIO void xlsxiowrite_add_cell_datetime (xlsxiowriter handle, time_
   write(handle->pipefd[PIPEFD_WRITE], buf, strlen(buf));
   write(handle->pipefd[PIPEFD_WRITE], "</v></c>", 8);
 */
-  double timestamp = (double)value / 86400 + 25569;
+  double timestamp = ((double)(value) + .499) / 86400 + 25569; //converstion from Unix to Excel timestamp
 	char* buf;
-	int buflen = snprintf(NULL, 0, "%.32G", timestamp);
+	int buflen = snprintf(NULL, 0, "%.16G", timestamp);
 	if (buflen <= 0 || (buf = (char*)malloc(buflen + 1)) == NULL) {
     xlsxiowrite_add_cell_string(handle, NULL);
     return;
 	}
-	snprintf(buf, buflen + 1, "%.32G", timestamp);
+	snprintf(buf, buflen + 1, "%.16G", timestamp);
 #ifdef WITH_XLSX_STYLES
   write(handle->pipefd[PIPEFD_WRITE], "<c s=\"" STR(STYLE_DATETIME) "\"><v>", 12);
 #else
@@ -507,6 +507,7 @@ DLL_EXPORT_XLSXIO void xlsxiowrite_add_cell_datetime (xlsxiowriter handle, time_
   write(handle->pipefd[PIPEFD_WRITE], buf, strlen(buf));
   write(handle->pipefd[PIPEFD_WRITE], "</v></c>", 8);
   free(buf);
+}
 /*
 Windows (And Mac Office 2011+):
 
@@ -518,7 +519,6 @@ MAC OS X (pre Office 2011):
     Unix Timestamp = (Excel Timestamp - 24107) * 86400
     Excel Timestamp = (Unix Timestamp / 86400) + 24107
 */
-}
 
 DLL_EXPORT_XLSXIO void xlsxiowrite_next_row (xlsxiowriter handle)
 {

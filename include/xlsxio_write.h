@@ -56,12 +56,12 @@ extern "C" {
 #endif
 
 /*! \brief get xlsxio_write version string
- * \param  major         pointer to integer that will receive major version number
- * \param  minor         pointer to integer that will receive minor version number
- * \param  micro         pointer to integer that will receive micro version number
+ * \param  pmajor        pointer to integer that will receive major version number
+ * \param  pminor        pointer to integer that will receive minor version number
+ * \param  pmicro        pointer to integer that will receive micro version number
  * \sa     xlsxiowrite_get_version_string()
  */
-DLL_EXPORT_XLSXIO void xlsxiowrite_get_version (int* major, int* minor, int* micro);
+DLL_EXPORT_XLSXIO void xlsxiowrite_get_version (int* pmajor, int* pminor, int* pmicro);
 
 /*! \brief get xlsxio_write version string
  * \return version string
@@ -98,7 +98,7 @@ DLL_EXPORT_XLSXIO void xlsxiowrite_add_cell_string (xlsxiowriter handle, const c
  * \param  value         integer value
  * \sa     xlsxiowrite_next_row()
  */
-DLL_EXPORT_XLSXIO void xlsxiowrite_add_cell_int (xlsxiowriter handle, long long value);
+DLL_EXPORT_XLSXIO void xlsxiowrite_add_cell_int (xlsxiowriter handle, long value);
 
 /*! \brief add a cell with floating point data
  * \param  handle        write handle for .xlsx object

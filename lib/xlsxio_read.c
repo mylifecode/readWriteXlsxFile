@@ -18,14 +18,14 @@ typedef struct zip_file zip_file_t;
 #define stricmp strcasecmp
 #endif
 
-DLL_EXPORT_XLSXIO void xlsxioread_get_version (int* major, int* minor, int* micro)
+DLL_EXPORT_XLSXIO void xlsxioread_get_version (int* pmajor, int* pminor, int* pmicro)
 {
-  if (major)
-    *major = XLSXIO_VERSION_MAJOR;
-  if (minor)
-    *minor = XLSXIO_VERSION_MINOR;
-  if (micro)
-    *micro = XLSXIO_VERSION_MICRO;
+  if (pmajor)
+    *pmajor = XLSXIO_VERSION_MAJOR;
+  if (pminor)
+    *pminor = XLSXIO_VERSION_MINOR;
+  if (pmicro)
+    *pmicro = XLSXIO_VERSION_MICRO;
 }
 
 DLL_EXPORT_XLSXIO const char* xlsxioread_get_version_string ()
@@ -1055,3 +1055,48 @@ DLL_EXPORT_XLSXIO char* xlsxioread_sheet_next_cell (xlsxioreadersheet sheethandl
   return result;
 }
 
+DLL_EXPORT_XLSXIO int xlsxioread_sheet_next_cell_string (xlsxioreadersheet sheethandle, char** pvalue)
+{
+  char* result;
+  if (!sheethandle)
+    return -1;
+  result = xlsxioread_sheet_next_cell(sheethandle);
+  if (pvalue)
+    *pvalue = result;
+  return (result ? 1 : 0);
+}
+
+DLL_EXPORT_XLSXIO int xlsxioread_sheet_next_cell_int (xlsxioreadersheet sheethandle, long* pvalue)
+{
+  char* result;
+  if ((result = xlsxioread_sheet_next_cell(sheethandle)) != NULL) {
+    if (pvalue)
+      *pvalue = strtol(result, NULL, 10);
+  }
+  return (result ? 1 : 0);
+}
+
+DLL_EXPORT_XLSXIO int xlsxioread_sheet_next_cell_float (xlsxioreadersheet sheethandle, double* pvalue)
+{
+  char* result;
+  if ((result = xlsxioread_sheet_next_cell(sheethandle)) != NULL) {
+    if (pvalue)
+      *pvalue = strtod(result, NULL);
+  }
+  return (result ? 1 : 0);
+}
+
+DLL_EXPORT_XLSXIO int xlsxioread_sheet_next_cell_datetime (xlsxioreadersheet sheethandle, time_t* pvalue)
+{
+  char* result;
+  if ((result = xlsxioread_sheet_next_cell(sheethandle)) != NULL) {
+    if (pvalue) {
+      double value = strtod(result, NULL);
+      if (value != 0) {
+        value = (value - 25569) * 86400;  //converstion from Excel to Unix timestamp
+      }
+      *pvalue = value;
+    }
+  }
+  return (result ? 1 : 0);
+}
