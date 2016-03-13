@@ -35,6 +35,7 @@ THE SOFTWARE.
 #include <stdlib.h>
 #include <time.h>
 
+/*! \cond PRIVATE */
 #ifndef DLL_EXPORT_XLSXIO
 #ifdef _WIN32
 #if defined(BUILD_XLSXIO_DLL)
@@ -48,6 +49,7 @@ THE SOFTWARE.
 #define DLL_EXPORT_XLSXIO
 #endif
 #endif
+/*! \endcond */
 
 #ifdef __cplusplus
 extern "C" {

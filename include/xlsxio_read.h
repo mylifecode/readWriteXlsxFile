@@ -34,6 +34,7 @@ THE SOFTWARE.
 
 #include <stdlib.h>
 
+/*! \cond PRIVATE */
 #ifndef DLL_EXPORT_XLSXIO
 #ifdef _WIN32
 #if defined(BUILD_XLSXIO_DLL)
@@ -47,6 +48,7 @@ THE SOFTWARE.
 #define DLL_EXPORT_XLSXIO
 #endif
 #endif
+/*! \endcond */
 
 #ifdef __cplusplus
 extern "C" {
@@ -107,15 +109,15 @@ DLL_EXPORT_XLSXIO void xlsxioread_list_sheets (xlsxioreader handle, xlsxioread_l
  * \name   XLSXIOREAD_SKIP_*
  * \{
  */
-/*! \brief don't skip any rows or cells */
+/*! \brief don't skip any rows or cells \hideinitializer */
 #define XLSXIOREAD_SKIP_NONE            0
-/*! \brief skip empty rows (note: cells may appear empty while they actually contain data) */
+/*! \brief skip empty rows (note: cells may appear empty while they actually contain data) \hideinitializer */
 #define XLSXIOREAD_SKIP_EMPTY_ROWS      0x01
-/*! \brief skip empty cells */
+/*! \brief skip empty cells \hideinitializer */
 #define XLSXIOREAD_SKIP_EMPTY_CELLS     0x02
-/*! \brief skip empty rows and cells */
+/*! \brief skip empty rows and cells \hideinitializer */
 #define XLSXIOREAD_SKIP_ALL_EMPTY       (XLSXIOREAD_SKIP_EMPTY_ROWS | XLSXIOREAD_SKIP_EMPTY_CELLS)
-/*! \brief skip extra cells to the right of the rightmost header cell */
+/*! \brief skip extra cells to the right of the rightmost header cell \hideinitializer */
 #define XLSXIOREAD_SKIP_EXTRA_CELLS     0x04
 /*! @} */
 
