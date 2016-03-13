@@ -1,3 +1,6 @@
+ifeq ($(OS),)
+OS = $(shell uname -s)
+endif
 PREFIX = /usr/local
 CC   = gcc
 CPP  = g++
@@ -14,14 +17,22 @@ else
 BINEXT =
 SOEXT = .so
 endif
-INCS =  -Iinclude -Ilib
-CFLAGS = $(INCS) -fexpensive-optimizations -Os
-CPPFLAGS = $(INCS) -fexpensive-optimizations -Os
+INCS = -Iinclude -Ilib
+CFLAGS = $(INCS) -Os
+CPPFLAGS = $(INCS) -Os
 STATIC_CFLAGS = -DBUILD_XLSXIO_STATIC
 SHARED_CFLAGS = -DBUILD_XLSXIO_DLL
 LIBS =
 LDFLAGS =
+ifeq ($(OS),Darwin)
+CFLAGS += -I/opt/local/include -I/opt/local/lib/libzip/include
+LDFLAGS += -L/opt/local/lib
+#CFLAGS += -arch i386 -arch x86_64
+#LDFLAGS += -arch i386 -arch x86_64
+STRIPFLAG =
+else
 STRIPFLAG = -s
+endif
 MKDIR = mkdir -p
 RM = rm -f
 RMDIR = rm -rf
@@ -39,8 +50,14 @@ endif
 ifeq ($(OS),Windows_NT)
 XLSXIOREAD_LDFLAGS += -Wl,--out-implib,$@$(LIBEXT)
 XLSXIOWRITE_LDFLAGS += -Wl,--out-implib,$@$(LIBEXT)
+else ifeq ($(OS),Darwin)
 else
 XLSXIOWRITE_LDFLAGS += -pthread
+endif
+ifeq ($(OS),Darwin)
+OS_LINK_FLAGS = -dynamiclib -o $@
+else
+OS_LINK_FLAGS = -shared -Wl,-soname,$@ $(STRIPFLAG)
 endif
 
 EXAMPLES_BIN = example_xlsxio_write$(BINEXT) example_xlsxio_read$(BINEXT) example_xlsxio_read_advanced$(BINEXT)
@@ -69,22 +86,22 @@ $(LIBPREFIX)xlsxio_read$(LIBEXT): $(XLSXIOREAD_OBJ:%.o=%.static.o)
 	$(AR) cru $@ $^
 
 $(LIBPREFIX)xlsxio_read$(SOEXT): $(XLSXIOREAD_OBJ:%.o=%.shared.o)
-	$(CC) -o $@ -shared -Wl,-soname,$@ $^ $(XLSXIOREAD_LDFLAGS) $(LDFLAGS) $(LIBS) $(STRIPFLAG)
+	$(CC) -o $@ $(OS_LINK_FLAGS) $^ $(XLSXIOREAD_LDFLAGS) $(LDFLAGS) $(LIBS)
 
 $(LIBPREFIX)xlsxio_write$(LIBEXT): $(XLSXIOWRITE_OBJ:%.o=%.static.o)
 	$(AR) cru $@ $^
 
 $(LIBPREFIX)xlsxio_write$(SOEXT): $(XLSXIOWRITE_OBJ:%.o=%.shared.o)
-	$(CC) -o $@ -shared -Wl,-soname,$@ $^ $(XLSXIOWRITE_LDFLAGS) $(LDFLAGS) $(LIBS) $(STRIPFLAG)
+	$(CC) -o $@ $(OS_LINK_FLAGS) $^ $(XLSXIOWRITE_LDFLAGS) $(LDFLAGS) $(LIBS)
 
 example_xlsxio_write$(BINEXT): $(LIBPREFIX)xlsxio_write$(LIBEXT) examples/example_xlsxio_write.static.o
-	$(CC) -o $@ examples/$(@:%$(BINEXT)=%.static.o) $(LIBPREFIX)xlsxio_write$(LIBEXT) $(XLSXIOWRITE_LDFLAGS) $(STRIPFLAG)
+	$(CC) -o $@ examples/$(@:%$(BINEXT)=%.static.o) $(LIBPREFIX)xlsxio_write$(LIBEXT) $(XLSXIOWRITE_LDFLAGS) $(LDFLAGS)
 
 example_xlsxio_read$(BINEXT): $(LIBPREFIX)xlsxio_read$(LIBEXT) examples/example_xlsxio_read.static.o
-	$(CC) -o $@ examples/$(@:%$(BINEXT)=%.static.o) $(LIBPREFIX)xlsxio_read$(LIBEXT) $(XLSXIOREAD_LDFLAGS) $(STRIPFLAG)
+	$(CC) -o $@ examples/$(@:%$(BINEXT)=%.static.o) $(LIBPREFIX)xlsxio_read$(LIBEXT) $(XLSXIOREAD_LDFLAGS) $(LDFLAGS)
 
 example_xlsxio_read_advanced$(BINEXT): $(LIBPREFIX)xlsxio_read$(LIBEXT) examples/example_xlsxio_read_advanced.static.o
-	$(CC) -o $@ examples/$(@:%$(BINEXT)=%.static.o) $(LIBPREFIX)xlsxio_read$(LIBEXT) $(XLSXIOREAD_LDFLAGS) $(STRIPFLAG)
+	$(CC) -o $@ examples/$(@:%$(BINEXT)=%.static.o) $(LIBPREFIX)xlsxio_read$(LIBEXT) $(XLSXIOREAD_LDFLAGS) $(LDFLAGS)
 
 examples: $(EXAMPLES_BIN)
 

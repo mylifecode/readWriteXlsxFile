@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <unistd.h>
 #include "xlsxio_write.h"
 
 const char* filename = "example.xlsx";
