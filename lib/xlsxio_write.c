@@ -444,8 +444,13 @@ DLL_EXPORT_XLSXIO void xlsxiowrite_add_cell_int (xlsxiowriter handle, long long 
 {
   if (!handle)
     return;
-	char buf[21];
-	lltoa(value, buf, 10);
+	char* buf;
+	int buflen = snprintf(NULL, 0, "%lli", value);
+	if (buflen <= 0 || (buf = (char*)malloc(buflen + 1)) == NULL) {
+    xlsxiowrite_add_cell_string(handle, NULL);
+    return;
+	}
+	snprintf(buf, buflen + 1, "%lli", value);
 #ifdef WITH_XLSX_STYLES
   write(handle->pipefd[PIPEFD_WRITE], "<c s=\"" STR(STYLE_INTEGER) "\"><v>", 12);
 #else
@@ -453,6 +458,7 @@ DLL_EXPORT_XLSXIO void xlsxiowrite_add_cell_int (xlsxiowriter handle, long long 
 #endif
   write(handle->pipefd[PIPEFD_WRITE], buf, strlen(buf));
   write(handle->pipefd[PIPEFD_WRITE], "</v></c>", 8);
+  free(buf);
 }
 
 DLL_EXPORT_XLSXIO void xlsxiowrite_add_cell_float (xlsxiowriter handle, double value)
@@ -461,8 +467,10 @@ DLL_EXPORT_XLSXIO void xlsxiowrite_add_cell_float (xlsxiowriter handle, double v
     return;
 	char* buf;
 	int buflen = snprintf(NULL, 0, "%.32G", value);
-	if (buflen <= 0 || (buf = (char*)malloc(buflen + 1)) == NULL)
+	if (buflen <= 0 || (buf = (char*)malloc(buflen + 1)) == NULL) {
     xlsxiowrite_add_cell_string(handle, NULL);
+    return;
+	}
 	snprintf(buf, buflen + 1, "%.32G", value);
 #ifdef WITH_XLSX_STYLES
   write(handle->pipefd[PIPEFD_WRITE], "<c s=\"" STR(STYLE_GENERAL) "\"><v>", 12);
@@ -486,8 +494,10 @@ DLL_EXPORT_XLSXIO void xlsxiowrite_add_cell_datetime (xlsxiowriter handle, time_
   double timestamp = (double)value / 86400 + 25569;
 	char* buf;
 	int buflen = snprintf(NULL, 0, "%.32G", timestamp);
-	if (buflen <= 0 || (buf = (char*)malloc(buflen + 1)) == NULL)
+	if (buflen <= 0 || (buf = (char*)malloc(buflen + 1)) == NULL) {
     xlsxiowrite_add_cell_string(handle, NULL);
+    return;
+	}
 	snprintf(buf, buflen + 1, "%.32G", timestamp);
 #ifdef WITH_XLSX_STYLES
   write(handle->pipefd[PIPEFD_WRITE], "<c s=\"" STR(STYLE_DATETIME) "\"><v>", 12);
