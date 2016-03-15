@@ -210,13 +210,6 @@ const char* worksheet_xml_begin =
   //"<cols><col min=\"1\" max=\"1\" width=\"40.625\" customWidth=\"1\"/><col min=\"2\" max=\"6\" width=\"19.625\" customWidth=\"1\"/><col min=\"7\" max=\"7\" width=\"23.625\" customWidth=\"1\"/><col min=\"8\" max=\"9\" width=\"19.625\" customWidth=\"1\"/><col min=\"10\" max=\"10\" width=\"18.625\" customWidth=\"1\"/><col min=\"11\" max=\"11\" width=\"8.625\" customWidth=\"1\"/><col min=\"12\" max=\"12\" width=\"128.625\" customWidth=\"1\"/><col min=\"13\" max=\"14\" width=\"20.625\" customWidth=\"1\"/><col min=\"15\" max=\"17\" width=\"48.625\" customWidth=\"1\"/><col min=\"18\" max=\"18\" width=\"15.625\" customWidth=\"1\"/></cols>"
   "<sheetData>";
 
-/*
-"<row><c t=\"inlineStr\"><is><t>Column1</t></is></c><c t=\"inlineStr\"><is><t>Column2</t></is></c></row>\r\n"
-"<row><c t=\"inlineStr\"><is><t>Test</t></is></c><c t=\"inlineStr\"><is><t>123</t></is></c></row>\r\n"
-//"<row r=\"1\"><c r=\"A1\"><is><t>Test String</t></is></c></row>\r\n"
-  //"<row r=\"1\" spans=\"1:18\" s=\"1\" customFormat=\"1\"><c r=\"A1\" s=\"1\" t=\"s\"><v>0</v></c><c r=\"B1\" s=\"1\" t=\"s\"><v>1</v></c><c r=\"C1\" s=\"1\" t=\"s\"><v>2</v></c><c r=\"D1\" s=\"1\" t=\"s\"><v>3</v></c><c r=\"E1\" s=\"1\" t=\"s\"><v>4</v></c><c r=\"F1\" s=\"1\" t=\"s\"><v>5</v></c><c r=\"G1\" s=\"1\" t=\"s\"><v>6</v></c><c r=\"H1\" s=\"1\" t=\"s\"><v>7</v></c><c r=\"I1\" s=\"1\" t=\"s\"><v>8</v></c><c r=\"J1\" s=\"1\" t=\"s\"><v>9</v></c><c r=\"K1\" s=\"1\" t=\"s\"><v>10</v></c><c r=\"L1\" s=\"1\" t=\"s\"><v>11</v></c><c r=\"M1\" s=\"1\" t=\"s\"><v>12</v></c><c r=\"N1\" s=\"1\" t=\"s\"><v>13</v></c><c r=\"O1\" s=\"1\" t=\"s\"><v>14</v></c><c r=\"P1\" s=\"1\" t=\"s\"><v>15</v></c><c r=\"Q1\" s=\"1\" t=\"s\"><v>16</v></c><c r=\"R1\" s=\"1\" t=\"s\"><v>17</v></c></row>\r\n"
-  //"<row r=\"2\" spans=\"1:18\"><c r=\"A2\" t=\"s\"><v>20</v></c><c r=\"B2\" t=\"s\"><v>21</v></c><c r=\"C2\" t=\"s\"><v>22</v></c><c r=\"D2\" t=\"s\"><v>23</v></c><c r=\"E2\" t=\"s\"><v>24</v></c><c r=\"F2\" t=\"s\"><v>18</v></c><c r=\"G2\" t=\"s\"><v>25</v></c><c r=\"H2\" t=\"s\"><v>26</v></c><c r=\"I2\" t=\"s\"><v>27</v></c><c r=\"J2\" t=\"s\"><v>28</v></c><c r=\"K2\"><v>1548</v></c><c r=\"L2\" t=\"s\"><v>29</v></c><c r=\"M2\" t=\"s\"><v>30</v></c><c r=\"N2\" t=\"s\"><v>31</v></c><c r=\"O2\" t=\"s\"><v>32</v></c><c r=\"P2\" t=\"s\"><v>18</v></c><c r=\"Q2\" t=\"s\"><v>33</v></c><c r=\"R2\" t=\"s\"><v>19</v></c></row>\r\n"
-*/
 const char* worksheet_xml_end =
   "</sheetData>"
   //"<pageMargins left=\"0.75\" right=\"0.75\" top=\"1\" bottom=\"1\" header=\"0.5\" footer=\"0.5\"/>"

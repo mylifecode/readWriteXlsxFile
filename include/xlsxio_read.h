@@ -27,6 +27,8 @@ THE SOFTWARE.
  *
  * Include this header file to use XLSX I/O for reading .xlsx files and
  * link with -lxlsxio_read.
+ * This header provides both advanced methods using callback functions and
+ * simple methods for iterating through data.
  */
 
 #ifndef INCLUDED_XLSXIO_READ_H
