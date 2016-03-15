@@ -3,6 +3,7 @@
 2016-03-15  Brecht Sanders  https://github.com/brechtsanders/
 
 	* added xlsxioread_sheetlist_ functions for getting worksheet names
+	* fixed Excel error: "That command cannot be used on multiple selections"
 
 0.1.1
 

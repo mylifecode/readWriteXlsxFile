@@ -76,24 +76,39 @@ int zip_add_static_content_string (zip_t* zip, const char* filename, const char*
 ////////////////////////////////////////////////////////////////////////
 
 #define WITH_XLSX_STYLES 1
-//See also: http://stackoverflow.com/questions/4655565/reading-dates-from-openxml-excel-files
-//See also: http://openxmldeveloper.org/blog/b/openxmldeveloper/archive/2012/02/16/dates-in-spreadsheetml.aspx
-//See also: http://openxmldeveloper.org/discussions/formats/f/14/t/242.aspx
+
+#ifdef USE_EXCEL_FOLDERS
+#define XML_FOLDER_DOCPROPS             "docProps/"
+#define XML_FOLDER_XL                   "xl/"
+#define XML_FOLDER_WORKSHEETS           "worksheets/"
+#else
+#define XML_FOLDER_DOCPROPS             ""
+#define XML_FOLDER_XL                   ""
+#define XML_FOLDER_WORKSHEETS           ""
+#endif
+#define XML_FILENAME_CONTENTTYPES       "[Content_Types].xml"
+#define XML_FILENAME_RELS               "_rels/.rels"
+#define XML_FILENAME_DOCPROPS_CORE      "core.xml"
+#define XML_FILENAME_DOCPROPS_APP       "app.xml"
+#define XML_FILENAME_XL_WORKBOOK_RELS   "_rels/workbook.xml.rels"
+#define XML_FILENAME_XL_WORKBOOK        "workbook.xml"
+#define XML_FILENAME_XL_STYLES          "styles.xml"
+#define XML_FILENAME_XL_WORKSHEET1      "sheet1.xml"
 
 const char* content_types_xml =
   "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\r\n"
   "<Types xmlns=\"http://schemas.openxmlformats.org/package/2006/content-types\">"
   "<Default Extension=\"rels\" ContentType=\"application/vnd.openxmlformats-package.relationships+xml\"/>"
   "<Default Extension=\"xml\" ContentType=\"application/xml\"/>"
-  "<Override PartName=\"/xl/workbook.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml\"/>"
-  "<Override PartName=\"/docProps/core.xml\" ContentType=\"application/vnd.openxmlformats-package.core-properties+xml\"/>"
-  "<Override PartName=\"/docProps/app.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.extended-properties+xml\"/>"
+  "<Override PartName=\"/" XML_FOLDER_XL XML_FILENAME_XL_WORKBOOK "\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml\"/>"
+  "<Override PartName=\"/" XML_FOLDER_DOCPROPS XML_FILENAME_DOCPROPS_CORE "\" ContentType=\"application/vnd.openxmlformats-package.core-properties+xml\"/>"
+  "<Override PartName=\"/" XML_FOLDER_DOCPROPS XML_FILENAME_DOCPROPS_APP "\" ContentType=\"application/vnd.openxmlformats-officedocument.extended-properties+xml\"/>"
 #ifdef WITH_XLSX_STYLES
-  "<Override PartName=\"/xl/styles.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml\"/>"
+  "<Override PartName=\"/" XML_FOLDER_XL XML_FILENAME_XL_STYLES "\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml\"/>"
 #endif
   //"<Override PartName=\"/xl/theme/theme1.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.theme+xml\"/>"
   //"<Override PartName=\"/xl/sharedStrings.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml\"/>"
-  "<Override PartName=\"/xl/worksheets/sheet1.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml\"/>"
+  "<Override PartName=\"/" XML_FOLDER_XL XML_FOLDER_WORKSHEETS XML_FILENAME_XL_WORKSHEET1 "\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml\"/>"
   "</Types>";
 
 const char* docprops_core_xml =
@@ -109,57 +124,57 @@ const char* docprops_app_xml =
 const char* rels_xml =
   "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\r\n"
   "<Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\">"
-  "<Relationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties\" Target=\"docProps/core.xml\"/>"
-  "<Relationship Id=\"rId2\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties\" Target=\"docProps/app.xml\"/>"
-  "<Relationship Id=\"rId3\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument\" Target=\"xl/workbook.xml\"/>"
+  "<Relationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties\" Target=\"" XML_FOLDER_DOCPROPS XML_FILENAME_DOCPROPS_CORE "\"/>"
+  "<Relationship Id=\"rId2\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties\" Target=\"" XML_FOLDER_DOCPROPS XML_FILENAME_DOCPROPS_APP "\"/>"
+  "<Relationship Id=\"rId3\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument\" Target=\"" XML_FOLDER_XL XML_FILENAME_XL_WORKBOOK "\"/>"
   "</Relationships>";
 
 #ifdef WITH_XLSX_STYLES
 const char* styles_xml =
   "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\r\n"
   "<styleSheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\">\r\n"
-  "  <fonts count=\"1\">\r\n"
-  "    <font>\r\n"
-  "      <sz val=\"10\"/>\r\n"
-  //"      <color theme=\"1\"/>\r\n"
-  "      <name val=\"Consolas\"/>\r\n"
-  "      <family val=\"2\"/>\r\n"
-  //"      <scheme val=\"minor\"/>\r\n"
-  "    </font>\r\n"
-  "  </fonts>\r\n"
-  "  <fills count=\"1\">\r\n"
-  "    <fill>\r\n"
-  //"      <patternFill patternType=\"none\"/>\r\n"
-  "    </fill>\r\n"
-  "  </fills>\r\n"
-  "  <borders count=\"1\">\r\n"
-  "    <border>\r\n"
-  //"      <left/>\r\n"
-  //"      <right/>\r\n"
-  //"      <top/>\r\n"
-  //"      <bottom/>\r\n"
-  //"      <diagonal/>\r\n"
-  "    </border>\r\n"
-  "  </borders>\r\n"
-  //"  <cellStyleXfs count=\"1\">\r\n"
-  //"    <xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\"/>\r\n"
-  //"  </cellStyleXfs>\r\n"
-  "  <cellXfs count=\"1\">\r\n"
-  "    <xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\"/>\r\n"
+  "<fonts count=\"1\">\r\n"
+  "<font>\r\n"
+  "<sz val=\"10\"/>\r\n"
+  //"<color theme=\"1\"/>\r\n"
+  "<name val=\"Consolas\"/>\r\n"
+  "<family val=\"2\"/>\r\n"
+  //"<scheme val=\"minor\"/>\r\n"
+  "</font>\r\n"
+  "</fonts>\r\n"
+  "<fills count=\"1\">\r\n"
+  "<fill>\r\n"
+  //"<patternFill patternType=\"none\"/>\r\n"
+  "</fill>\r\n"
+  "</fills>\r\n"
+  "<borders count=\"1\">\r\n"
+  "<border>\r\n"
+  //"<left/>\r\n"
+  //"<right/>\r\n"
+  //"<top/>\r\n"
+  //"<bottom/>\r\n"
+  //"<diagonal/>\r\n"
+  "</border>\r\n"
+  "</borders>\r\n"
+  //"<cellStyleXfs count=\"1\">\r\n"
+  //"<xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\"/>\r\n"
+  //"</cellStyleXfs>\r\n"
+  "<cellXfs count=\"1\">\r\n"
+  "<xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\"/>\r\n"
 #define STYLE_GENERAL 1
-  "    <xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\" applyAlignment=\"1\"><alignment vertical=\"top\"/></xf>\r\n"
+  "<xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\" applyAlignment=\"1\"><alignment vertical=\"top\"/></xf>\r\n"
 #define STYLE_TEXT 2
-  "    <xf numFmtId=\"49\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\" applyNumberFormat=\"1\" applyAlignment=\"1\"><alignment vertical=\"top\" wrapText=\"1\"/></xf>\r\n"
+  "<xf numFmtId=\"49\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\" applyNumberFormat=\"1\" applyAlignment=\"1\"><alignment vertical=\"top\" wrapText=\"1\"/></xf>\r\n"
 #define STYLE_INTEGER 3
-  "    <xf numFmtId=\"1\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\" applyNumberFormat=\"1\" applyAlignment=\"1\"><alignment vertical=\"top\"/></xf>\r\n"
+  "<xf numFmtId=\"1\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\" applyNumberFormat=\"1\" applyAlignment=\"1\"><alignment vertical=\"top\"/></xf>\r\n"
 #define STYLE_DATETIME 4
-  "    <xf numFmtId=\"22\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\" applyNumberFormat=\"1\" applyAlignment=\"1\"><alignment horizontal=\"center\" vertical=\"top\"/></xf>\r\n"
-  "  </cellXfs>\r\n"
-  //"  <cellStyles count=\"2\">\r\n"
-  //"    <cellStyle name=\"Normal\" xfId=\"0\" builtinId=\"0\"/>\r\n"
-  //"  </cellStyles>\r\n"
-  "  <dxfs count=\"0\"/>\r\n"
-  //"  <tableStyles count=\"0\" defaultTableStyle=\"TableStyleMedium9\" defaultPivotStyle=\"PivotStyleLight16\"/>\r\n"
+  "<xf numFmtId=\"22\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\" applyNumberFormat=\"1\" applyAlignment=\"1\"><alignment horizontal=\"center\" vertical=\"top\"/></xf>\r\n"
+  "</cellXfs>\r\n"
+  //"<cellStyles count=\"2\">\r\n"
+  //"<cellStyle name=\"Normal\" xfId=\"0\" builtinId=\"0\"/>\r\n"
+  //"</cellStyles>\r\n"
+  "<dxfs count=\"0\"/>\r\n"
+  //"<tableStyles count=\"0\" defaultTableStyle=\"TableStyleMedium9\" defaultPivotStyle=\"PivotStyleLight16\"/>\r\n"
   "</styleSheet>\r\n";
 #endif
 
@@ -182,15 +197,19 @@ const char* workbook_rels_xml =
   "<Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\">"
   //"<Relationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme\" Target=\"theme/theme1.xml\"/>"
 #ifdef WITH_XLSX_STYLES
-  "<Relationship Id=\"rId2\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles\" Target=\"styles.xml\"/>"
+  "<Relationship Id=\"rId2\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles\" Target=\"" XML_FILENAME_XL_STYLES "\"/>"
 #endif
-  "<Relationship Id=\"rId3\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet\" Target=\"worksheets/sheet1.xml\"/>"
+  "<Relationship Id=\"rId3\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet\" Target=\"" XML_FOLDER_WORKSHEETS XML_FILENAME_XL_WORKSHEET1 "\"/>"
   //"<Relationship Id=\"rId4\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings\" Target=\"sharedStrings.xml\"/>"
   "</Relationships>";
 
 const char* workbook_xml =
   "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\r\n"
   "<workbook xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">"
+  //"<workbookPr/>"
+  "<bookViews>"
+  "<workbookView/>"
+  "</bookViews>"
   "<sheets>"
   "<sheet name=\"SheetName1\" sheetId=\"1\" r:id=\"rId3\"/>"
   "</sheets>"
@@ -305,21 +324,21 @@ void* thread_proc (void* arg)
 #endif
   }
   //generate required files
-  zip_add_static_content_string(handle->zip, "[Content_Types].xml", content_types_xml);
-  zip_add_static_content_string(handle->zip, "docProps/core.xml", docprops_core_xml);
-  zip_add_static_content_string(handle->zip, "docProps/app.xml", docprops_app_xml);
-  zip_add_static_content_string(handle->zip, "_rels/.rels", rels_xml);
+  zip_add_static_content_string(handle->zip, XML_FILENAME_CONTENTTYPES, content_types_xml);
+  zip_add_static_content_string(handle->zip, XML_FOLDER_DOCPROPS XML_FILENAME_DOCPROPS_CORE, docprops_core_xml);
+  zip_add_static_content_string(handle->zip, XML_FOLDER_DOCPROPS XML_FILENAME_DOCPROPS_APP, docprops_app_xml);
+  zip_add_static_content_string(handle->zip, XML_FILENAME_RELS, rels_xml);
 #ifdef WITH_XLSX_STYLES
-  zip_add_static_content_string(handle->zip, "xl/styles.xml", styles_xml);
+  zip_add_static_content_string(handle->zip, XML_FOLDER_XL XML_FILENAME_XL_STYLES, styles_xml);
 #endif
   //zip_add_static_content_string(handle->zip, "xl/theme/theme1.xml", theme_xml);
-  zip_add_static_content_string(handle->zip, "xl/_rels/workbook.xml.rels", workbook_rels_xml);
-  zip_add_static_content_string(handle->zip, "xl/workbook.xml", workbook_xml);
+  zip_add_static_content_string(handle->zip, XML_FOLDER_XL XML_FILENAME_XL_WORKBOOK_RELS, workbook_rels_xml);
+  zip_add_static_content_string(handle->zip, XML_FOLDER_XL XML_FILENAME_XL_WORKBOOK, workbook_xml);
   //zip_add_static_content_string(handle->zip, "xl/sharedStrings.xml", sharedstrings_xml);
 
   //add sheet content with pipe data as source
   zip_source_t* zipsrc = zip_source_filep(handle->zip, fdopen(handle->pipefd[PIPEFD_READ], "rb"), 0, -1);
-  if (zip_file_add(handle->zip, "xl/worksheets/sheet1.xml", zipsrc, ZIP_FL_OVERWRITE | ZIP_FL_ENC_UTF_8) < 0) {
+  if (zip_file_add(handle->zip, XML_FOLDER_XL XML_FOLDER_WORKSHEETS XML_FILENAME_XL_WORKSHEET1, zipsrc, ZIP_FL_OVERWRITE | ZIP_FL_ENC_UTF_8) < 0) {
     zip_source_free(zipsrc);
     fprintf(stdout, "Error adding file");
   }
