@@ -4,6 +4,7 @@
 
 	* added xlsxioread_sheetlist_ functions for getting worksheet names
 	* fixed Excel error: "That command cannot be used on multiple selections"
+	* use simpler folder structure inside .xlsx file
 
 0.1.1
 
