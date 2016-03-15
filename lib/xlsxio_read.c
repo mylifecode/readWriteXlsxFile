@@ -58,11 +58,43 @@ int expat_process_zip_file (zip_t* zip, const char* filename, XML_StartElementHa
   while ((buflen = zip_fread(zipfile, buf, sizeof(buf))) >= 0) {
     if ((status = XML_Parse(parser, buf, buflen, (buflen < sizeof(buf) ? 1 : 0))) == XML_STATUS_ERROR)
       break;
+    if (xmlparser && status == XML_STATUS_SUSPENDED)
+      return 0;
   }
   XML_ParserFree(parser);
   zip_fclose(zipfile);
   //return (status == XML_STATUS_ERROR != XML_ERROR_FINISHED ? 1 : 0);
   return 0;
+}
+
+XML_Parser expat_process_zip_file_suspendable (zip_file_t* zipfile, XML_StartElementHandler start_handler, XML_EndElementHandler end_handler, XML_CharacterDataHandler data_handler, void* callbackdata)
+{
+  XML_Parser result;
+  if ((result = XML_ParserCreate(NULL)) != NULL) {
+    XML_SetUserData(result, callbackdata);
+    XML_SetElementHandler(result, start_handler, end_handler);
+    XML_SetCharacterDataHandler(result, data_handler);
+  }
+  return result;
+}
+
+enum XML_Status expat_process_zip_file_resume (zip_file_t* zipfile, XML_Parser xmlparser)
+{
+  enum XML_Status status;
+  status = XML_ResumeParser(xmlparser);
+  if (status == XML_STATUS_SUSPENDED)
+    return status;
+  if (status == XML_STATUS_ERROR && XML_GetErrorCode(xmlparser) != XML_ERROR_NOT_SUSPENDED)
+    return status;
+  char buf[BUFFER_SIZE];
+  zip_int64_t buflen;
+  while ((buflen = zip_fread(zipfile, buf, sizeof(buf))) > 0) {
+    if ((status = XML_Parse(xmlparser, buf, buflen, (buflen < sizeof(buf) ? 1 : 0))) == XML_STATUS_ERROR)
+      return status;
+    if (status == XML_STATUS_SUSPENDED)
+      return status;
+  }
+  return status;
 }
 
 //get expat attribute by name, returns NULL if not found
@@ -335,8 +367,10 @@ DLL_EXPORT_XLSXIO xlsxioreader xlsxioread_open (const char* filename)
 
 DLL_EXPORT_XLSXIO void xlsxioread_close (xlsxioreader handle)
 {
-  if (handle)
+  if (handle) {
     zip_close(handle->zip);
+    free(handle);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -345,7 +379,6 @@ DLL_EXPORT_XLSXIO void xlsxioread_close (xlsxioreader handle)
 typedef void (*contenttype_file_callback_fn)(zip_t* zip, const char* filename, const char* contenttype, void* callbackdata);
 
 struct list_files_by_contenttype_callback_data {
-  /*XML_Parser xmlparser;*/
   zip_t* zip;
   const char* contenttype;
   contenttype_file_callback_fn filecallbackfn;
@@ -391,16 +424,15 @@ void list_files_by_contenttype_expat_callback_element_start (void* callbackdata,
 }
 
 //list file names by content type
-void list_files_by_contenttype (zip_t* zip, const char* contenttype, contenttype_file_callback_fn filecallbackfn, void* filecallbackdata)
+int list_files_by_contenttype (zip_t* zip, const char* contenttype, contenttype_file_callback_fn filecallbackfn, void* filecallbackdata, XML_Parser* xmlparser)
 {
   struct list_files_by_contenttype_callback_data callbackdata = {
-    /*.xmlparser = NULL,*/
     .zip = zip,
     .contenttype = contenttype,
     .filecallbackfn = filecallbackfn,
     .filecallbackdata = filecallbackdata
   };
-  expat_process_zip_file(zip, "[Content_Types].xml", list_files_by_contenttype_expat_callback_element_start, NULL, NULL, &callbackdata, NULL/*&callbackdata.xmlparser*/);
+  return expat_process_zip_file(zip, "[Content_Types].xml", list_files_by_contenttype_expat_callback_element_start, NULL, NULL, &callbackdata, xmlparser);
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -420,13 +452,19 @@ void main_sheet_list_expat_callback_element_start (void* callbackdata, const XML
     if (stricmp(name, "sheet") == 0) {
       const XML_Char* sheetname;
       //const XML_Char* relid = get_expat_attr_by_name(atts, "r:id");
-      if ((sheetname = get_expat_attr_by_name(atts, "name")) != NULL)
+      if ((sheetname = get_expat_attr_by_name(atts, "name")) != NULL) {
         if (data->callback) {
           if ((*data->callback)(sheetname, data->callbackdata) != 0) {
             XML_StopParser(data->xmlparser, XML_FALSE);
             return;
           }
+/*
+        } else {
+          //for non-calback method suspend here
+          XML_StopParser(data->xmlparser, XML_TRUE);
+*/
         }
+      }
     }
   }
 }
@@ -441,7 +479,7 @@ void xlsxioread_list_sheets_callback (zip_t* zip, const char* filename, const ch
 //list all worksheets
 DLL_EXPORT_XLSXIO void xlsxioread_list_sheets (xlsxioreader handle, xlsxioread_list_sheets_callback_fn callback, void* callbackdata)
 {
-  if (!handle)
+  if (!handle || !callback)
     return;
   //process contents of main sheet
   struct main_sheet_list_callback_data sheetcallbackdata = {
@@ -449,7 +487,7 @@ DLL_EXPORT_XLSXIO void xlsxioread_list_sheets (xlsxioreader handle, xlsxioread_l
     .callback = callback,
     .callbackdata = callbackdata
   };
-  list_files_by_contenttype(handle->zip, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml", xlsxioread_list_sheets_callback, &sheetcallbackdata);
+  list_files_by_contenttype(handle->zip, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml", xlsxioread_list_sheets_callback, &sheetcallbackdata, &sheetcallbackdata.xmlparser);
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -860,39 +898,6 @@ struct xlsxio_read_sheet_struct {
   size_t paddingcol;
 };
 
-int expat_process_zip_file_suspendable (xlsxioreadersheet sheethandle, const char* filename, XML_StartElementHandler start_handler, XML_EndElementHandler end_handler, XML_CharacterDataHandler data_handler)
-{
-  if ((sheethandle->zipfile = zip_fopen(sheethandle->handle->zip, filename, 0)) == NULL) {
-    return -1;
-  }
-  sheethandle->processcallbackdata.xmlparser = XML_ParserCreate(NULL);
-  XML_SetUserData(sheethandle->processcallbackdata.xmlparser, &sheethandle->processcallbackdata);
-  XML_SetElementHandler(sheethandle->processcallbackdata.xmlparser, start_handler, end_handler);
-  XML_SetCharacterDataHandler(sheethandle->processcallbackdata.xmlparser, data_handler);
-  return 0;
-}
-
-enum XML_Status expat_process_zip_file_resume (xlsxioreadersheet sheethandle)
-{
-  enum XML_Status status;
-  status = XML_ResumeParser(sheethandle->processcallbackdata.xmlparser);
-  if (status == XML_STATUS_SUSPENDED)
-    return status;
-  if (status == XML_STATUS_ERROR && XML_GetErrorCode(sheethandle->processcallbackdata.xmlparser) != XML_ERROR_NOT_SUSPENDED)
-    return status;
-  char buf[BUFFER_SIZE];
-  zip_int64_t buflen;
-  while ((buflen = zip_fread(sheethandle->zipfile, buf, sizeof(buf))) > 0) {
-    if ((status = XML_Parse(sheethandle->processcallbackdata.xmlparser, buf, buflen, (buflen < sizeof(buf) ? 1 : 0))) == XML_STATUS_ERROR)
-      return status;
-    if (status == XML_STATUS_SUSPENDED)
-      return status;
-  }
-  return status;
-}
-
-////////////////////////////////////////////////////////////////////////
-
 DLL_EXPORT_XLSXIO int xlsxioread_process (xlsxioreader handle, const char* sheetname, unsigned int flags, xlsxioread_process_cell_callback_fn cell_callback, xlsxioread_process_row_callback_fn row_callback, void* callbackdata)
 {
   int result = 0;
@@ -904,7 +909,7 @@ DLL_EXPORT_XLSXIO int xlsxioread_process (xlsxioreader handle, const char* sheet
     .sheetfile = NULL,
     .sharedstringsfile = NULL
   };
-  list_files_by_contenttype(handle->zip, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml", main_sheet_get_sheetfile_callback, &getrelscallbackdata);
+  list_files_by_contenttype(handle->zip, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml", main_sheet_get_sheetfile_callback, &getrelscallbackdata, NULL);
 
   //process shared strings
   struct sharedstringlist* sharedstrings = sharedstringlist_create();
@@ -937,7 +942,12 @@ DLL_EXPORT_XLSXIO int xlsxioread_process (xlsxioreader handle, const char* sheet
     //use simplified interface by suspending the XML parser when data is found
     xlsxioreadersheet sheethandle = (xlsxioreadersheet)callbackdata;
     data_sheet_callback_data_initialize(&sheethandle->processcallbackdata, sharedstrings, flags, NULL, NULL, sheethandle);
-    result = expat_process_zip_file_suspendable(sheethandle, getrelscallbackdata.sheetfile, data_sheet_expat_callback_find_worksheet_start, NULL, NULL);
+    if ((sheethandle->zipfile = zip_fopen(sheethandle->handle->zip, getrelscallbackdata.sheetfile, 0)) == NULL) {
+      result = 1;
+    }
+    if ((sheethandle->processcallbackdata.xmlparser = expat_process_zip_file_suspendable(sheethandle->zipfile, data_sheet_expat_callback_find_worksheet_start, NULL, NULL, &sheethandle->processcallbackdata)) == NULL) {
+      result = 2;
+    }
   }
 
   //clean up
@@ -946,6 +956,79 @@ DLL_EXPORT_XLSXIO int xlsxioread_process (xlsxioreader handle, const char* sheet
   free(getrelscallbackdata.sheetfile);
   free(getrelscallbackdata.sharedstringsfile);
   return result;
+}
+
+////////////////////////////////////////////////////////////////////////
+
+struct xlsxio_read_sheetlist_struct {
+  xlsxioreader handle;
+  zip_file_t* zipfile;
+  struct main_sheet_list_callback_data sheetcallbackdata;
+  XML_Parser xmlparser;
+  char* nextsheetname;
+};
+
+int xlsxioread_list_sheets_resumable_callback (const char* name, void* callbackdata)
+{
+  //struct main_sheet_list_callback_data* data = (struct main_sheet_list_callback_data*)callbackdata;
+  xlsxioreadersheetlist data = (xlsxioreadersheetlist)callbackdata;
+  data->nextsheetname = strdup(name);
+  XML_StopParser(data->xmlparser, XML_TRUE);
+  return 0;
+}
+
+void xlsxioread_find_main_sheet_file_callback (zip_t* zip, const char* filename, const char* contenttype, void* callbackdata)
+{
+  char** data = (char**)callbackdata;
+  *data = strdup(filename);
+}
+
+DLL_EXPORT_XLSXIO xlsxioreadersheetlist xlsxioread_sheetlist_open (xlsxioreader handle)
+{
+  //determine main sheet name
+  char* mainsheetfile = NULL;
+  list_files_by_contenttype(handle->zip, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml", xlsxioread_find_main_sheet_file_callback, &mainsheetfile, NULL);
+  if (!mainsheetfile)
+    return NULL;
+  //process contents of main sheet
+  xlsxioreadersheetlist result;
+  if ((result = (xlsxioreadersheetlist)malloc(sizeof(struct xlsxio_read_sheetlist_struct))) == NULL)
+    return NULL;
+  result->handle = handle;
+  result->sheetcallbackdata.xmlparser = NULL;
+  result->sheetcallbackdata.callback = xlsxioread_list_sheets_resumable_callback;
+  result->sheetcallbackdata.callbackdata = result;
+  result->nextsheetname = NULL;
+  if ((result->zipfile = zip_fopen(handle->zip, mainsheetfile, 0)) != NULL) {
+    result->xmlparser = expat_process_zip_file_suspendable(result->zipfile, main_sheet_list_expat_callback_element_start, NULL, NULL, &result->sheetcallbackdata);
+  }
+  //clean up
+  free(mainsheetfile);
+  return result;
+}
+
+DLL_EXPORT_XLSXIO void xlsxioread_sheetlist_close (xlsxioreadersheetlist sheetlisthandle)
+{
+  if (sheetlisthandle->xmlparser)
+    XML_ParserFree(sheetlisthandle->xmlparser);
+  if (sheetlisthandle->zipfile)
+    zip_fclose(sheetlisthandle->zipfile);
+  free(sheetlisthandle->nextsheetname);
+  free(sheetlisthandle);
+
+}
+
+DLL_EXPORT_XLSXIO const char* xlsxioread_sheetlist_next (xlsxioreadersheetlist sheetlisthandle)
+{
+  if (!sheetlisthandle->zipfile || !sheetlisthandle->xmlparser)
+    return NULL;
+  free(sheetlisthandle->nextsheetname);
+  sheetlisthandle->nextsheetname = NULL;
+  enum XML_Status status;
+  if ((status = expat_process_zip_file_resume(sheetlisthandle->zipfile, sheetlisthandle->xmlparser)) != XML_STATUS_SUSPENDED) {
+    return NULL;
+  }
+  return sheetlisthandle->nextsheetname;
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -974,6 +1057,7 @@ DLL_EXPORT_XLSXIO void xlsxioread_sheet_close (xlsxioreadersheet sheethandle)
   data_sheet_callback_data_cleanup(&sheethandle->processcallbackdata);
   if (sheethandle->zipfile)
     zip_fclose(sheethandle->zipfile);
+  free(sheethandle);
 }
 
 DLL_EXPORT_XLSXIO int xlsxioread_sheet_next_row (xlsxioreadersheet sheethandle)
@@ -993,7 +1077,7 @@ DLL_EXPORT_XLSXIO int xlsxioread_sheet_next_row (xlsxioreadersheet sheethandle)
   }
   sheethandle->paddingcol = 0;
   //go to beginning of next row
-  while ((status = expat_process_zip_file_resume(sheethandle)) == XML_STATUS_SUSPENDED && sheethandle->processcallbackdata.colnr != 0) {
+  while ((status = expat_process_zip_file_resume(sheethandle->zipfile, sheethandle->processcallbackdata.xmlparser)) == XML_STATUS_SUSPENDED && sheethandle->processcallbackdata.colnr != 0) {
   }
   return (status == XML_STATUS_SUSPENDED ? 1 : 0);
 }
@@ -1025,7 +1109,7 @@ DLL_EXPORT_XLSXIO char* xlsxioread_sheet_next_cell (xlsxioreadersheet sheethandl
   }
   //get value
   if (!sheethandle->processcallbackdata.celldata)
-    if (expat_process_zip_file_resume(sheethandle) != XML_STATUS_SUSPENDED)
+    if (expat_process_zip_file_resume(sheethandle->zipfile, sheethandle->processcallbackdata.xmlparser) != XML_STATUS_SUSPENDED)
       sheethandle->processcallbackdata.celldata = NULL;
   //insert empty rows if needed
   if (!(sheethandle->processcallbackdata.flags & XLSXIOREAD_SKIP_EMPTY_ROWS) && sheethandle->lastrownr + 1 < sheethandle->processcallbackdata.rownr) {
@@ -1100,3 +1184,4 @@ DLL_EXPORT_XLSXIO int xlsxioread_sheet_next_cell_datetime (xlsxioreadersheet she
   }
   return (result ? 1 : 0);
 }
+

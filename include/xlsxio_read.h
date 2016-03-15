@@ -158,6 +158,31 @@ DLL_EXPORT_XLSXIO int xlsxioread_process (xlsxioreader handle, const char* sheet
 
 
 
+/*! \brief read handle for list of worksheet names */
+typedef struct xlsxio_read_sheetlist_struct* xlsxioreadersheetlist;
+
+/*! \brief open list of worksheet names
+ * \param  handle           read handle for .xlsx object
+ * \sa     xlsxioread_sheetlist_close()
+ * \sa     xlsxioread_open()
+ */
+DLL_EXPORT_XLSXIO xlsxioreadersheetlist xlsxioread_sheetlist_open (xlsxioreader handle);
+
+/*! \brief close worksheet
+ * \param  sheetlisthandle  read handle for worksheet object
+ * \sa     xlsxioread_sheetlist_open()
+ */
+DLL_EXPORT_XLSXIO void xlsxioread_sheetlist_close (xlsxioreadersheetlist sheetlisthandle);
+
+/*! \brief get next cell from worksheet
+ * \param  sheetlisthandle  read handle for worksheet object
+ * \return name of worksheet or NULL if no more worksheets are available
+ * \sa     xlsxioread_sheetlist_open()
+ */
+DLL_EXPORT_XLSXIO const char* xlsxioread_sheetlist_next (xlsxioreadersheetlist sheetlisthandle);
+
+
+
 /*! \brief read handle for worksheet object */
 typedef struct xlsxio_read_sheet_struct* xlsxioreadersheet;
 
@@ -186,7 +211,7 @@ DLL_EXPORT_XLSXIO int xlsxioread_sheet_next_row (xlsxioreadersheet sheethandle);
 
 /*! \brief get next cell from worksheet
  * \param  handle        read handle for worksheet object
- * \return value (caller must free the result) or NULL if no more cells were available in the current row
+ * \return value (caller must free the result) or NULL if no more cells are available in the current row
  * \sa     xlsxioread_sheet_open()
  */
 DLL_EXPORT_XLSXIO char* xlsxioread_sheet_next_cell (xlsxioreadersheet sheethandle);

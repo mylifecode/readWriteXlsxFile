@@ -1,5 +1,9 @@
 0.1.2
 
+2016-03-15  Brecht Sanders  https://github.com/brechtsanders/
+
+	* added xlsxioread_sheetlist_ functions for getting worksheet names
+
 0.1.1
 
 2016-03-13  Brecht Sanders  https://github.com/brechtsanders/

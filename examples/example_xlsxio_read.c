@@ -13,6 +13,18 @@ int main (int argc, char* argv[])
     fprintf(stderr, "Error opening .xlsx file\n");
     return 1;
   }
+
+  //list available sheets
+  printf("Available sheets:\n");
+  xlsxioreadersheetlist sheetlist;
+  const char* sheetname;
+  if ((sheetlist = xlsxioread_sheetlist_open(xlsxioread)) != NULL) {
+    while ((sheetname = xlsxioread_sheetlist_next(sheetlist)) != NULL) {
+      printf(" - %s\n", sheetname);
+    }
+    xlsxioread_sheetlist_close(sheetlist);
+  }
+
   char* value;
   xlsxioreadersheet sheet = xlsxioread_sheet_open(xlsxioread, NULL, XLSXIOREAD_SKIP_EMPTY_ROWS);
   while (xlsxioread_sheet_next_row(sheet)) {
