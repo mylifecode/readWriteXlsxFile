@@ -67,7 +67,7 @@ SOURCE_PACKAGE_FILES = $(COMMON_PACKAGE_FILES) Makefile doc/Doxyfile include/*.h
 
 default: all
 
-all: static-lib shared-lib doc
+all: static-lib shared-lib
 
 %.o: %.c
 	$(CC) -c -o $@ $< $(CFLAGS) 
