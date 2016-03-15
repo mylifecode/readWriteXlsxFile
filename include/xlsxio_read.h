@@ -252,14 +252,6 @@ DLL_EXPORT_XLSXIO int xlsxioread_sheet_next_cell_float (xlsxioreadersheet sheeth
  */
 DLL_EXPORT_XLSXIO int xlsxioread_sheet_next_cell_datetime (xlsxioreadersheet sheethandle, time_t* pvalue);
 
-
-
-
-typedef struct xlsxio_read_sheetlist_struct* xlsxioreadersheetlist;
-DLL_EXPORT_XLSXIO xlsxioreadersheetlist xlsxioread_sheetlist_open (xlsxioreader handle);
-DLL_EXPORT_XLSXIO void xlsxioread_sheetlist_close (xlsxioreadersheetlist sheetlisthandle);
-DLL_EXPORT_XLSXIO char* xlsxioread_sheetlist_next (xlsxioreadersheetlist sheetlisthandle);
-
 #ifdef __cplusplus
 }
 #endif
