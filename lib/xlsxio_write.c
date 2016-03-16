@@ -133,7 +133,7 @@ const char* rels_xml =
 const char* styles_xml =
   "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\r\n"
   "<styleSheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\">\r\n"
-  "<fonts count=\"1\">\r\n"
+  "<fonts count=\"2\">\r\n"
   "<font>\r\n"
   "<sz val=\"10\"/>\r\n"
   //"<color theme=\"1\"/>\r\n"
@@ -141,13 +141,20 @@ const char* styles_xml =
   "<family val=\"2\"/>\r\n"
   //"<scheme val=\"minor\"/>\r\n"
   "</font>\r\n"
+"<font>\r\n"
+"<b/><u/>"
+"<sz val=\"10\"/>\r\n"
+//"<color theme=\"1\"/>\r\n"
+"<name val=\"Consolas\"/>\r\n"
+"<family val=\"2\"/>\r\n"
+//"<scheme val=\"minor\"/>\r\n"
+"</font>\r\n"
   "</fonts>\r\n"
   "<fills count=\"1\">\r\n"
-  "<fill>\r\n"
-  //"<patternFill patternType=\"none\"/>\r\n"
-  "</fill>\r\n"
+  "<fill/>\r\n"
+  //"<fill><patternFill patternType=\"none\"/></fill>\r\n"
   "</fills>\r\n"
-  "<borders count=\"1\">\r\n"
+  "<borders count=\"2\">\r\n"
   "<border>\r\n"
   //"<left/>\r\n"
   //"<right/>\r\n"
@@ -155,19 +162,22 @@ const char* styles_xml =
   //"<bottom/>\r\n"
   //"<diagonal/>\r\n"
   "</border>\r\n"
+"<border><bottom style=\"thin\"><color indexed=\"64\"/></bottom></border>\r\n"
   "</borders>\r\n"
   //"<cellStyleXfs count=\"1\">\r\n"
   //"<xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\"/>\r\n"
   //"</cellStyleXfs>\r\n"
-  "<cellXfs count=\"1\">\r\n"
+  "<cellXfs count=\"6\">\r\n"
   "<xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\"/>\r\n"
-#define STYLE_GENERAL 1
+#define STYLE_HEADER 1
+  "<xf numFmtId=\"0\" fontId=\"1\" fillId=\"0\" borderId=\"1\" xfId=\"0\" applyFont=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><alignment vertical=\"top\"/></xf>\r\n"
+#define STYLE_GENERAL 2
   "<xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\" applyAlignment=\"1\"><alignment vertical=\"top\"/></xf>\r\n"
-#define STYLE_TEXT 2
+#define STYLE_TEXT 3
   "<xf numFmtId=\"49\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\" applyNumberFormat=\"1\" applyAlignment=\"1\"><alignment vertical=\"top\" wrapText=\"1\"/></xf>\r\n"
-#define STYLE_INTEGER 3
+#define STYLE_INTEGER 4
   "<xf numFmtId=\"1\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\" applyNumberFormat=\"1\" applyAlignment=\"1\"><alignment vertical=\"top\"/></xf>\r\n"
-#define STYLE_DATETIME 4
+#define STYLE_DATETIME 5
   "<xf numFmtId=\"22\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\" applyNumberFormat=\"1\" applyAlignment=\"1\"><alignment horizontal=\"center\" vertical=\"top\"/></xf>\r\n"
   "</cellXfs>\r\n"
   //"<cellStyles count=\"2\">\r\n"
@@ -227,7 +237,19 @@ const char* worksheet_xml_begin =
   "</sheetViews>"
   //"<sheetFormatPr defaultRowHeight=\"13.5\"/>"
   //"<cols><col min=\"1\" max=\"1\" width=\"40.625\" customWidth=\"1\"/><col min=\"2\" max=\"6\" width=\"19.625\" customWidth=\"1\"/><col min=\"7\" max=\"7\" width=\"23.625\" customWidth=\"1\"/><col min=\"8\" max=\"9\" width=\"19.625\" customWidth=\"1\"/><col min=\"10\" max=\"10\" width=\"18.625\" customWidth=\"1\"/><col min=\"11\" max=\"11\" width=\"8.625\" customWidth=\"1\"/><col min=\"12\" max=\"12\" width=\"128.625\" customWidth=\"1\"/><col min=\"13\" max=\"14\" width=\"20.625\" customWidth=\"1\"/><col min=\"15\" max=\"17\" width=\"48.625\" customWidth=\"1\"/><col min=\"18\" max=\"18\" width=\"15.625\" customWidth=\"1\"/></cols>"
-  "<sheetData>";
+  "<sheetData>"
+/*/
+"<row s=\"" STR(STYLE_HEADER) "\" customFormat=\"1\">"
+"<c t=\"inlineStr\" s=\"" STR(STYLE_HEADER) "\"><is><t>Col1</t></is></c>"
+"<c s=\"" STR(STYLE_HEADER) "\" t=\"inlineStr\"><is><t>Col2</t></is></c>"
+"<c><v>100</v></c>"
+"<c t=\"inlineStr\"><is><t>Col3</t></is></c>"
+"<c t=\"inlineStr\"><is><t>Col4</t></is></c>"
+"<c t=\"inlineStr\"><is><t>Col5</t></is></c>"
+"<c t=\"inlineStr\"><is><t>Col6</t></is></c>"
+"</row>"
+/**/
+;
 
 const char* worksheet_xml_end =
   "</sheetData>"

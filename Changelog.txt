@@ -1,3 +1,9 @@
+0.1.3
+
+2016-03-16  Brecht Sanders  https://github.com/brechtsanders/
+
+  * now ignores hidden rows
+
 0.1.2
 
 2016-03-15  Brecht Sanders  https://github.com/brechtsanders/
@@ -12,7 +18,7 @@
 
 	* added header file with version information
 	* additional functions for reading cells (integer, floating point, date/time)
-	
+
 2016-03-12  Brecht Sanders  https://github.com/brechtsanders/
 
 	* add support multiline text fields

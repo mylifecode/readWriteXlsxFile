@@ -17,5 +17,6 @@
 		<Project filename="example_xlsxio_read_advanced.cbp">
 			<Depends filename="libxlsxio_read_shared.cbp" />
 		</Project>
+		<Project filename="test1.cbp" />
 	</Workspace>
 </CodeBlocks_workspace_file>

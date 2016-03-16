@@ -675,12 +675,18 @@ void data_sheet_expat_callback_find_row_start (void* callbackdata, const XML_Cha
 {
   struct data_sheet_callback_data* data = (struct data_sheet_callback_data*)callbackdata;
   if (stricmp(name, "row") == 0) {
-    data->rownr++;
-    data->colnr = 0;
-    XML_SetElementHandler(data->xmlparser, data_sheet_expat_callback_find_cell_start, data_sheet_expat_callback_find_row_end);
-    //for non-calback method suspend here on new row
-    if (data->flags & XLSXIOREAD_NO_CALLBACK) {
-      XML_StopParser(data->xmlparser, XML_TRUE);
+    const XML_Char* hidden = get_expat_attr_by_name(atts, "hidden");
+    if (!hidden || atoi(hidden) == 0) {
+      data->rownr++;
+      data->colnr = 0;
+      XML_SetElementHandler(data->xmlparser, data_sheet_expat_callback_find_cell_start, data_sheet_expat_callback_find_row_end);
+      //for non-calback method suspend here on new row
+      if (data->flags & XLSXIOREAD_NO_CALLBACK) {
+        XML_StopParser(data->xmlparser, XML_TRUE);
+      }
+    } else {
+      //skip hidden tow
+      XML_SetElementHandler(data->xmlparser, NULL, data_sheet_expat_callback_find_row_end);
     }
   }
 }
