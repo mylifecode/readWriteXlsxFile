@@ -237,19 +237,7 @@ const char* worksheet_xml_begin =
   "</sheetViews>"
   //"<sheetFormatPr defaultRowHeight=\"13.5\"/>"
   //"<cols><col min=\"1\" max=\"1\" width=\"40.625\" customWidth=\"1\"/><col min=\"2\" max=\"6\" width=\"19.625\" customWidth=\"1\"/><col min=\"7\" max=\"7\" width=\"23.625\" customWidth=\"1\"/><col min=\"8\" max=\"9\" width=\"19.625\" customWidth=\"1\"/><col min=\"10\" max=\"10\" width=\"18.625\" customWidth=\"1\"/><col min=\"11\" max=\"11\" width=\"8.625\" customWidth=\"1\"/><col min=\"12\" max=\"12\" width=\"128.625\" customWidth=\"1\"/><col min=\"13\" max=\"14\" width=\"20.625\" customWidth=\"1\"/><col min=\"15\" max=\"17\" width=\"48.625\" customWidth=\"1\"/><col min=\"18\" max=\"18\" width=\"15.625\" customWidth=\"1\"/></cols>"
-  "<sheetData>"
-/*/
-"<row s=\"" STR(STYLE_HEADER) "\" customFormat=\"1\">"
-"<c t=\"inlineStr\" s=\"" STR(STYLE_HEADER) "\"><is><t>Col1</t></is></c>"
-"<c s=\"" STR(STYLE_HEADER) "\" t=\"inlineStr\"><is><t>Col2</t></is></c>"
-"<c><v>100</v></c>"
-"<c t=\"inlineStr\"><is><t>Col3</t></is></c>"
-"<c t=\"inlineStr\"><is><t>Col4</t></is></c>"
-"<c t=\"inlineStr\"><is><t>Col5</t></is></c>"
-"<c t=\"inlineStr\"><is><t>Col6</t></is></c>"
-"</row>"
-/**/
-;
+  "<sheetData>";
 
 const char* worksheet_xml_end =
   "</sheetData>"
@@ -448,6 +436,30 @@ DLL_EXPORT_XLSXIO int xlsxiowrite_close (xlsxiowriter handle)
     close(handle->pipefd[PIPEFD_READ]);
   free(handle);
   return 0;
+}
+
+DLL_EXPORT_XLSXIO void xlsxiowrite_add_column (xlsxiowriter handle, const char* value)
+{
+  if (!handle)
+    return;
+  if (!handle->rowopen) {
+    write(handle->pipefd[PIPEFD_WRITE], "<row s=\"" STR(STYLE_HEADER) "\">", 11);
+    handle->rowopen = 1;
+  }
+  if (value) {
+    char* xmlvalue = strdup(value);
+    fix_xml_special_chars(&xmlvalue);
+#ifdef WITH_XLSX_STYLES
+    write(handle->pipefd[PIPEFD_WRITE], "<c t=\"inlineStr\" s=\"" STR(STYLE_HEADER) "\"><is><t>", 30);
+#else
+    write(handle->pipefd[PIPEFD_WRITE], "<c t=\"inlineStr\"><is><t>", 24);
+#endif
+    write(handle->pipefd[PIPEFD_WRITE], xmlvalue, strlen(xmlvalue));
+    write(handle->pipefd[PIPEFD_WRITE], "</t></is></c>", 13);
+    free(xmlvalue);
+  } else {
+    write(handle->pipefd[PIPEFD_WRITE], "<c/>", 4);
+  }
 }
 
 DLL_EXPORT_XLSXIO void xlsxiowrite_add_cell_string (xlsxiowriter handle, const char* value)

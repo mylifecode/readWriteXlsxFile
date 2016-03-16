@@ -2,7 +2,8 @@
 
 2016-03-16  Brecht Sanders  https://github.com/brechtsanders/
 
-  * now ignores hidden rows
+  * now reading ignores hidden rows
+  * added support for writing column names: xlsxiowrite_add_column()
 
 0.1.2
 

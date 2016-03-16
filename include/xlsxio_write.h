@@ -86,6 +86,16 @@ DLL_EXPORT_XLSXIO xlsxiowriter xlsxiowrite_open (const char* filename);
  */
 DLL_EXPORT_XLSXIO int xlsxiowrite_close (xlsxiowriter handle);
 
+/*! \brief add a column cell
+ * \param  handle        write handle for .xlsx object
+ * \param  name          column name
+ * Only one row of column names is supported or none.
+ * Call for each column, and finish column row by calling xlsxiowrite_next_row().
+ * Must be called before any xlsxiowrite_next_row() or the xlsxiowrite_add_cell_ functions.
+ * \sa     xlsxiowrite_next_row()
+ */
+DLL_EXPORT_XLSXIO void xlsxiowrite_add_column (xlsxiowriter handle, const char* name);
+
 /*! \brief add a cell with string data
  * \param  handle        write handle for .xlsx object
  * \param  value         string value
