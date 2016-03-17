@@ -74,10 +74,11 @@ typedef struct xlsxio_write_struct* xlsxiowriter;
 
 /*! \brief open .xlsx file
  * \param  filename      path of .xlsx file to open
+ * \param  sheetname     name of worksheet
  * \return write handle for .xlsx object or NULL on error
  * \sa     xlsxiowrite_close()
  */
-DLL_EXPORT_XLSXIO xlsxiowriter xlsxiowrite_open (const char* filename);
+DLL_EXPORT_XLSXIO xlsxiowriter xlsxiowrite_open (const char* filename, const char* sheetname);
 
 /*! \brief close .xlsx file
  * \param  handle        write handle for .xlsx object

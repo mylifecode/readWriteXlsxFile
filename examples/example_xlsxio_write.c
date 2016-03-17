@@ -11,7 +11,7 @@ int main (int argc, char* argv[])
   //remove the destination file first if it exists
   unlink(filename);
   //open .xlsx file for writing
-  if ((handle = xlsxiowrite_open(filename)) == NULL) {
+  if ((handle = xlsxiowrite_open(filename, "MySheet")) == NULL) {
     fprintf(stderr, "Error creating .xlsx file\n");
     return 1;
   }

@@ -1,10 +1,12 @@
 #include "xlsxio_write.h"
 #include "xlsxio_version.h"
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <stdarg.h>
 #ifdef BUILD_XLSXIO_STATIC
 #define ZIP_STATIC
 #endif
@@ -53,30 +55,6 @@ DLL_EXPORT_XLSXIO const char* xlsxiowrite_get_version_string ()
 
 ////////////////////////////////////////////////////////////////////////
 
-int zip_add_static_content_buffer (zip_t* zip, const char* filename, const char* buf, size_t buflen)
-{
-  zip_source_t* zipsrc;
-  if ((zipsrc = zip_source_buffer(zip, buf, buflen, 0)) == NULL) {
-    fprintf(stderr, "Error creating file \"%s\" inside zip file\n", filename);/////
-    return 1;
-  }
-  if (zip_file_add(zip, filename, zipsrc, ZIP_FL_OVERWRITE | ZIP_FL_ENC_UTF_8) < 0) {
-    fprintf(stderr, "Error in zip_file_add\n");/////
-    zip_source_free(zipsrc);
-    return 2;
-  }
-  return 0;
-}
-
-int zip_add_static_content_string (zip_t* zip, const char* filename, const char* data)
-{
-  return zip_add_static_content_buffer(zip, filename, data, strlen(data));
-}
-
-////////////////////////////////////////////////////////////////////////
-
-#define WITH_XLSX_STYLES 1
-
 #ifdef USE_EXCEL_FOLDERS
 #define XML_FOLDER_DOCPROPS             "docProps/"
 #define XML_FOLDER_XL                   "xl/"
@@ -103,7 +81,7 @@ const char* content_types_xml =
   "<Override PartName=\"/" XML_FOLDER_XL XML_FILENAME_XL_WORKBOOK "\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml\"/>"
   "<Override PartName=\"/" XML_FOLDER_DOCPROPS XML_FILENAME_DOCPROPS_CORE "\" ContentType=\"application/vnd.openxmlformats-package.core-properties+xml\"/>"
   "<Override PartName=\"/" XML_FOLDER_DOCPROPS XML_FILENAME_DOCPROPS_APP "\" ContentType=\"application/vnd.openxmlformats-officedocument.extended-properties+xml\"/>"
-#ifdef WITH_XLSX_STYLES
+#ifndef WITHOUT_XLSX_STYLES
   "<Override PartName=\"/" XML_FOLDER_XL XML_FILENAME_XL_STYLES "\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml\"/>"
 #endif
   //"<Override PartName=\"/xl/theme/theme1.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.theme+xml\"/>"
@@ -129,7 +107,7 @@ const char* rels_xml =
   "<Relationship Id=\"rId3\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument\" Target=\"" XML_FOLDER_XL XML_FILENAME_XL_WORKBOOK "\"/>"
   "</Relationships>";
 
-#ifdef WITH_XLSX_STYLES
+#ifndef WITHOUT_XLSX_STYLES
 const char* styles_xml =
   "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\r\n"
   "<styleSheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\">\r\n"
@@ -206,7 +184,7 @@ const char* workbook_rels_xml =
   "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\r\n"
   "<Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\">"
   //"<Relationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme\" Target=\"theme/theme1.xml\"/>"
-#ifdef WITH_XLSX_STYLES
+#ifndef WITHOUT_XLSX_STYLES
   "<Relationship Id=\"rId2\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles\" Target=\"" XML_FILENAME_XL_STYLES "\"/>"
 #endif
   "<Relationship Id=\"rId3\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet\" Target=\"" XML_FOLDER_WORKSHEETS XML_FILENAME_XL_WORKSHEET1 "\"/>"
@@ -221,7 +199,7 @@ const char* workbook_xml =
   "<workbookView/>"
   "</bookViews>"
   "<sheets>"
-  "<sheet name=\"SheetName1\" sheetId=\"1\" r:id=\"rId3\"/>"
+  "<sheet name=\"%s\" sheetId=\"1\" r:id=\"rId3\"/>"
   "</sheets>"
   "</workbook>";
 
@@ -237,12 +215,57 @@ const char* worksheet_xml_begin =
   "</sheetViews>"
   //"<sheetFormatPr defaultRowHeight=\"13.5\"/>"
   //"<cols><col min=\"1\" max=\"1\" width=\"40.625\" customWidth=\"1\"/><col min=\"2\" max=\"6\" width=\"19.625\" customWidth=\"1\"/><col min=\"7\" max=\"7\" width=\"23.625\" customWidth=\"1\"/><col min=\"8\" max=\"9\" width=\"19.625\" customWidth=\"1\"/><col min=\"10\" max=\"10\" width=\"18.625\" customWidth=\"1\"/><col min=\"11\" max=\"11\" width=\"8.625\" customWidth=\"1\"/><col min=\"12\" max=\"12\" width=\"128.625\" customWidth=\"1\"/><col min=\"13\" max=\"14\" width=\"20.625\" customWidth=\"1\"/><col min=\"15\" max=\"17\" width=\"48.625\" customWidth=\"1\"/><col min=\"18\" max=\"18\" width=\"15.625\" customWidth=\"1\"/></cols>"
+  ;
+
+const char* worksheet_xml_start_data =
   "<sheetData>";
 
 const char* worksheet_xml_end =
   "</sheetData>"
   //"<pageMargins left=\"0.75\" right=\"0.75\" top=\"1\" bottom=\"1\" header=\"0.5\" footer=\"0.5\"/>"
   "</worksheet>";
+
+////////////////////////////////////////////////////////////////////////
+
+int zip_add_content_buffer (zip_t* zip, const char* filename, const char* buf, size_t buflen, int mustfree)
+{
+  zip_source_t* zipsrc;
+  if ((zipsrc = zip_source_buffer(zip, buf, buflen, mustfree)) == NULL) {
+    fprintf(stderr, "Error creating file \"%s\" inside zip file\n", filename);/////
+    return 1;
+  }
+  if (zip_file_add(zip, filename, zipsrc, ZIP_FL_OVERWRITE | ZIP_FL_ENC_UTF_8) < 0) {
+    fprintf(stderr, "Error in zip_file_add\n");/////
+    zip_source_free(zipsrc);
+    return 2;
+  }
+  return 0;
+}
+
+int zip_add_static_content_string (zip_t* zip, const char* filename, const char* data)
+{
+  return zip_add_content_buffer(zip, filename, data, strlen(data), 0);
+}
+
+int zip_add_dynamic_content_string (zip_t* zip, const char* filename, const char* data, ...)
+{
+  int result;
+  char* buf;
+  int buflen;
+  va_list args;
+  va_start(args, data);
+  buflen = vsnprintf(NULL, 0, data, args);
+  if (buflen < 0 || (buf = (char*)malloc(buflen + 1)) == NULL) {
+    result = -1;
+  } else {
+    va_end(args);
+    va_start(args, data);
+    vsnprintf(buf, buflen + 1, data, args);
+    result = zip_add_content_buffer(zip, filename, buf, buflen, 1);
+  }
+  va_end(args);
+  return result;
+}
 
 ////////////////////////////////////////////////////////////////////////
 
@@ -300,18 +323,17 @@ char* fix_xml_special_chars (char** s)
 
 ////////////////////////////////////////////////////////////////////////
 
-#define PIPEFD_READ   0
-#define PIPEFD_WRITE  1
-
 struct xlsxio_write_struct {
   char* filename;
+  char* sheetname;
   zip_t* zip;
 #ifdef USE_WINTHREADS
   HANDLE thread;
 #else
   pthread_t thread;
 #endif
-  int pipefd[2];
+  FILE* pipe_read;
+  FILE* pipe_write;
   int rowopen;
 };
 
@@ -338,16 +360,28 @@ void* thread_proc (void* arg)
   zip_add_static_content_string(handle->zip, XML_FOLDER_DOCPROPS XML_FILENAME_DOCPROPS_CORE, docprops_core_xml);
   zip_add_static_content_string(handle->zip, XML_FOLDER_DOCPROPS XML_FILENAME_DOCPROPS_APP, docprops_app_xml);
   zip_add_static_content_string(handle->zip, XML_FILENAME_RELS, rels_xml);
-#ifdef WITH_XLSX_STYLES
+#ifndef WITHOUT_XLSX_STYLES
   zip_add_static_content_string(handle->zip, XML_FOLDER_XL XML_FILENAME_XL_STYLES, styles_xml);
 #endif
   //zip_add_static_content_string(handle->zip, "xl/theme/theme1.xml", theme_xml);
   zip_add_static_content_string(handle->zip, XML_FOLDER_XL XML_FILENAME_XL_WORKBOOK_RELS, workbook_rels_xml);
+/**/
+  { //TO DO: this crashes on Linux
+    char* sheetname = NULL;
+    if (handle->sheetname) {
+      sheetname = strdup(handle->sheetname);
+      fix_xml_special_chars(&sheetname);
+    }
+    zip_add_dynamic_content_string(handle->zip, XML_FOLDER_XL XML_FILENAME_XL_WORKBOOK, workbook_xml, (sheetname ? sheetname : "Sheet1"));
+    free(sheetname);
+  }
+/*/
   zip_add_static_content_string(handle->zip, XML_FOLDER_XL XML_FILENAME_XL_WORKBOOK, workbook_xml);
+/**/
   //zip_add_static_content_string(handle->zip, "xl/sharedStrings.xml", sharedstrings_xml);
 
   //add sheet content with pipe data as source
-  zip_source_t* zipsrc = zip_source_filep(handle->zip, fdopen(handle->pipefd[PIPEFD_READ], "rb"), 0, -1);
+  zip_source_t* zipsrc = zip_source_filep(handle->zip, handle->pipe_read, 0, -1);
   if (zip_file_add(handle->zip, XML_FOLDER_XL XML_FOLDER_WORKSHEETS XML_FILENAME_XL_WORKSHEET1, zipsrc, ZIP_FL_OVERWRITE | ZIP_FL_ENC_UTF_8) < 0) {
     zip_source_free(zipsrc);
     fprintf(stdout, "Error adding file");
@@ -370,6 +404,7 @@ void* thread_proc (void* arg)
     fprintf(stderr, "can't close zip archive : %s\n", zip_strerror(handle->zip));
   }
   handle->zip = NULL;
+  handle->pipe_read = NULL;
 #ifdef USE_WINTHREADS
   return 0;
 #else
@@ -377,22 +412,25 @@ void* thread_proc (void* arg)
 #endif
 }
 
-DLL_EXPORT_XLSXIO xlsxiowriter xlsxiowrite_open (const char* filename)
+DLL_EXPORT_XLSXIO xlsxiowriter xlsxiowrite_open (const char* filename, const char* sheetname)
 {
   xlsxiowriter handle;
   if (!filename)
     return NULL;
   if ((handle = (xlsxiowriter)malloc(sizeof(struct xlsxio_write_struct))) != NULL) {
+    int pipefd[2];
     //initialize
     handle->filename = strdup(filename);
+    handle->sheetname = (sheetname ? strdup(sheetname) : NULL);
     handle->zip = NULL;
-    handle->pipefd[PIPEFD_READ] = -1;
-    handle->pipefd[PIPEFD_WRITE] = -1;
+    handle->pipe_write = NULL;
     handle->rowopen = 0;
     //create pipe
-    if (pipe(handle->pipefd) != 0) {
+    if (pipe(pipefd) != 0) {
       fprintf(stderr, "Error creating pipe\n");/////
     }
+    handle->pipe_read = fdopen(pipefd[0], "rb");
+    handle->pipe_write = fdopen(pipefd[1], "wb");
     //create and start thread that will receive data via pipe
 #ifdef USE_WINTHREADS
     if ((handle->thread = CreateThread(NULL, 0, thread_proc, handle, 0, NULL)) == NULL) {
@@ -402,8 +440,8 @@ DLL_EXPORT_XLSXIO xlsxiowriter xlsxiowrite_open (const char* filename)
       fprintf(stderr, "Error creating thread\n");/////
     }
     //write worksheet data
-    write(handle->pipefd[PIPEFD_WRITE], worksheet_xml_begin, strlen(worksheet_xml_begin));
-
+    fprintf(handle->pipe_write, "%s", worksheet_xml_begin);
+    fprintf(handle->pipe_write, "%s", worksheet_xml_start_data);
   }
   return handle;
 }
@@ -413,15 +451,15 @@ DLL_EXPORT_XLSXIO int xlsxiowrite_close (xlsxiowriter handle)
   if (!handle)
     return -1;
 
-  if (handle->pipefd[PIPEFD_WRITE] == -1)
-    return 1;
-  //close row if needed
-  if (handle->rowopen)
-    write(handle->pipefd[PIPEFD_WRITE], "</row>", 6);
-  //write worksheet data
-  write(handle->pipefd[PIPEFD_WRITE], worksheet_xml_end, strlen(worksheet_xml_end));
-  //close pipe
-  close(handle->pipefd[PIPEFD_WRITE]);
+  if (handle->pipe_write) {
+    //close row if needed
+    if (handle->rowopen)
+      fprintf(handle->pipe_write, "</row>");
+    //write worksheet data
+    fprintf(handle->pipe_write, "%s", worksheet_xml_end);
+    //close pipe
+    fclose(handle->pipe_write);
+  }
   //wait for thread to finish
 #ifdef USE_WINTHREADS
   WaitForSingleObject(handle->thread, INFINITE);
@@ -430,10 +468,11 @@ DLL_EXPORT_XLSXIO int xlsxiowrite_close (xlsxiowriter handle)
 #endif
   //clean up
   free(handle->filename);
+  free(handle->sheetname);
   if (handle->zip)
     zip_close(handle->zip);
-  if (handle->pipefd[PIPEFD_READ] != -1)
-    close(handle->pipefd[PIPEFD_READ]);
+  if (handle->pipe_read)
+    fclose(handle->pipe_read);
   free(handle);
   return 0;
 }
@@ -443,22 +482,21 @@ DLL_EXPORT_XLSXIO void xlsxiowrite_add_column (xlsxiowriter handle, const char* 
   if (!handle)
     return;
   if (!handle->rowopen) {
-    write(handle->pipefd[PIPEFD_WRITE], "<row s=\"" STR(STYLE_HEADER) "\">", 11);
+    fprintf(handle->pipe_write, "<row s=\"" STR(STYLE_HEADER) "\">");
     handle->rowopen = 1;
   }
   if (value) {
     char* xmlvalue = strdup(value);
     fix_xml_special_chars(&xmlvalue);
-#ifdef WITH_XLSX_STYLES
-    write(handle->pipefd[PIPEFD_WRITE], "<c t=\"inlineStr\" s=\"" STR(STYLE_HEADER) "\"><is><t>", 30);
+#ifndef WITHOUT_XLSX_STYLES
+    fprintf(handle->pipe_write, "<c t=\"inlineStr\" s=\"" STR(STYLE_HEADER) "\">");
 #else
-    write(handle->pipefd[PIPEFD_WRITE], "<c t=\"inlineStr\"><is><t>", 24);
+    fwrite("<c t=\"inlineStr\">", 1, 24, handle->pipe_write);
 #endif
-    write(handle->pipefd[PIPEFD_WRITE], xmlvalue, strlen(xmlvalue));
-    write(handle->pipefd[PIPEFD_WRITE], "</t></is></c>", 13);
+    fprintf(handle->pipe_write, "<is><t>%s</t></is></c>", xmlvalue);
     free(xmlvalue);
   } else {
-    write(handle->pipefd[PIPEFD_WRITE], "<c/>", 4);
+    fprintf(handle->pipe_write, "<c/>");
   }
 }
 
@@ -467,22 +505,21 @@ DLL_EXPORT_XLSXIO void xlsxiowrite_add_cell_string (xlsxiowriter handle, const c
   if (!handle)
     return;
   if (!handle->rowopen) {
-    write(handle->pipefd[PIPEFD_WRITE], "<row>", 5);
+    fprintf(handle->pipe_write, "<row>");
     handle->rowopen = 1;
   }
   if (value) {
     char* xmlvalue = strdup(value);
     fix_xml_special_chars(&xmlvalue);
-#ifdef WITH_XLSX_STYLES
-    write(handle->pipefd[PIPEFD_WRITE], "<c t=\"inlineStr\" s=\"" STR(STYLE_TEXT) "\"><is><t>", 30);
+#ifndef WITHOUT_XLSX_STYLES
+    fprintf(handle->pipe_write, "<c t=\"inlineStr\" s=\"" STR(STYLE_TEXT) "\">");
 #else
-    write(handle->pipefd[PIPEFD_WRITE], "<c t=\"inlineStr\"><is><t>", 24);
+    fprintf(handle->pipe_write, "<c t=\"inlineStr\">");
 #endif
-    write(handle->pipefd[PIPEFD_WRITE], xmlvalue, strlen(xmlvalue));
-    write(handle->pipefd[PIPEFD_WRITE], "</t></is></c>", 13);
+    fprintf(handle->pipe_write, "<is><t>%s</t></is></c>", xmlvalue);
     free(xmlvalue);
   } else {
-    write(handle->pipefd[PIPEFD_WRITE], "<c/>", 4);
+    fprintf(handle->pipe_write, "<c/>");
   }
 }
 
@@ -490,69 +527,35 @@ DLL_EXPORT_XLSXIO void xlsxiowrite_add_cell_int (xlsxiowriter handle, long value
 {
   if (!handle)
     return;
-	char* buf;
-	int buflen = snprintf(NULL, 0, "%li", value);
-	if (buflen <= 0 || (buf = (char*)malloc(buflen + 1)) == NULL) {
-    xlsxiowrite_add_cell_string(handle, NULL);
-    return;
-	}
-	snprintf(buf, buflen + 1, "%li", value);
-#ifdef WITH_XLSX_STYLES
-  write(handle->pipefd[PIPEFD_WRITE], "<c s=\"" STR(STYLE_INTEGER) "\"><v>", 12);
+#ifndef WITHOUT_XLSX_STYLES
+    fprintf(handle->pipe_write, "<c s=\"" STR(STYLE_INTEGER) "\">");
 #else
-  write(handle->pipefd[PIPEFD_WRITE], "<c><v>", 6);
+  fprintf(handle->pipe_write, "<c>");
 #endif
-  write(handle->pipefd[PIPEFD_WRITE], buf, strlen(buf));
-  write(handle->pipefd[PIPEFD_WRITE], "</v></c>", 8);
-  free(buf);
+  fprintf(handle->pipe_write, "<v>%li</v></c>", value);
 }
 
 DLL_EXPORT_XLSXIO void xlsxiowrite_add_cell_float (xlsxiowriter handle, double value)
 {
   if (!handle)
     return;
-	char* buf;
-	int buflen = snprintf(NULL, 0, "%.32G", value);
-	if (buflen <= 0 || (buf = (char*)malloc(buflen + 1)) == NULL) {
-    xlsxiowrite_add_cell_string(handle, NULL);
-    return;
-	}
-	snprintf(buf, buflen + 1, "%.32G", value);
-#ifdef WITH_XLSX_STYLES
-  write(handle->pipefd[PIPEFD_WRITE], "<c s=\"" STR(STYLE_GENERAL) "\"><v>", 12);
+#ifndef WITHOUT_XLSX_STYLES
+  fprintf(handle->pipe_write, "<c s=\"" STR(STYLE_GENERAL) "\">");
 #else
-  write(handle->pipefd[PIPEFD_WRITE], "<c><v>", 6);
+  fprintf(handle->pipe_write, "<c>");
 #endif
-  write(handle->pipefd[PIPEFD_WRITE], buf, strlen(buf));
-  write(handle->pipefd[PIPEFD_WRITE], "</v></c>", 8);
-  free(buf);
+  fprintf(handle->pipe_write, "<v>%.32G</v></c>", value);
 }
 
 DLL_EXPORT_XLSXIO void xlsxiowrite_add_cell_datetime (xlsxiowriter handle, time_t value)
 {
-/*
-	char buf[20];
-	strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", gmtime(&value));
-  write(handle->pipefd[PIPEFD_WRITE], "<c s=\"1\"><v>", 12);
-  write(handle->pipefd[PIPEFD_WRITE], buf, strlen(buf));
-  write(handle->pipefd[PIPEFD_WRITE], "</v></c>", 8);
-*/
   double timestamp = ((double)(value) + .499) / 86400 + 25569; //converstion from Unix to Excel timestamp
-	char* buf;
-	int buflen = snprintf(NULL, 0, "%.16G", timestamp);
-	if (buflen <= 0 || (buf = (char*)malloc(buflen + 1)) == NULL) {
-    xlsxiowrite_add_cell_string(handle, NULL);
-    return;
-	}
-	snprintf(buf, buflen + 1, "%.16G", timestamp);
-#ifdef WITH_XLSX_STYLES
-  write(handle->pipefd[PIPEFD_WRITE], "<c s=\"" STR(STYLE_DATETIME) "\"><v>", 12);
+#ifndef WITHOUT_XLSX_STYLES
+  fprintf(handle->pipe_write, "<c s=\"" STR(STYLE_DATETIME) "\">");
 #else
-  write(handle->pipefd[PIPEFD_WRITE], "<c><v>", 6);
+  fprintf(handle->pipe_write, "<c>");
 #endif
-  write(handle->pipefd[PIPEFD_WRITE], buf, strlen(buf));
-  write(handle->pipefd[PIPEFD_WRITE], "</v></c>", 8);
-  free(buf);
+  fprintf(handle->pipe_write, "<v>%.16G</v></c>", timestamp);
 }
 /*
 Windows (And Mac Office 2011+):
@@ -571,7 +574,7 @@ DLL_EXPORT_XLSXIO void xlsxiowrite_next_row (xlsxiowriter handle)
   if (!handle)
     return;
   if (handle->rowopen)
-    write(handle->pipefd[PIPEFD_WRITE], "</row>", 6);
+    fprintf(handle->pipe_write, "</row>");
   handle->rowopen = 0;
 
 }

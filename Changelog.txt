@@ -1,9 +1,11 @@
 0.1.3
 
-2016-03-16  Brecht Sanders  https://github.com/brechtsanders/
+2016-03-17  Brecht Sanders  https://github.com/brechtsanders/
 
   * now reading ignores hidden rows
   * added support for writing column names: xlsxiowrite_add_column()
+  * simplified xlsxio_write.c by using FILE* handles
+  * added sheetname parameter to xlsxiowrite_open()
 
 0.1.2
 
