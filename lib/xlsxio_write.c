@@ -509,13 +509,15 @@ int vappend_data (char** pdata, size_t* pdatalen, const char* format, va_list ar
 {
   int len;
   //va_start(args, format);
+  va_list args2;
+  va_copy(args2, args);
   if ((len = vsnprintf(NULL, 0, format, args)) < 0)
     return -1;
   //va_end(args);
   if ((*pdata = (char*)realloc(*pdata, *pdatalen + len + 1)) == NULL)
     return -1;
   //va_start(args, format);
-  vsnprintf(*pdata + *pdatalen, len + 1, format, args);
+  vsnprintf(*pdata + *pdatalen, len + 1, format, args2);
   //va_end(args);
   *pdatalen += len;
   return len;
@@ -548,9 +550,7 @@ void write_cell_data (xlsxiowriter handle, const char* rowattr, const char* pref
     if (handle->sheetopen) {
       fprintf(handle->pipe_write, "<row%s>", (rowattr ? rowattr : ""));
     } else {
-      va_start(args, format);
       append_data(&handle->buf, &handle->buflen, "<row%s>", (rowattr ? rowattr : ""));
-      va_end(args);
     }
     handle->rowopen = 1;
   }
