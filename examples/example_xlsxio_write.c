@@ -16,13 +16,13 @@ int main (int argc, char* argv[])
     return 1;
   }
   //write column names
-  xlsxiowrite_add_column(handle, "Col1");
-  xlsxiowrite_add_column(handle, "Col2");
-  xlsxiowrite_add_column(handle, "Col3");
-  xlsxiowrite_add_column(handle, "Col4");
-  xlsxiowrite_add_column(handle, "Col5");
-  xlsxiowrite_add_column(handle, "Col6");
-  xlsxiowrite_add_column(handle, "Col7");
+  xlsxiowrite_add_column(handle, "Col1", 4);
+  xlsxiowrite_add_column(handle, "Col2", 21);
+  xlsxiowrite_add_column(handle, "Col3", 12);
+  xlsxiowrite_add_column(handle, "Col4", 2);
+  xlsxiowrite_add_column(handle, "Col5", 4);
+  xlsxiowrite_add_column(handle, "Col6", 16);
+  xlsxiowrite_add_column(handle, "Col7", 10);
   xlsxiowrite_next_row(handle);
   //write data
   int i;

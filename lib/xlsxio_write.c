@@ -320,6 +320,12 @@ char* fix_xml_special_chars (char** s)
 
 ////////////////////////////////////////////////////////////////////////
 
+struct column_info_struct {
+  int width;
+  int maxwidth;
+  struct column_info_struct* next;
+};
+
 struct xlsxio_write_struct {
   char* filename;
   char* sheetname;
@@ -331,6 +337,11 @@ struct xlsxio_write_struct {
 #endif
   FILE* pipe_read;
   FILE* pipe_write;
+  struct column_info_struct* columninfo;
+  struct column_info_struct** pcurrentcolumn;
+  char* buf;
+  size_t buflen;
+  int sheetopen;
   int rowopen;
 };
 
@@ -405,6 +416,8 @@ void* thread_proc (void* arg)
 #endif
 }
 
+////////////////////////////////////////////////////////////////////////
+
 DLL_EXPORT_XLSXIO xlsxiowriter xlsxiowrite_open (const char* filename, const char* sheetname)
 {
   xlsxiowriter handle;
@@ -416,11 +429,19 @@ DLL_EXPORT_XLSXIO xlsxiowriter xlsxiowrite_open (const char* filename, const cha
     handle->filename = strdup(filename);
     handle->sheetname = (sheetname ? strdup(sheetname) : NULL);
     handle->zip = NULL;
-    handle->pipe_write = NULL;
+    //handle->pipe_read = NULL;
+    //handle->pipe_write = NULL;
+    handle->columninfo = NULL;
+    handle->pcurrentcolumn = &handle->columninfo;
+    handle->buf = NULL;
+    handle->buflen = 0;
+    handle->sheetopen = 0;
     handle->rowopen = 0;
     //create pipe
     if (pipe(pipefd) != 0) {
       fprintf(stderr, "Error creating pipe\n");/////
+      free(handle);
+      return NULL;
     }
     handle->pipe_read = fdopen(pipefd[0], "rb");
     handle->pipe_write = fdopen(pipefd[1], "wb");
@@ -432,18 +453,19 @@ DLL_EXPORT_XLSXIO xlsxiowriter xlsxiowrite_open (const char* filename, const cha
 #endif
       fprintf(stderr, "Error creating thread\n");/////
     }
-    //write worksheet data
+    //write initial worksheet data
     fprintf(handle->pipe_write, "%s", worksheet_xml_begin);
-    fprintf(handle->pipe_write, "%s", worksheet_xml_start_data);
   }
   return handle;
 }
 
 DLL_EXPORT_XLSXIO int xlsxiowrite_close (xlsxiowriter handle)
 {
+  struct column_info_struct* colinfo;
+  struct column_info_struct* colinfonext;
   if (!handle)
     return -1;
-
+  //finalize data
   if (handle->pipe_write) {
     //close row if needed
     if (handle->rowopen)
@@ -460,6 +482,12 @@ DLL_EXPORT_XLSXIO int xlsxiowrite_close (xlsxiowriter handle)
   pthread_join(handle->thread, NULL);
 #endif
   //clean up
+  colinfo = handle->columninfo;
+  while (colinfo) {
+    colinfonext = colinfo->next;
+    free(colinfo);
+    colinfo = colinfonext;
+  }
   free(handle->filename);
   free(handle->sheetname);
   if (handle->zip)
@@ -477,29 +505,112 @@ DLL_EXPORT_XLSXIO int xlsxiowrite_close (xlsxiowriter handle)
 #define STYLE_ATTR(style) ""
 #endif
 
-void write_cell_data (xlsxiowriter handle, const char* rowattr, const char* data, ...)
+int vappend_data (char** pdata, size_t* pdatalen, const char* format, va_list args)
 {
-  if (!handle)
-    return;
-  if (!handle->rowopen) {
-    fprintf(handle->pipe_write, "<row%s>", (rowattr ? rowattr : ""));
-    handle->rowopen = 1;
-  }
-  va_list args;
-  va_start(args, data);
-  vfprintf(handle->pipe_write, data, args);
-  va_end(args);
+  int len;
+  //va_start(args, format);
+  if ((len = vsnprintf(NULL, 0, format, args)) < 0)
+    return -1;
+  //va_end(args);
+  if ((*pdata = (char*)realloc(*pdata, *pdatalen + len + 1)) == NULL)
+    return -1;
+  //va_start(args, format);
+  vsnprintf(*pdata + *pdatalen, len + 1, format, args);
+  //va_end(args);
+  *pdatalen += len;
+  return len;
 }
 
-DLL_EXPORT_XLSXIO void xlsxiowrite_add_column (xlsxiowriter handle, const char* value)
+int append_data (char** pdata, size_t* pdatalen, const char* format, ...)
 {
+  int result;
+  va_list args;
+  va_start(args, format);
+  result = vappend_data(pdata, pdatalen, format, args);
+  va_end(args);
+  return result;
+}
+
+void write_cell_data (xlsxiowriter handle, const char* rowattr, const char* prefix, const char* suffix, const char* format, ...)
+{
+  va_list args;
+  if (!handle)
+    return;
+  //start new row if needed
+  if (!handle->rowopen) {
+/*
+    if (!handle->sheetopen) {
+      fprintf(handle->pipe_write, "%s", worksheet_xml_start_data);
+      handle->sheetopen = 1;
+    }
+*/
+    //open new row
+    if (handle->sheetopen) {
+      fprintf(handle->pipe_write, "<row%s>", (rowattr ? rowattr : ""));
+    } else {
+      va_start(args, format);
+      append_data(&handle->buf, &handle->buflen, "<row%s>", (rowattr ? rowattr : ""));
+      va_end(args);
+    }
+    handle->rowopen = 1;
+  }
+  //add cell data
+  if (handle->sheetopen) {
+    //write cell data
+    if (prefix)
+      fprintf(handle->pipe_write, "%s", prefix);
+    if (format) {
+      va_start(args, format);
+      vfprintf(handle->pipe_write, format, args);
+      va_end(args);
+    }
+    if (suffix)
+      fprintf(handle->pipe_write, "%s", suffix);
+  } else {
+    int len;
+    //add cell data to buffer
+    if (prefix) {
+      append_data(&handle->buf, &handle->buflen, "%s", prefix);
+    }
+    if (format) {
+      va_start(args, format);
+      len = vappend_data(&handle->buf, &handle->buflen, format, args);
+      va_end(args);
+    } else {
+      len = -1;
+    }
+    if (suffix)
+      append_data(&handle->buf, &handle->buflen, "%s", suffix);
+    //collect cell information
+    if (!*handle->pcurrentcolumn) {
+      //collect column information
+      struct column_info_struct* colinfo;
+      if ((colinfo = (struct column_info_struct*)malloc(sizeof(struct column_info_struct))) != NULL) {
+        colinfo->width = 0;
+        colinfo->maxwidth = 0;
+        colinfo->next = NULL;
+        *handle->pcurrentcolumn = colinfo;
+        handle->pcurrentcolumn = &colinfo->next;
+      }
+      if (len > 0 /*&& len > colinfo->maxwidth*/)
+        colinfo->maxwidth = len;
+    }
+  }
+}
+
+DLL_EXPORT_XLSXIO void xlsxiowrite_add_column (xlsxiowriter handle, const char* value, int width)
+{
+  struct column_info_struct** pcolinfo = handle->pcurrentcolumn;
   if (value) {
     char* xmlvalue = strdup(value);
     fix_xml_special_chars(&xmlvalue);
-    write_cell_data(handle, STYLE_ATTR(STYLE_HEADER), "<c t=\"inlineStr\"" STYLE_ATTR(STYLE_HEADER) "><is><t>%s</t></is></c>", xmlvalue);
+    write_cell_data(handle, STYLE_ATTR(STYLE_HEADER), "<c t=\"inlineStr\"" STYLE_ATTR(STYLE_HEADER) "><is><t>", "</t></is></c>", "%s", xmlvalue);
     free(xmlvalue);
   } else {
-    write_cell_data(handle, STYLE_ATTR(STYLE_HEADER), "<c" STYLE_ATTR(STYLE_HEADER) "/>");
+    write_cell_data(handle, STYLE_ATTR(STYLE_HEADER), "<c" STYLE_ATTR(STYLE_HEADER) "/>", NULL, NULL);
+  }
+  if (*pcolinfo) {
+    (*pcolinfo)->width = width;
   }
 }
 
@@ -508,27 +619,27 @@ DLL_EXPORT_XLSXIO void xlsxiowrite_add_cell_string (xlsxiowriter handle, const c
   if (value) {
     char* xmlvalue = strdup(value);
     fix_xml_special_chars(&xmlvalue);
-    write_cell_data(handle, NULL, "<c t=\"inlineStr\"" STYLE_ATTR(STYLE_TEXT) "><is><t>%s</t></is></c>", xmlvalue);
+    write_cell_data(handle, NULL, "<c t=\"inlineStr\"" STYLE_ATTR(STYLE_TEXT) "><is><t>", "</t></is></c>", "%s", xmlvalue);
     free(xmlvalue);
   } else {
-    write_cell_data(handle, NULL, "<c" STYLE_ATTR(STYLE_TEXT) "/>");
+    write_cell_data(handle, NULL, "<c" STYLE_ATTR(STYLE_TEXT) "/>", NULL, NULL);
   }
 }
 
 DLL_EXPORT_XLSXIO void xlsxiowrite_add_cell_int (xlsxiowriter handle, long value)
 {
-  write_cell_data(handle, NULL, "<c" STYLE_ATTR(STYLE_INTEGER) "><v>%li</v></c>", value);
+  write_cell_data(handle, NULL, "<c" STYLE_ATTR(STYLE_INTEGER) "><v>", "</v></c>", "%li", value);
 }
 
 DLL_EXPORT_XLSXIO void xlsxiowrite_add_cell_float (xlsxiowriter handle, double value)
 {
-  write_cell_data(handle, NULL, "<c" STYLE_ATTR(STYLE_GENERAL) "><v>%.32G</v></c>", value);
+  write_cell_data(handle, NULL, "<c" STYLE_ATTR(STYLE_GENERAL) "><v>", "</v></c>", "%.32G", value);
 }
 
 DLL_EXPORT_XLSXIO void xlsxiowrite_add_cell_datetime (xlsxiowriter handle, time_t value)
 {
   double timestamp = ((double)(value) + .499) / 86400 + 25569; //conversion from Unix to Excel timestamp
-  write_cell_data(handle, NULL, "<c" STYLE_ATTR(STYLE_DATETIME) "><v>%.16G</v></c>", timestamp);
+  write_cell_data(handle, NULL, "<c" STYLE_ATTR(STYLE_DATETIME) "><v>", "</v></c>", "%.16G", timestamp);
 }
 /*
 Windows (And Mac Office 2011+):
@@ -546,9 +657,44 @@ DLL_EXPORT_XLSXIO void xlsxiowrite_next_row (xlsxiowriter handle)
 {
   if (!handle)
     return;
+  if (!handle->sheetopen) {
+    if (handle->columninfo) {
+      int col = 0;
+      int len;
+      struct column_info_struct* colinfo = handle->columninfo;
+      //"<cols><col min=\"1\" max=\"1\" width=\"40.625\" customWidth=\"1\"/><col min=\"2\" max=\"6\" width=\"19.625\" customWidth=\"1\"/><col min=\"7\" max=\"7\" width=\"23.625\" customWidth=\"1\"/><col min=\"8\" max=\"9\" width=\"19.625\" customWidth=\"1\"/><col min=\"10\" max=\"10\" width=\"18.625\" customWidth=\"1\"/><col min=\"11\" max=\"11\" width=\"8.625\" customWidth=\"1\"/><col min=\"12\" max=\"12\" width=\"128.625\" customWidth=\"1\"/><col min=\"13\" max=\"14\" width=\"20.625\" customWidth=\"1\"/><col min=\"15\" max=\"17\" width=\"48.625\" customWidth=\"1\"/><col min=\"18\" max=\"18\" width=\"15.625\" customWidth=\"1\"/></cols>"
+      fprintf(handle->pipe_write, "<cols>");
+      while (colinfo) {
+        ++col;
+        len = colinfo->width;
+        if (len == 0) {
+          if (colinfo->maxwidth > 0)
+            len = colinfo->maxwidth;
+        } else if (len < 0) {
+          len = -len;
+          if (colinfo->maxwidth < len)
+            len = colinfo->maxwidth;
+        }
+        if (len)
+          fprintf(handle->pipe_write, "<col min=\"%i\" max=\"%i\" width=\"%.6G\" customWidth=\"1\"/>", col, col, (double)len + .75);
+        else
+          fprintf(handle->pipe_write, "<col min=\"%i\" max=\"%i\"/>", col, col);
+        colinfo = colinfo->next;
+      }
+      fprintf(handle->pipe_write, "</cols>");
+    }
+    fprintf(handle->pipe_write, "%s", worksheet_xml_start_data);
+    if (handle->buf && handle->buflen > 0) {
+      fwrite(handle->buf, 1, handle->buflen, handle->pipe_write);
+      free(handle->buf);
+      handle->buf = NULL;
+      handle->buflen = 0;
+    }
+    handle->sheetopen = 1;
+  }
   if (handle->rowopen)
     fprintf(handle->pipe_write, "</row>");
   handle->rowopen = 0;
-
+  handle->pcurrentcolumn = &handle->columninfo;
 }
 
