@@ -35,9 +35,6 @@ typedef struct zip_source zip_source_t;
 #define _fdopen(f) f
 #endif
 
-#define STR_HELPER(x) #x
-#define STR(x) STR_HELPER(x)
-
 DLL_EXPORT_XLSXIO void xlsxiowrite_get_version (int* pmajor, int* pminor, int* pmicro)
 {
   if (pmajor)
@@ -365,7 +362,6 @@ void* thread_proc (void* arg)
 #endif
   //zip_add_static_content_string(handle->zip, "xl/theme/theme1.xml", theme_xml);
   zip_add_static_content_string(handle->zip, XML_FOLDER_XL XML_FILENAME_XL_WORKBOOK_RELS, workbook_rels_xml);
-/**/
   { //TO DO: this crashes on Linux
     char* sheetname = NULL;
     if (handle->sheetname) {
@@ -375,9 +371,6 @@ void* thread_proc (void* arg)
     zip_add_dynamic_content_string(handle->zip, XML_FOLDER_XL XML_FILENAME_XL_WORKBOOK, workbook_xml, (sheetname ? sheetname : "Sheet1"));
     free(sheetname);
   }
-/*/
-  zip_add_static_content_string(handle->zip, XML_FOLDER_XL XML_FILENAME_XL_WORKBOOK, workbook_xml);
-/**/
   //zip_add_static_content_string(handle->zip, "xl/sharedStrings.xml", sharedstrings_xml);
 
   //add sheet content with pipe data as source
@@ -477,85 +470,65 @@ DLL_EXPORT_XLSXIO int xlsxiowrite_close (xlsxiowriter handle)
   return 0;
 }
 
-DLL_EXPORT_XLSXIO void xlsxiowrite_add_column (xlsxiowriter handle, const char* value)
+#ifndef WITHOUT_XLSX_STYLES
+#define STYLE_ATTR_HELPER(x) #x
+#define STYLE_ATTR(style) " s=\"" STYLE_ATTR_HELPER(style) "\""
+#else
+#define STYLE_ATTR(style) ""
+#endif
+
+void write_cell_data (xlsxiowriter handle, const char* rowattr, const char* data, ...)
 {
   if (!handle)
     return;
   if (!handle->rowopen) {
-    fprintf(handle->pipe_write, "<row s=\"" STR(STYLE_HEADER) "\">");
+    fprintf(handle->pipe_write, "<row%s>", (rowattr ? rowattr : ""));
     handle->rowopen = 1;
   }
+  va_list args;
+  va_start(args, data);
+  vfprintf(handle->pipe_write, data, args);
+  va_end(args);
+}
+
+DLL_EXPORT_XLSXIO void xlsxiowrite_add_column (xlsxiowriter handle, const char* value)
+{
   if (value) {
     char* xmlvalue = strdup(value);
     fix_xml_special_chars(&xmlvalue);
-#ifndef WITHOUT_XLSX_STYLES
-    fprintf(handle->pipe_write, "<c t=\"inlineStr\" s=\"" STR(STYLE_HEADER) "\">");
-#else
-    fwrite("<c t=\"inlineStr\">", 1, 24, handle->pipe_write);
-#endif
-    fprintf(handle->pipe_write, "<is><t>%s</t></is></c>", xmlvalue);
+    write_cell_data(handle, STYLE_ATTR(STYLE_HEADER), "<c t=\"inlineStr\"" STYLE_ATTR(STYLE_HEADER) "><is><t>%s</t></is></c>", xmlvalue);
     free(xmlvalue);
   } else {
-    fprintf(handle->pipe_write, "<c/>");
+    write_cell_data(handle, STYLE_ATTR(STYLE_HEADER), "<c" STYLE_ATTR(STYLE_HEADER) "/>");
   }
 }
 
 DLL_EXPORT_XLSXIO void xlsxiowrite_add_cell_string (xlsxiowriter handle, const char* value)
 {
-  if (!handle)
-    return;
-  if (!handle->rowopen) {
-    fprintf(handle->pipe_write, "<row>");
-    handle->rowopen = 1;
-  }
   if (value) {
     char* xmlvalue = strdup(value);
     fix_xml_special_chars(&xmlvalue);
-#ifndef WITHOUT_XLSX_STYLES
-    fprintf(handle->pipe_write, "<c t=\"inlineStr\" s=\"" STR(STYLE_TEXT) "\">");
-#else
-    fprintf(handle->pipe_write, "<c t=\"inlineStr\">");
-#endif
-    fprintf(handle->pipe_write, "<is><t>%s</t></is></c>", xmlvalue);
+    write_cell_data(handle, NULL, "<c t=\"inlineStr\"" STYLE_ATTR(STYLE_TEXT) "><is><t>%s</t></is></c>", xmlvalue);
     free(xmlvalue);
   } else {
-    fprintf(handle->pipe_write, "<c/>");
+    write_cell_data(handle, NULL, "<c" STYLE_ATTR(STYLE_TEXT) "/>");
   }
 }
 
 DLL_EXPORT_XLSXIO void xlsxiowrite_add_cell_int (xlsxiowriter handle, long value)
 {
-  if (!handle)
-    return;
-#ifndef WITHOUT_XLSX_STYLES
-    fprintf(handle->pipe_write, "<c s=\"" STR(STYLE_INTEGER) "\">");
-#else
-  fprintf(handle->pipe_write, "<c>");
-#endif
-  fprintf(handle->pipe_write, "<v>%li</v></c>", value);
+  write_cell_data(handle, NULL, "<c" STYLE_ATTR(STYLE_INTEGER) "><v>%li</v></c>", value);
 }
 
 DLL_EXPORT_XLSXIO void xlsxiowrite_add_cell_float (xlsxiowriter handle, double value)
 {
-  if (!handle)
-    return;
-#ifndef WITHOUT_XLSX_STYLES
-  fprintf(handle->pipe_write, "<c s=\"" STR(STYLE_GENERAL) "\">");
-#else
-  fprintf(handle->pipe_write, "<c>");
-#endif
-  fprintf(handle->pipe_write, "<v>%.32G</v></c>", value);
+  write_cell_data(handle, NULL, "<c" STYLE_ATTR(STYLE_GENERAL) "><v>%.32G</v></c>", value);
 }
 
 DLL_EXPORT_XLSXIO void xlsxiowrite_add_cell_datetime (xlsxiowriter handle, time_t value)
 {
-  double timestamp = ((double)(value) + .499) / 86400 + 25569; //converstion from Unix to Excel timestamp
-#ifndef WITHOUT_XLSX_STYLES
-  fprintf(handle->pipe_write, "<c s=\"" STR(STYLE_DATETIME) "\">");
-#else
-  fprintf(handle->pipe_write, "<c>");
-#endif
-  fprintf(handle->pipe_write, "<v>%.16G</v></c>", timestamp);
+  double timestamp = ((double)(value) + .499) / 86400 + 25569; //conversion from Unix to Excel timestamp
+  write_cell_data(handle, NULL, "<c" STYLE_ATTR(STYLE_DATETIME) "><v>%.16G</v></c>", timestamp);
 }
 /*
 Windows (And Mac Office 2011+):
