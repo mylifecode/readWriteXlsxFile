@@ -15,10 +15,12 @@ int main (int argc, char* argv[])
     fprintf(stderr, "Error creating .xlsx file\n");
     return 1;
   }
+  //how many rows to buffer to detect column widths
+  xlsxiowrite_set_detection_rows(handle, 10);
   //write column names
   xlsxiowrite_add_column(handle, "Col1", 4);
   xlsxiowrite_add_column(handle, "Col2", 21);
-  xlsxiowrite_add_column(handle, "Col3", 12);
+  xlsxiowrite_add_column(handle, "Col3", 12*0);
   xlsxiowrite_add_column(handle, "Col4", 2);
   xlsxiowrite_add_column(handle, "Col5", 4);
   xlsxiowrite_add_column(handle, "Col6", 16);

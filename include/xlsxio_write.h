@@ -95,8 +95,18 @@ DLL_EXPORT_XLSXIO int xlsxiowrite_close (xlsxiowriter handle);
  * Call for each column, and finish column row by calling xlsxiowrite_next_row().
  * Must be called before any xlsxiowrite_next_row() or the xlsxiowrite_add_cell_ functions.
  * \sa     xlsxiowrite_next_row()
+ * \sa     xlsxiowrite_set_detection_rows()
  */
 DLL_EXPORT_XLSXIO void xlsxiowrite_add_column (xlsxiowriter handle, const char* name, int width);
+
+/*! \brief specify how many initial rows will be buffered in memory to determine column widths
+ * \param  handle        write handle for .xlsx object
+ * \param  rows          number of rows to buffer in memory, zero for none
+ * Must be called before the first call to xlsxiowrite_next_row()
+ * \sa     xlsxiowrite_add_column()
+ * \sa     xlsxiowrite_next_row()
+ */
+DLL_EXPORT_XLSXIO void xlsxiowrite_set_detection_rows (xlsxiowriter handle, size_t rows);
 
 /*! \brief add a cell with string data
  * \param  handle        write handle for .xlsx object

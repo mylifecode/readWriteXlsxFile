@@ -341,6 +341,7 @@ struct xlsxio_write_struct {
   struct column_info_struct** pcurrentcolumn;
   char* buf;
   size_t buflen;
+  size_t rowstobuffer;
   int sheetopen;
   int rowopen;
 };
@@ -435,6 +436,7 @@ DLL_EXPORT_XLSXIO xlsxiowriter xlsxiowrite_open (const char* filename, const cha
     handle->pcurrentcolumn = &handle->columninfo;
     handle->buf = NULL;
     handle->buflen = 0;
+    handle->rowstobuffer = 5;
     handle->sheetopen = 0;
     handle->rowopen = 0;
     //create pipe
@@ -540,12 +542,6 @@ void write_cell_data (xlsxiowriter handle, const char* rowattr, const char* pref
     return;
   //start new row if needed
   if (!handle->rowopen) {
-/*
-    if (!handle->sheetopen) {
-      fprintf(handle->pipe_write, "%s", worksheet_xml_start_data);
-      handle->sheetopen = 1;
-    }
-*/
     //open new row
     if (handle->sheetopen) {
       fprintf(handle->pipe_write, "<row%s>", (rowattr ? rowattr : ""));
@@ -559,6 +555,7 @@ void write_cell_data (xlsxiowriter handle, const char* rowattr, const char* pref
     //write cell data
     if (prefix)
       fprintf(handle->pipe_write, "%s", prefix);
+/////TO DO: count raw characters, then run fix_xml_special_chars()
     if (format) {
       va_start(args, format);
       vfprintf(handle->pipe_write, format, args);
@@ -582,20 +579,68 @@ void write_cell_data (xlsxiowriter handle, const char* rowattr, const char* pref
     if (suffix)
       append_data(&handle->buf, &handle->buflen, "%s", suffix);
     //collect cell information
-    if (!*handle->pcurrentcolumn) {
-      //collect column information
-      struct column_info_struct* colinfo;
-      if ((colinfo = (struct column_info_struct*)malloc(sizeof(struct column_info_struct))) != NULL) {
-        colinfo->width = 0;
-        colinfo->maxwidth = 0;
-        colinfo->next = NULL;
-        *handle->pcurrentcolumn = colinfo;
-        handle->pcurrentcolumn = &colinfo->next;
+    if (!handle->sheetopen) {
+      if (!*handle->pcurrentcolumn) {
+        //create new column information structure
+        struct column_info_struct* colinfo;
+        if ((colinfo = (struct column_info_struct*)malloc(sizeof(struct column_info_struct))) != NULL) {
+          colinfo->width = 0;
+          colinfo->maxwidth = 0;
+          colinfo->next = NULL;
+          *handle->pcurrentcolumn = colinfo;
+        }
       }
-      if (len > 0 /*&& len > colinfo->maxwidth*/)
-        colinfo->maxwidth = len;
+      //keep track of biggest column width
+      if (len > 0 && len > (*handle->pcurrentcolumn)->maxwidth)
+        (*handle->pcurrentcolumn)->maxwidth = len;
+      //prepare for the next column
+      handle->pcurrentcolumn = &(*handle->pcurrentcolumn)->next;
     }
   }
+}
+
+void flush_buffer (xlsxiowriter handle)
+{
+  //write column information
+  if (handle->columninfo) {
+    int col = 0;
+    int len;
+    struct column_info_struct* colinfo = handle->columninfo;
+    //"<cols><col min=\"1\" max=\"1\" width=\"40.625\" customWidth=\"1\"/><col min=\"2\" max=\"6\" width=\"19.625\" customWidth=\"1\"/><col min=\"7\" max=\"7\" width=\"23.625\" customWidth=\"1\"/><col min=\"8\" max=\"9\" width=\"19.625\" customWidth=\"1\"/><col min=\"10\" max=\"10\" width=\"18.625\" customWidth=\"1\"/><col min=\"11\" max=\"11\" width=\"8.625\" customWidth=\"1\"/><col min=\"12\" max=\"12\" width=\"128.625\" customWidth=\"1\"/><col min=\"13\" max=\"14\" width=\"20.625\" customWidth=\"1\"/><col min=\"15\" max=\"17\" width=\"48.625\" customWidth=\"1\"/><col min=\"18\" max=\"18\" width=\"15.625\" customWidth=\"1\"/></cols>"
+    fprintf(handle->pipe_write, "<cols>");
+    while (colinfo) {
+      ++col;
+      //determine column width
+      len = colinfo->width;
+      if (len == 0) {
+        //use detected maximum length if column width specified was zero
+        if (colinfo->maxwidth > 0)
+          len = colinfo->maxwidth;
+      } else if (len < 0) {
+        //use detected maximum length if column width specified was negative and the detected maximum length is larger than the absolute value of the specified width
+        len = -len;
+        if (colinfo->maxwidth > len)
+          len = colinfo->maxwidth;
+      }
+      if (len)
+        fprintf(handle->pipe_write, "<col min=\"%i\" max=\"%i\" width=\"%.6G\" customWidth=\"1\"/>", col, col, (double)len + .75);
+      else
+        fprintf(handle->pipe_write, "<col min=\"%i\" max=\"%i\"/>", col, col);
+      colinfo = colinfo->next;
+    }
+    fprintf(handle->pipe_write, "</cols>");
+  }
+  //write initial data
+  fprintf(handle->pipe_write, "%s", worksheet_xml_start_data);
+  //write buffer and clear it
+  if (handle->buf) {
+    if (handle->buflen > 0)
+      fwrite(handle->buf, 1, handle->buflen, handle->pipe_write);
+    free(handle->buf);
+    handle->buf = NULL;
+  }
+  handle->buflen = 0;
+  handle->sheetopen = 1;
 }
 
 DLL_EXPORT_XLSXIO void xlsxiowrite_add_column (xlsxiowriter handle, const char* value, int width)
@@ -612,6 +657,18 @@ DLL_EXPORT_XLSXIO void xlsxiowrite_add_column (xlsxiowriter handle, const char* 
   if (*pcolinfo) {
     (*pcolinfo)->width = width;
   }
+}
+
+DLL_EXPORT_XLSXIO void xlsxiowrite_set_detection_rows (xlsxiowriter handle, size_t rows)
+{
+  //abort if currently not buffering
+  if (!handle->rowstobuffer || !handle->sheetopen)
+    return;
+  //set number of rows to buffer
+  handle->rowstobuffer = rows;
+  //flush when zero was specified
+  if (!rows)
+    flush_buffer(handle);
 }
 
 DLL_EXPORT_XLSXIO void xlsxiowrite_add_cell_string (xlsxiowriter handle, const char* value)
@@ -657,43 +714,22 @@ DLL_EXPORT_XLSXIO void xlsxiowrite_next_row (xlsxiowriter handle)
 {
   if (!handle)
     return;
+  //check if buffer should be flushed
   if (!handle->sheetopen) {
-    if (handle->columninfo) {
-      int col = 0;
-      int len;
-      struct column_info_struct* colinfo = handle->columninfo;
-      //"<cols><col min=\"1\" max=\"1\" width=\"40.625\" customWidth=\"1\"/><col min=\"2\" max=\"6\" width=\"19.625\" customWidth=\"1\"/><col min=\"7\" max=\"7\" width=\"23.625\" customWidth=\"1\"/><col min=\"8\" max=\"9\" width=\"19.625\" customWidth=\"1\"/><col min=\"10\" max=\"10\" width=\"18.625\" customWidth=\"1\"/><col min=\"11\" max=\"11\" width=\"8.625\" customWidth=\"1\"/><col min=\"12\" max=\"12\" width=\"128.625\" customWidth=\"1\"/><col min=\"13\" max=\"14\" width=\"20.625\" customWidth=\"1\"/><col min=\"15\" max=\"17\" width=\"48.625\" customWidth=\"1\"/><col min=\"18\" max=\"18\" width=\"15.625\" customWidth=\"1\"/></cols>"
-      fprintf(handle->pipe_write, "<cols>");
-      while (colinfo) {
-        ++col;
-        len = colinfo->width;
-        if (len == 0) {
-          if (colinfo->maxwidth > 0)
-            len = colinfo->maxwidth;
-        } else if (len < 0) {
-          len = -len;
-          if (colinfo->maxwidth < len)
-            len = colinfo->maxwidth;
-        }
-        if (len)
-          fprintf(handle->pipe_write, "<col min=\"%i\" max=\"%i\" width=\"%.6G\" customWidth=\"1\"/>", col, col, (double)len + .75);
-        else
-          fprintf(handle->pipe_write, "<col min=\"%i\" max=\"%i\"/>", col, col);
-        colinfo = colinfo->next;
+    if (handle->rowstobuffer > 0) {
+      if (--handle->rowstobuffer == 0) {
+        flush_buffer(handle);
+      } else {
       }
-      fprintf(handle->pipe_write, "</cols>");
     }
-    fprintf(handle->pipe_write, "%s", worksheet_xml_start_data);
-    if (handle->buf && handle->buflen > 0) {
-      fwrite(handle->buf, 1, handle->buflen, handle->pipe_write);
-      free(handle->buf);
-      handle->buf = NULL;
-      handle->buflen = 0;
-    }
-    handle->sheetopen = 1;
   }
-  if (handle->rowopen)
-    fprintf(handle->pipe_write, "</row>");
+  //close previous row if needed
+  if (handle->rowopen) {
+    if (handle->rowstobuffer == 0)
+      fprintf(handle->pipe_write, "</row>");
+    else
+      append_data(&handle->buf, &handle->buflen, "</row>");
+  }
   handle->rowopen = 0;
   handle->pcurrentcolumn = &handle->columninfo;
 }
