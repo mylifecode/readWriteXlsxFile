@@ -1,6 +1,8 @@
+0.1.5
+
 0.1.4
 
-2016-03-18  Brecht Sanders  https://github.com/brechtsanders/
+2016-03-19  Brecht Sanders  https://github.com/brechtsanders/
 
   * optimized code for writing cell data
   * added witdh parameter to xlsxiowrite_add_column()
