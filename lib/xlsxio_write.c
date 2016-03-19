@@ -613,7 +613,7 @@ void write_cell_data (xlsxiowriter handle, const char* rowattr, const char* pref
 void flush_buffer (xlsxiowriter handle)
 {
   //default to row height of 1 line
-  fprintf(handle->pipe_write, "<sheetFormatPr defaultRowHeight=\"%.6G\" customHeight=\"1\"/>", (double)12.75);
+  //fprintf(handle->pipe_write, "<sheetFormatPr defaultRowHeight=\"%.6G\" customHeight=\"1\"/>", (double)12.75);
   //write column information
   if (handle->columninfo) {
     int col = 0;

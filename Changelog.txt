@@ -3,7 +3,9 @@
 2016-03-18  Brecht Sanders  https://github.com/brechtsanders/
 
   * optimized code for writing cell data
-  * added with parameter to xlsxiowrite_add_column()
+  * added witdh parameter to xlsxiowrite_add_column()
+  * added column with detection and xlsxiowrite_set_detection_rows()
+  * added xlsxiowrite_set_row_height()
 
 0.1.3
 

@@ -96,7 +96,7 @@ DLL_EXPORT_XLSXIO int xlsxiowrite_close (xlsxiowriter handle);
  */
 DLL_EXPORT_XLSXIO void xlsxiowrite_set_detection_rows (xlsxiowriter handle, size_t rows);
 
-/*! \brief specify the row height to use from this point forward
+/*! \brief specify the row height to use for the current and next rows
  * \param  handle        write handle for .xlsx object
  * \param  height        row height (in text lines), zero for unspecified
  * Must be called before the first call to any xlsxiowrite_add_ function of the current row
