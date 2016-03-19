@@ -35,6 +35,9 @@ typedef struct zip_source zip_source_t;
 #define _fdopen(f) f
 #endif
 
+//#undef WITHOUT_XLSX_STYLES
+#define DEFAULT_BUFFERED_ROWS 5
+
 DLL_EXPORT_XLSXIO void xlsxiowrite_get_version (int* pmajor, int* pminor, int* pmicro)
 {
   if (pmajor)
@@ -209,10 +212,7 @@ const char* worksheet_xml_begin =
   "<pane ySplit=\"1\" topLeftCell=\"A2\" activePane=\"bottomLeft\" state=\"frozen\"/>"
   "<selection pane=\"bottomLeft\"/>"
   "</sheetView>"
-  "</sheetViews>"
-  //"<sheetFormatPr defaultRowHeight=\"13.5\"/>"
-  //"<cols><col min=\"1\" max=\"1\" width=\"40.625\" customWidth=\"1\"/><col min=\"2\" max=\"6\" width=\"19.625\" customWidth=\"1\"/><col min=\"7\" max=\"7\" width=\"23.625\" customWidth=\"1\"/><col min=\"8\" max=\"9\" width=\"19.625\" customWidth=\"1\"/><col min=\"10\" max=\"10\" width=\"18.625\" customWidth=\"1\"/><col min=\"11\" max=\"11\" width=\"8.625\" customWidth=\"1\"/><col min=\"12\" max=\"12\" width=\"128.625\" customWidth=\"1\"/><col min=\"13\" max=\"14\" width=\"20.625\" customWidth=\"1\"/><col min=\"15\" max=\"17\" width=\"48.625\" customWidth=\"1\"/><col min=\"18\" max=\"18\" width=\"15.625\" customWidth=\"1\"/></cols>"
-  ;
+  "</sheetViews>";
 
 const char* worksheet_xml_start_data =
   "<sheetData>";
@@ -342,6 +342,7 @@ struct xlsxio_write_struct {
   char* buf;
   size_t buflen;
   size_t rowstobuffer;
+  size_t rowheight;
   int sheetopen;
   int rowopen;
 };
@@ -436,7 +437,8 @@ DLL_EXPORT_XLSXIO xlsxiowriter xlsxiowrite_open (const char* filename, const cha
     handle->pcurrentcolumn = &handle->columninfo;
     handle->buf = NULL;
     handle->buflen = 0;
-    handle->rowstobuffer = 5;
+    handle->rowstobuffer = DEFAULT_BUFFERED_ROWS;
+    handle->rowheight = 0;
     handle->sheetopen = 0;
     handle->rowopen = 0;
     //create pipe
@@ -543,38 +545,47 @@ void write_cell_data (xlsxiowriter handle, const char* rowattr, const char* pref
   if (!handle->rowopen) {
     //open new row
     if (handle->sheetopen) {
-      fprintf(handle->pipe_write, "<row%s>", (rowattr ? rowattr : ""));
+      if (!handle->rowheight)
+        fprintf(handle->pipe_write, "<row%s>", (rowattr ? rowattr : ""));
+      else
+        fprintf(handle->pipe_write, "<row ht=\"%.6G\" customHeight=\"1\"%s>", (double)handle->rowheight * 12.75, (rowattr ? rowattr : ""));
     } else {
-      append_data(&handle->buf, &handle->buflen, "<row%s>", (rowattr ? rowattr : ""));
+      if (!handle->rowheight)
+        append_data(&handle->buf, &handle->buflen, "<row%s>", (rowattr ? rowattr : ""));
+      else
+        append_data(&handle->buf, &handle->buflen, "<row ht=\"%.6G\" customHeight=\"1\"%s>", (double)handle->rowheight * 12.75, (rowattr ? rowattr : ""));
     }
     handle->rowopen = 1;
   }
+  //get formatted data
+  int datalen;
+  char* data;
+  va_start(args, format);
+  if (format && (datalen = vsnprintf(NULL, 0, format, args)) >= 0 && (data = (char*)malloc(datalen + 1)) != NULL) {
+    va_end(args);
+    va_start(args, format);
+    vsnprintf(data, datalen + 1, format, args);
+    //prepare data for XML output
+    fix_xml_special_chars(&data);
+  } else {
+    data = NULL;
+  }
+  va_end(args);
   //add cell data
   if (handle->sheetopen) {
     //write cell data
     if (prefix)
       fprintf(handle->pipe_write, "%s", prefix);
-/////TO DO: count raw characters, then run fix_xml_special_chars()
-    if (format) {
-      va_start(args, format);
-      vfprintf(handle->pipe_write, format, args);
-      va_end(args);
-    }
+    if (data)
+      fprintf(handle->pipe_write, "%s", data);
     if (suffix)
       fprintf(handle->pipe_write, "%s", suffix);
   } else {
-    int len;
     //add cell data to buffer
     if (prefix) {
       append_data(&handle->buf, &handle->buflen, "%s", prefix);
     }
-    if (format) {
-      va_start(args, format);
-      len = vappend_data(&handle->buf, &handle->buflen, format, args);
-      va_end(args);
-    } else {
-      len = -1;
-    }
+    append_data(&handle->buf, &handle->buflen, "%s", data);
     if (suffix)
       append_data(&handle->buf, &handle->buflen, "%s", suffix);
     //collect cell information
@@ -590,22 +601,24 @@ void write_cell_data (xlsxiowriter handle, const char* rowattr, const char* pref
         }
       }
       //keep track of biggest column width
-      if (len > 0 && len > (*handle->pcurrentcolumn)->maxwidth)
-        (*handle->pcurrentcolumn)->maxwidth = len;
+      if (datalen > 0 && datalen > (*handle->pcurrentcolumn)->maxwidth)
+        (*handle->pcurrentcolumn)->maxwidth = datalen;
       //prepare for the next column
       handle->pcurrentcolumn = &(*handle->pcurrentcolumn)->next;
     }
   }
+  free(data);
 }
 
 void flush_buffer (xlsxiowriter handle)
 {
+  //default to row height of 1 line
+  fprintf(handle->pipe_write, "<sheetFormatPr defaultRowHeight=\"%.6G\" customHeight=\"1\"/>", (double)12.75);
   //write column information
   if (handle->columninfo) {
     int col = 0;
     int len;
     struct column_info_struct* colinfo = handle->columninfo;
-    //"<cols><col min=\"1\" max=\"1\" width=\"40.625\" customWidth=\"1\"/><col min=\"2\" max=\"6\" width=\"19.625\" customWidth=\"1\"/><col min=\"7\" max=\"7\" width=\"23.625\" customWidth=\"1\"/><col min=\"8\" max=\"9\" width=\"19.625\" customWidth=\"1\"/><col min=\"10\" max=\"10\" width=\"18.625\" customWidth=\"1\"/><col min=\"11\" max=\"11\" width=\"8.625\" customWidth=\"1\"/><col min=\"12\" max=\"12\" width=\"128.625\" customWidth=\"1\"/><col min=\"13\" max=\"14\" width=\"20.625\" customWidth=\"1\"/><col min=\"15\" max=\"17\" width=\"48.625\" customWidth=\"1\"/><col min=\"18\" max=\"18\" width=\"15.625\" customWidth=\"1\"/></cols>"
     fprintf(handle->pipe_write, "<cols>");
     while (colinfo) {
       ++col;
@@ -642,22 +655,6 @@ void flush_buffer (xlsxiowriter handle)
   handle->sheetopen = 1;
 }
 
-DLL_EXPORT_XLSXIO void xlsxiowrite_add_column (xlsxiowriter handle, const char* value, int width)
-{
-  struct column_info_struct** pcolinfo = handle->pcurrentcolumn;
-  if (value) {
-    char* xmlvalue = strdup(value);
-    fix_xml_special_chars(&xmlvalue);
-    write_cell_data(handle, STYLE_ATTR(STYLE_HEADER), "<c t=\"inlineStr\"" STYLE_ATTR(STYLE_HEADER) "><is><t>", "</t></is></c>", "%s", xmlvalue);
-    free(xmlvalue);
-  } else {
-    write_cell_data(handle, STYLE_ATTR(STYLE_HEADER), "<c" STYLE_ATTR(STYLE_HEADER) "/>", NULL, NULL);
-  }
-  if (*pcolinfo) {
-    (*pcolinfo)->width = width;
-  }
-}
-
 DLL_EXPORT_XLSXIO void xlsxiowrite_set_detection_rows (xlsxiowriter handle, size_t rows)
 {
   //abort if currently not buffering
@@ -670,16 +667,28 @@ DLL_EXPORT_XLSXIO void xlsxiowrite_set_detection_rows (xlsxiowriter handle, size
     flush_buffer(handle);
 }
 
+DLL_EXPORT_XLSXIO void xlsxiowrite_set_row_height (xlsxiowriter handle, size_t height)
+{
+  handle->rowheight = height;
+}
+
+DLL_EXPORT_XLSXIO void xlsxiowrite_add_column (xlsxiowriter handle, const char* value, int width)
+{
+  struct column_info_struct** pcolinfo = handle->pcurrentcolumn;
+  if (value)
+    write_cell_data(handle, STYLE_ATTR(STYLE_HEADER), "<c t=\"inlineStr\"" STYLE_ATTR(STYLE_HEADER) "><is><t>", "</t></is></c>", "%s", value);
+  else
+    write_cell_data(handle, STYLE_ATTR(STYLE_HEADER), "<c" STYLE_ATTR(STYLE_HEADER) "/>", NULL, NULL);
+  if (*pcolinfo)
+    (*pcolinfo)->width = width;
+}
+
 DLL_EXPORT_XLSXIO void xlsxiowrite_add_cell_string (xlsxiowriter handle, const char* value)
 {
-  if (value) {
-    char* xmlvalue = strdup(value);
-    fix_xml_special_chars(&xmlvalue);
-    write_cell_data(handle, NULL, "<c t=\"inlineStr\"" STYLE_ATTR(STYLE_TEXT) "><is><t>", "</t></is></c>", "%s", xmlvalue);
-    free(xmlvalue);
-  } else {
+  if (value)
+    write_cell_data(handle, NULL, "<c t=\"inlineStr\"" STYLE_ATTR(STYLE_TEXT) "><is><t>", "</t></is></c>", "%s", value);
+  else
     write_cell_data(handle, NULL, "<c" STYLE_ATTR(STYLE_TEXT) "/>", NULL, NULL);
-  }
 }
 
 DLL_EXPORT_XLSXIO void xlsxiowrite_add_cell_int (xlsxiowriter handle, long value)

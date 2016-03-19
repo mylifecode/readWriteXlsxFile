@@ -87,6 +87,23 @@ DLL_EXPORT_XLSXIO xlsxiowriter xlsxiowrite_open (const char* filename, const cha
  */
 DLL_EXPORT_XLSXIO int xlsxiowrite_close (xlsxiowriter handle);
 
+/*! \brief specify how many initial rows will be buffered in memory to determine column widths
+ * \param  handle        write handle for .xlsx object
+ * \param  rows          number of rows to buffer in memory, zero for none
+ * Must be called before the first call to xlsxiowrite_next_row()
+ * \sa     xlsxiowrite_add_column()
+ * \sa     xlsxiowrite_next_row()
+ */
+DLL_EXPORT_XLSXIO void xlsxiowrite_set_detection_rows (xlsxiowriter handle, size_t rows);
+
+/*! \brief specify the row height to use from this point forward
+ * \param  handle        write handle for .xlsx object
+ * \param  height        row height (in text lines), zero for unspecified
+ * Must be called before the first call to any xlsxiowrite_add_ function of the current row
+ * \sa     xlsxiowrite_next_row()
+ */
+DLL_EXPORT_XLSXIO void xlsxiowrite_set_row_height (xlsxiowriter handle, size_t height);
+
 /*! \brief add a column cell
  * \param  handle        write handle for .xlsx object
  * \param  name          column name
@@ -98,15 +115,6 @@ DLL_EXPORT_XLSXIO int xlsxiowrite_close (xlsxiowriter handle);
  * \sa     xlsxiowrite_set_detection_rows()
  */
 DLL_EXPORT_XLSXIO void xlsxiowrite_add_column (xlsxiowriter handle, const char* name, int width);
-
-/*! \brief specify how many initial rows will be buffered in memory to determine column widths
- * \param  handle        write handle for .xlsx object
- * \param  rows          number of rows to buffer in memory, zero for none
- * Must be called before the first call to xlsxiowrite_next_row()
- * \sa     xlsxiowrite_add_column()
- * \sa     xlsxiowrite_next_row()
- */
-DLL_EXPORT_XLSXIO void xlsxiowrite_set_detection_rows (xlsxiowriter handle, size_t rows);
 
 /*! \brief add a cell with string data
  * \param  handle        write handle for .xlsx object

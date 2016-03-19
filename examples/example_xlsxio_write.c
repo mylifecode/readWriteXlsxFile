@@ -15,6 +15,7 @@ int main (int argc, char* argv[])
     fprintf(stderr, "Error creating .xlsx file\n");
     return 1;
   }
+  //set row height
   //how many rows to buffer to detect column widths
   xlsxiowrite_set_detection_rows(handle, 10);
   //write column names
@@ -29,6 +30,7 @@ int main (int argc, char* argv[])
   //write data
   int i;
   for (i = 0; i < 1000; i++) {
+    xlsxiowrite_set_row_height(handle, i);
     xlsxiowrite_add_cell_string(handle, "Test");
     xlsxiowrite_add_cell_string(handle, "A b  c   d    e     f\nnew line");
     xlsxiowrite_add_cell_string(handle, "&% <test> \"'");
