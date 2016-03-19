@@ -515,12 +515,11 @@ int vappend_data (char** pdata, size_t* pdatalen, const char* format, va_list ar
   va_copy(args2, args);
   if ((len = vsnprintf(NULL, 0, format, args)) < 0)
     return -1;
-  //va_end(args);
+  va_end(args);
   if ((*pdata = (char*)realloc(*pdata, *pdatalen + len + 1)) == NULL)
     return -1;
-  //va_start(args, format);
   vsnprintf(*pdata + *pdatalen, len + 1, format, args2);
-  //va_end(args);
+  va_end(args2);
   *pdatalen += len;
   return len;
 }
