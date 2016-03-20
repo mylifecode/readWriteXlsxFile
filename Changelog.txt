@@ -2,8 +2,10 @@
 
 2016-03-20  Brecht Sanders  https://github.com/brechtsanders/
 
-  * fixed issue with detecting with of columns with NULL data
-  * chaged with detection to only count first line of multiline data
+  * fixed issue with detecting witdh of columns with NULL data
+  * changed witdh detection to only count first line of multiline data
+  * fixed issue with inserting empty rows
+  * only freezes top row when columns were specified
 
 0.1.4
 
@@ -11,7 +13,7 @@
 
   * optimized code for writing cell data
   * added witdh parameter to xlsxiowrite_add_column()
-  * added column with detection and xlsxiowrite_set_detection_rows()
+  * added column witdh detection and xlsxiowrite_set_detection_rows()
   * added xlsxiowrite_set_row_height()
 
 0.1.3
