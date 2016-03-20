@@ -205,8 +205,9 @@ const char* workbook_xml =
 
 const char* worksheet_xml_begin =
   "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\r\n"
-  "<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">"
-  //"<dimension ref=\"A1:R2\"/>"
+  "<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">";
+
+const char* worksheet_xml_freeze_top_row =
   "<sheetViews>"
   "<sheetView tabSelected=\"1\" workbookViewId=\"0\">"
   "<pane ySplit=\"1\" topLeftCell=\"A2\" activePane=\"bottomLeft\" state=\"frozen\"/>"
@@ -343,6 +344,7 @@ struct xlsxio_write_struct {
   size_t buflen;
   size_t rowstobuffer;
   size_t rowheight;
+  int freezetop;
   int sheetopen;
   int rowopen;
 };
@@ -439,6 +441,7 @@ DLL_EXPORT_XLSXIO xlsxiowriter xlsxiowrite_open (const char* filename, const cha
     handle->buflen = 0;
     handle->rowstobuffer = DEFAULT_BUFFERED_ROWS;
     handle->rowheight = 0;
+    handle->freezetop = 0;
     handle->sheetopen = 0;
     handle->rowopen = 0;
     //create pipe
@@ -509,6 +512,7 @@ DLL_EXPORT_XLSXIO int xlsxiowrite_close (xlsxiowriter handle)
 #define STYLE_ATTR(style) ""
 #endif
 
+//add data to a null-terminated buffer and update the length counter
 int vappend_data (char** pdata, size_t* pdatalen, const char* format, va_list args)
 {
   int len;
@@ -526,6 +530,7 @@ int vappend_data (char** pdata, size_t* pdatalen, const char* format, va_list ar
   return len;
 }
 
+//add formatted data to a null-terminated buffer and update the length counter
 int append_data (char** pdata, size_t* pdatalen, const char* format, ...)
 {
   int result;
@@ -536,27 +541,32 @@ int append_data (char** pdata, size_t* pdatalen, const char* format, ...)
   return result;
 }
 
+//output start of row
+void write_row_start (xlsxiowriter handle, const char* rowattr)
+{
+  if (handle->sheetopen) {
+    if (!handle->rowheight)
+      fprintf(handle->pipe_write, "<row%s>", (rowattr ? rowattr : ""));
+    else
+      fprintf(handle->pipe_write, "<row ht=\"%.6G\" customHeight=\"1\"%s>", (double)handle->rowheight * 12.75, (rowattr ? rowattr : ""));
+  } else {
+    if (!handle->rowheight)
+      append_data(&handle->buf, &handle->buflen, "<row%s>", (rowattr ? rowattr : ""));
+    else
+      append_data(&handle->buf, &handle->buflen, "<row ht=\"%.6G\" customHeight=\"1\"%s>", (double)handle->rowheight * 12.75, (rowattr ? rowattr : ""));
+  }
+  handle->rowopen = 1;
+}
+
+//output cell data
 void write_cell_data (xlsxiowriter handle, const char* rowattr, const char* prefix, const char* suffix, const char* format, ...)
 {
   va_list args;
   if (!handle)
     return;
   //start new row if needed
-  if (!handle->rowopen) {
-    //open new row
-    if (handle->sheetopen) {
-      if (!handle->rowheight)
-        fprintf(handle->pipe_write, "<row%s>", (rowattr ? rowattr : ""));
-      else
-        fprintf(handle->pipe_write, "<row ht=\"%.6G\" customHeight=\"1\"%s>", (double)handle->rowheight * 12.75, (rowattr ? rowattr : ""));
-    } else {
-      if (!handle->rowheight)
-        append_data(&handle->buf, &handle->buflen, "<row%s>", (rowattr ? rowattr : ""));
-      else
-        append_data(&handle->buf, &handle->buflen, "<row ht=\"%.6G\" customHeight=\"1\"%s>", (double)handle->rowheight * 12.75, (rowattr ? rowattr : ""));
-    }
-    handle->rowopen = 1;
-  }
+  if (!handle->rowopen)
+    write_row_start(handle, rowattr);
   //get formatted data
   int datalen;
   char* data;
@@ -617,8 +627,12 @@ void write_cell_data (xlsxiowriter handle, const char* rowattr, const char* pref
   free(data);
 }
 
+//output buffered data and stop buffering
 void flush_buffer (xlsxiowriter handle)
 {
+  //write section to freeze top row
+  if (handle->freezetop > 0)
+    fprintf(handle->pipe_write, "%s", worksheet_xml_freeze_top_row);
   //default to row height of 1 line
   //fprintf(handle->pipe_write, "<sheetFormatPr defaultRowHeight=\"%.6G\" customHeight=\"1\"/>", (double)12.75);
   //write column information
@@ -688,6 +702,8 @@ DLL_EXPORT_XLSXIO void xlsxiowrite_add_column (xlsxiowriter handle, const char* 
     write_cell_data(handle, STYLE_ATTR(STYLE_HEADER), "<c" STYLE_ATTR(STYLE_HEADER) "/>", NULL, NULL);
   if (*pcolinfo)
     (*pcolinfo)->width = width;
+  if (handle->freezetop == 0)
+    handle->freezetop = 1;
 }
 
 DLL_EXPORT_XLSXIO void xlsxiowrite_add_cell_string (xlsxiowriter handle, const char* value)
@@ -738,13 +754,14 @@ DLL_EXPORT_XLSXIO void xlsxiowrite_next_row (xlsxiowriter handle)
       }
     }
   }
-  //close previous row if needed
-  if (handle->rowopen) {
-    if (handle->rowstobuffer == 0)
-      fprintf(handle->pipe_write, "</row>");
-    else
-      append_data(&handle->buf, &handle->buflen, "</row>");
-  }
+  //start new row if needed
+  if (!handle->rowopen)
+    write_row_start(handle, NULL);
+  //end row
+  if (handle->rowstobuffer == 0)
+    fprintf(handle->pipe_write, "</row>");
+  else
+    append_data(&handle->buf, &handle->buflen, "</row>");
   handle->rowopen = 0;
   handle->pcurrentcolumn = &handle->columninfo;
 }
