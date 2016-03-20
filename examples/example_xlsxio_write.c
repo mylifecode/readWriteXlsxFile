@@ -20,13 +20,13 @@ int main (int argc, char* argv[])
   //how many rows to buffer to detect column widths
   xlsxiowrite_set_detection_rows(handle, 10);
   //write column names
-  xlsxiowrite_add_column(handle, "Col1", 4);
-  xlsxiowrite_add_column(handle, "Col2", 21);
-  xlsxiowrite_add_column(handle, "Col3", 12*0);
-  xlsxiowrite_add_column(handle, "Col4", 2);
-  xlsxiowrite_add_column(handle, "Col5", 4);
-  xlsxiowrite_add_column(handle, "Col6", 16);
-  xlsxiowrite_add_column(handle, "Col7", 10);
+  xlsxiowrite_add_column(handle, "Col1", 0*4);
+  xlsxiowrite_add_column(handle, "Col2", 0*21);
+  xlsxiowrite_add_column(handle, "Col3", 0*12);
+  xlsxiowrite_add_column(handle, "Col4", 0*2);
+  xlsxiowrite_add_column(handle, "Col5", 0*4);
+  xlsxiowrite_add_column(handle, "Col6", 0*16);
+  xlsxiowrite_add_column(handle, "Col7", 0*10);
   xlsxiowrite_next_row(handle);
   //write data
   int i;

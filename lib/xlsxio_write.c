@@ -601,8 +601,15 @@ void write_cell_data (xlsxiowriter handle, const char* rowattr, const char* pref
         }
       }
       //keep track of biggest column width
-      if (datalen > 0 && datalen > (*handle->pcurrentcolumn)->maxwidth)
-        (*handle->pcurrentcolumn)->maxwidth = datalen;
+      if (data) {
+        //only count first line in multiline data
+        char* p = strchr(data, '\n');
+        if (p)
+          datalen = p - data;
+        //remember this length if it is the longest one so far
+        if (datalen > 0 && datalen > (*handle->pcurrentcolumn)->maxwidth)
+          (*handle->pcurrentcolumn)->maxwidth = datalen;
+      }
       //prepare for the next column
       handle->pcurrentcolumn = &(*handle->pcurrentcolumn)->next;
     }
@@ -658,7 +665,7 @@ void flush_buffer (xlsxiowriter handle)
 DLL_EXPORT_XLSXIO void xlsxiowrite_set_detection_rows (xlsxiowriter handle, size_t rows)
 {
   //abort if currently not buffering
-  if (!handle->rowstobuffer || !handle->sheetopen)
+  if (!handle->rowstobuffer || handle->sheetopen)
     return;
   //set number of rows to buffer
   handle->rowstobuffer = rows;

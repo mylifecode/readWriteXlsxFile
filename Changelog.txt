@@ -1,5 +1,10 @@
 0.1.5
 
+2016-03-20  Brecht Sanders  https://github.com/brechtsanders/
+
+  * fixed issue with detecting with of columns with NULL data
+  * chaged with detection to only count first line of multiline data
+
 0.1.4
 
 2016-03-19  Brecht Sanders  https://github.com/brechtsanders/
