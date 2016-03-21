@@ -29,7 +29,21 @@ class XLSXIOReaderSheet
   ~XLSXIOReaderSheet ();
   bool GetNextRow ();
   char* GetNextCell ();
-  bool GetNextCell (std::string& value);
+  bool GetNextCellString (char*& value);
+  bool GetNextCellString (std::string& value);
+  bool GetNextCellInt (long& value);
+  bool GetNextCellFloat (double& value);
+  bool GetNextCellDateTime (time_t& value);
+  inline XLSXIOReaderSheet& operator >> (char*& value) { GetNextCellString(value); return *this; }
+  inline XLSXIOReaderSheet& operator >> (std::string& value) { GetNextCellString(value); return *this; }
+  inline XLSXIOReaderSheet& operator >> (int& value) { long l; GetNextCellInt(l); l = value; return *this; }
+  inline XLSXIOReaderSheet& operator >> (long& value) { GetNextCellInt(value); return *this; }
+  inline XLSXIOReaderSheet& operator >> (long long& value) { long l; GetNextCellInt(l); l = value; return *this; }
+  inline XLSXIOReaderSheet& operator >> (unsigned int& value) { long l; GetNextCellInt(l); l = value; return *this; }
+  inline XLSXIOReaderSheet& operator >> (unsigned long& value) { long l; GetNextCellInt(l); l = value; return *this; }
+  inline XLSXIOReaderSheet& operator >> (unsigned long long& value) { long l; GetNextCellInt(l); l = value; return *this; }
+  inline XLSXIOReaderSheet& operator >> (double& value) { GetNextCellFloat(value); return *this; }
+  //inline XLSXIOReaderSheet& operator >> (time_t& value) { GetNextCellString(value); return *this; }
 };
 
 
@@ -73,15 +87,51 @@ char* XLSXIOReaderSheet::GetNextCell ()
   return xlsxioread_sheet_next_cell(sheethandle);
 }
 
-bool XLSXIOReaderSheet::GetNextCell (std::string& value)
+bool XLSXIOReaderSheet::GetNextCellString (char*& value)
 {
-  char* result = xlsxioread_sheet_next_cell(sheethandle);
-  if (!result) {
+  if (!xlsxioread_sheet_next_cell_string(sheethandle, &value)) {
+    value = NULL;
+    return false;
+  }
+  return true;
+}
+
+bool XLSXIOReaderSheet::GetNextCellString (std::string& value)
+{
+  char* result;
+  if (!xlsxioread_sheet_next_cell_string(sheethandle, &result)) {
     value.clear();
     return false;
   }
   value.assign(result);
   free(result);
+  return true;
+}
+
+bool XLSXIOReaderSheet::GetNextCellInt (long& value)
+{
+  if (!xlsxioread_sheet_next_cell_int(sheethandle, &value)) {
+    value = 0;
+    return false;
+  }
+  return true;
+}
+
+bool XLSXIOReaderSheet::GetNextCellFloat (double& value)
+{
+  if (!xlsxioread_sheet_next_cell_float(sheethandle, &value)) {
+    value = 0;
+    return false;
+  }
+  return true;
+}
+
+bool XLSXIOReaderSheet::GetNextCellDateTime (time_t& value)
+{
+  if (!xlsxioread_sheet_next_cell_datetime(sheethandle, &value)) {
+    value = 0;
+    return false;
+  }
   return true;
 }
 
@@ -94,9 +144,26 @@ int main (int argc, char* argv[])
   if (xlsxsheet) {
     std::string value;
     while (xlsxsheet->GetNextRow()) {
-      while (xlsxsheet->GetNextCell(value)) {
+/*
+      while (xlsxsheet->GetNextCellString(value)) {
         printf("%s\t", value.c_str());
       }
+*/
+      std::string s;
+      *xlsxsheet >> s;
+      printf("%s\t", s.c_str());
+      char* n;
+      *xlsxsheet >> n;
+      printf("%s\t", n);
+      free(n);
+      int i;
+      *xlsxsheet >> i;
+      printf("%i\t", i);
+      *xlsxsheet >> i;
+      printf("%i\t", i);
+      double d;
+      *xlsxsheet >> d;
+      printf("%.6G\t", d);
       printf("\n");
     }
     delete xlsxsheet;
