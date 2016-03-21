@@ -72,7 +72,7 @@ DLL_EXPORT_XLSXIO const char* xlsxiowrite_get_version_string ();
 /*! \brief write handle for .xlsx object */
 typedef struct xlsxio_write_struct* xlsxiowriter;
 
-/*! \brief open .xlsx file
+/*! \brief create and open .xlsx file
  * \param  filename      path of .xlsx file to open
  * \param  sheetname     name of worksheet
  * \return write handle for .xlsx object or NULL on error

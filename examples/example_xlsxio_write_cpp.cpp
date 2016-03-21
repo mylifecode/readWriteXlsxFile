@@ -1,22 +1,56 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <string>
 #include "xlsxio_write.h"
 
+/*! \class XLSXIOWriter
+ *  \brief class for writing data to an .xlsx file
+ *\details C++ wrapper for xlsxiowrite_ functions.
+ */
 class XLSXIOWriter
 {
  private:
   xlsxiowriter handle;
  public:
+
+  /*! \brief XLSXIOWriter constructor, creates and opens .xlsx file
+   * \param  filename      path of .xlsx file to open
+   * \param  sheetname     name of worksheet
+   * \param  detectionrows number of rows to buffer in memory, zero for none, defaults to 5
+   * \sa     xlsxiowrite_open()
+   */
   XLSXIOWriter (const char* filename, const char* sheetname = NULL, size_t detectionrows = 5);
+
+  /*! \brief XLSXIOWriter destructor, closes .xlsx file
+   * \sa     xlsxiowrite_close()
+   */
   ~XLSXIOWriter ();
+
+  /*! \brief specify the row height to use for the current and next rows
+   * \param  height        row height (in text lines), zero for unspecified
+   * Must be called before the first call to any Add method of the current row
+   * \sa     xlsxiowrite_set_row_height()
+   */
   void SetRowHeight (size_t height = 0);
   void AddColumn (const char* name, int width = 0);
   void AddCellString (const char* value);
   void AddCellInt (long long value);
   void AddCellFloat (double value);
   void AddCellDateTime (time_t value);
+  inline XLSXIOWriter& operator << (const char* value) { AddCellString(value); return *this; }
+  inline XLSXIOWriter& operator << (const std::string& value) { AddCellString(value.c_str()); return *this; }
+  inline XLSXIOWriter& operator << (int value) { AddCellInt(value); return *this; }
+  inline XLSXIOWriter& operator << (long value) { AddCellInt(value); return *this; }
+  inline XLSXIOWriter& operator << (long long value) { AddCellInt(value); return *this; }
+  inline XLSXIOWriter& operator << (unsigned int value) { AddCellInt(value); return *this; }
+  inline XLSXIOWriter& operator << (unsigned long value) { AddCellInt(value); return *this; }
+  inline XLSXIOWriter& operator << (unsigned long long value) { AddCellInt(value); return *this; }
+  inline XLSXIOWriter& operator << (float value) { AddCellFloat(value); return *this; }
+  inline XLSXIOWriter& operator << (double value) { AddCellFloat(value); return *this; }
+  //inline XLSXIOWriter& operator << (time_t value) { AddCellDateTime(value); return *this; }
   void NextRow ();
 };
+
 
 
 
@@ -82,11 +116,9 @@ int main (int argc, char* argv[])
   xlsxfile->NextRow();
   int i;
   for (i = 0; i < 1000; i++) {
-    xlsxfile->AddCellString("Test");
-    xlsxfile->AddCellString((char*)NULL);
-    xlsxfile->AddCellInt((long long)i);
+    *xlsxfile << "Test" << (char*)NULL << i;
     xlsxfile->AddCellDateTime(time(NULL));
-    xlsxfile->AddCellFloat(3.1415926);
+    *xlsxfile << 3.1415926;
     xlsxfile->NextRow();
   }
   delete xlsxfile;
