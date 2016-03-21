@@ -32,11 +32,46 @@ class XLSXIOWriter
    * \sa     xlsxiowrite_set_row_height()
    */
   void SetRowHeight (size_t height = 0);
+
+  /*! \brief add a column cell
+   * \param  name          column name
+   * \param  width         column width (in characters)
+   * Only one row of column names is supported or none.
+   * Call for each column, and finish column row by calling NextRow().
+   * Must be called before any NextRow() or the AddCell methods.
+   * \sa     NextRow()
+   */
   void AddColumn (const char* name, int width = 0);
+
+  /*! \brief add a cell with string data
+   * \param  value         string value
+   * \sa     NextRow()
+   */
   void AddCellString (const char* value);
+
+  /*! \brief add a cell with integer data
+   * \param  value         integer value
+   * \sa     NextRow()
+   */
   void AddCellInt (long long value);
+
+  /*! \brief add a cell with floating point data
+   * \param  value         floating point value
+   * \sa     NextRow()
+   */
   void AddCellFloat (double value);
+
+  /*! \brief add a cell with date and time data
+   * \param  value         date and time value
+   * \sa     NextRow()
+   */
   void AddCellDateTime (time_t value);
+
+  /*! \brief insertion operators
+   * \sa     AddCellString()
+   * \name   operator<<
+   * \{
+   */
   inline XLSXIOWriter& operator << (const char* value) { AddCellString(value); return *this; }
   inline XLSXIOWriter& operator << (const std::string& value) { AddCellString(value.c_str()); return *this; }
   inline XLSXIOWriter& operator << (int value) { AddCellInt(value); return *this; }
@@ -48,6 +83,11 @@ class XLSXIOWriter
   inline XLSXIOWriter& operator << (float value) { AddCellFloat(value); return *this; }
   inline XLSXIOWriter& operator << (double value) { AddCellFloat(value); return *this; }
   //inline XLSXIOWriter& operator << (time_t value) { AddCellDateTime(value); return *this; }
+  /*! @} */
+
+  /*! \brief mark the end of a row (next cell will start on a new row)
+   * \sa     AddCellString()
+   */
   void NextRow ();
 };
 
