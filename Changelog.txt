@@ -1,5 +1,10 @@
 0.1.6
 
+2016-03-24  Brecht Sanders  https://github.com/brechtsanders/
+
+  * delete destination file before writing to it
+  * fixed corruption issue when closing if no rows were written
+
 0.1.5
 
 2016-03-20  Brecht Sanders  https://github.com/brechtsanders/

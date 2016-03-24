@@ -452,6 +452,8 @@ DLL_EXPORT_XLSXIO xlsxiowriter xlsxiowrite_open (const char* filename, const cha
     }
     handle->pipe_read = fdopen(pipefd[0], "rb");
     handle->pipe_write = fdopen(pipefd[1], "wb");
+    //remove filename if it already exists
+    unlink(filename);
     //create and start thread that will receive data via pipe
 #ifdef USE_WINTHREADS
     if ((handle->thread = CreateThread(NULL, 0, thread_proc, handle, 0, NULL)) == NULL) {
@@ -474,6 +476,9 @@ DLL_EXPORT_XLSXIO int xlsxiowrite_close (xlsxiowriter handle)
     return -1;
   //finalize data
   if (handle->pipe_write) {
+    //check if buffer should be flushed
+    if (!handle->sheetopen)
+      flush_buffer(handle);
     //close row if needed
     if (handle->rowopen)
       fprintf(handle->pipe_write, "</row>");
