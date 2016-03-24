@@ -24,6 +24,8 @@ THE SOFTWARE.
  * @file xlsxio_read.h
  * @brief XLSX I/O header file for reading .xlsx files.
  * @author Brecht Sanders
+ * @date 2016
+ * @copyright MIT
  *
  * Include this header file to use XLSX I/O for reading .xlsx files and
  * link with -lxlsxio_read.

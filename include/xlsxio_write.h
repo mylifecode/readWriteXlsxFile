@@ -24,6 +24,8 @@ THE SOFTWARE.
  * @file xlsxio_write.h
  * @brief XLSX I/O header file for writing .xlsx files.
  * @author Brecht Sanders
+ * @date 2016
+ * @copyright MIT
  *
  * Include this header file to use XLSX I/O for writing .xlsx files and
  * link with -lxlsxio_write.
