@@ -74,12 +74,13 @@ class XLSXIOWriter
    */
   inline XLSXIOWriter& operator << (const char* value) { AddCellString(value); return *this; }
   inline XLSXIOWriter& operator << (const std::string& value) { AddCellString(value.c_str()); return *this; }
-  inline XLSXIOWriter& operator << (int value) { AddCellInt(value); return *this; }
-  inline XLSXIOWriter& operator << (long value) { AddCellInt(value); return *this; }
-  inline XLSXIOWriter& operator << (long long value) { AddCellInt(value); return *this; }
-  inline XLSXIOWriter& operator << (unsigned int value) { AddCellInt(value); return *this; }
-  inline XLSXIOWriter& operator << (unsigned long value) { AddCellInt(value); return *this; }
-  inline XLSXIOWriter& operator << (unsigned long long value) { AddCellInt(value); return *this; }
+  inline XLSXIOWriter& operator << (int64_t value) { AddCellInt(value); return *this; }
+  //inline XLSXIOWriter& operator << (int value) { AddCellInt(value); return *this; }
+  //inline XLSXIOWriter& operator << (long value) { AddCellInt(value); return *this; }
+  //inline XLSXIOWriter& operator << (long long value) { AddCellInt(value); return *this; }
+  //inline XLSXIOWriter& operator << (unsigned int value) { AddCellInt(value); return *this; }
+  //inline XLSXIOWriter& operator << (unsigned long value) { AddCellInt(value); return *this; }
+  //inline XLSXIOWriter& operator << (unsigned long long value) { AddCellInt(value); return *this; }
   inline XLSXIOWriter& operator << (float value) { AddCellFloat(value); return *this; }
   inline XLSXIOWriter& operator << (double value) { AddCellFloat(value); return *this; }
   //inline XLSXIOWriter& operator << (time_t value) { AddCellDateTime(value); return *this; }
@@ -156,7 +157,7 @@ int main (int argc, char* argv[])
   xlsxfile->NextRow();
   int i;
   for (i = 0; i < 1000; i++) {
-    *xlsxfile << "Test" << (char*)NULL << i;
+    *xlsxfile << "Test" << (char*)NULL << (int64_t)i;
     xlsxfile->AddCellDateTime(time(NULL));
     *xlsxfile << 3.1415926;
     xlsxfile->NextRow();

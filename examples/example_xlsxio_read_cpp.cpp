@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <inttypes.h>
 #include <string>
 #include "xlsxio_read.h"
 
@@ -31,17 +32,18 @@ class XLSXIOReaderSheet
   char* GetNextCell ();
   bool GetNextCellString (char*& value);
   bool GetNextCellString (std::string& value);
-  bool GetNextCellInt (long& value);
+  bool GetNextCellInt (int64_t& value);
   bool GetNextCellFloat (double& value);
   bool GetNextCellDateTime (time_t& value);
   inline XLSXIOReaderSheet& operator >> (char*& value) { GetNextCellString(value); return *this; }
   inline XLSXIOReaderSheet& operator >> (std::string& value) { GetNextCellString(value); return *this; }
-  inline XLSXIOReaderSheet& operator >> (int& value) { long l; GetNextCellInt(l); l = value; return *this; }
-  inline XLSXIOReaderSheet& operator >> (long& value) { GetNextCellInt(value); return *this; }
-  inline XLSXIOReaderSheet& operator >> (long long& value) { long l; GetNextCellInt(l); l = value; return *this; }
-  inline XLSXIOReaderSheet& operator >> (unsigned int& value) { long l; GetNextCellInt(l); l = value; return *this; }
-  inline XLSXIOReaderSheet& operator >> (unsigned long& value) { long l; GetNextCellInt(l); l = value; return *this; }
-  inline XLSXIOReaderSheet& operator >> (unsigned long long& value) { long l; GetNextCellInt(l); l = value; return *this; }
+  inline XLSXIOReaderSheet& operator >> (int64_t& value) { GetNextCellInt(value); return *this; }
+  //inline XLSXIOReaderSheet& operator >> (int& value) { int64_t l; GetNextCellInt(l); l = value; return *this; }
+  //inline XLSXIOReaderSheet& operator >> (long& value) { int64_t l; GetNextCellInt(l); l = value; return *this; }
+  //inline XLSXIOReaderSheet& operator >> (long long& value) { int64_t l; GetNextCellInt(l); l = value; return *this; }
+  //inline XLSXIOReaderSheet& operator >> (unsigned int& value) { int64_t l; GetNextCellInt(l); l = value; return *this; }
+  //inline XLSXIOReaderSheet& operator >> (unsigned long& value) { int64_t l; GetNextCellInt(l); l = value; return *this; }
+  //inline XLSXIOReaderSheet& operator >> (unsigned long long& value) { int64_t l; GetNextCellInt(l); l = value; return *this; }
   inline XLSXIOReaderSheet& operator >> (double& value) { GetNextCellFloat(value); return *this; }
   //inline XLSXIOReaderSheet& operator >> (time_t& value) { GetNextCellString(value); return *this; }
 };
@@ -108,7 +110,7 @@ bool XLSXIOReaderSheet::GetNextCellString (std::string& value)
   return true;
 }
 
-bool XLSXIOReaderSheet::GetNextCellInt (long& value)
+bool XLSXIOReaderSheet::GetNextCellInt (int64_t& value)
 {
   if (!xlsxioread_sheet_next_cell_int(sheethandle, &value)) {
     value = 0;
@@ -156,11 +158,13 @@ int main (int argc, char* argv[])
       *xlsxsheet >> n;
       printf("%s\t", n);
       free(n);
-      int i;
+      int64_t i;
       *xlsxsheet >> i;
-      printf("%i\t", i);
+      //printf("%" PRIi64 "\t", i);
+      printf("%li\t", (long)i);
       *xlsxsheet >> i;
-      printf("%i\t", i);
+      //printf("%" PRIi64 "\t", i);
+      printf("%li\t", (long)i);
       double d;
       *xlsxsheet >> d;
       printf("%.6G\t", d);

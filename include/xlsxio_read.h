@@ -37,6 +37,7 @@ THE SOFTWARE.
 #define INCLUDED_XLSXIO_READ_H
 
 #include <stdlib.h>
+#include <stdint.h>
 #include <time.h>
 
 /*! \cond PRIVATE */
@@ -236,7 +237,7 @@ DLL_EXPORT_XLSXIO int xlsxioread_sheet_next_cell_string (xlsxioreadersheet sheet
  * \sa     xlsxioread_sheet_open()
  * \sa     xlsxioread_sheet_next_cell()
  */
-DLL_EXPORT_XLSXIO int xlsxioread_sheet_next_cell_int (xlsxioreadersheet sheethandle, long* pvalue);
+DLL_EXPORT_XLSXIO int xlsxioread_sheet_next_cell_int (xlsxioreadersheet sheethandle, int64_t* pvalue);
 
 /*! \brief get next cell from worksheet as a floating point value
  * \param  handle        read handle for worksheet object

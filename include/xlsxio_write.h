@@ -35,6 +35,7 @@ THE SOFTWARE.
 #define INCLUDED_XLSXIO_WRITE_H
 
 #include <stdlib.h>
+#include <stdint.h>
 #include <time.h>
 
 /*! \cond PRIVATE */
@@ -130,7 +131,7 @@ DLL_EXPORT_XLSXIO void xlsxiowrite_add_cell_string (xlsxiowriter handle, const c
  * \param  value         integer value
  * \sa     xlsxiowrite_next_row()
  */
-DLL_EXPORT_XLSXIO void xlsxiowrite_add_cell_int (xlsxiowriter handle, long value);
+DLL_EXPORT_XLSXIO void xlsxiowrite_add_cell_int (xlsxiowriter handle, int64_t value);
 
 /*! \brief add a cell with floating point data
  * \param  handle        write handle for .xlsx object

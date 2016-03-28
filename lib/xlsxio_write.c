@@ -2,6 +2,7 @@
 #include "xlsxio_version.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <inttypes.h>
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
@@ -468,6 +469,8 @@ DLL_EXPORT_XLSXIO xlsxiowriter xlsxiowrite_open (const char* filename, const cha
   return handle;
 }
 
+void flush_buffer (xlsxiowriter handle);
+
 DLL_EXPORT_XLSXIO int xlsxiowrite_close (xlsxiowriter handle)
 {
   struct column_info_struct* colinfo;
@@ -719,9 +722,9 @@ DLL_EXPORT_XLSXIO void xlsxiowrite_add_cell_string (xlsxiowriter handle, const c
     write_cell_data(handle, NULL, "<c" STYLE_ATTR(STYLE_TEXT) "/>", NULL, NULL);
 }
 
-DLL_EXPORT_XLSXIO void xlsxiowrite_add_cell_int (xlsxiowriter handle, long value)
+DLL_EXPORT_XLSXIO void xlsxiowrite_add_cell_int (xlsxiowriter handle, int64_t value)
 {
-  write_cell_data(handle, NULL, "<c" STYLE_ATTR(STYLE_INTEGER) "><v>", "</v></c>", "%li", value);
+  write_cell_data(handle, NULL, "<c" STYLE_ATTR(STYLE_INTEGER) "><v>", "</v></c>", "%" PRIi64, value);
 }
 
 DLL_EXPORT_XLSXIO void xlsxiowrite_add_cell_float (xlsxiowriter handle, double value)

@@ -1,6 +1,7 @@
 #include "xlsxio_read.h"
 #include "xlsxio_version.h"
 #include <stdlib.h>
+#include <inttypes.h>
 #include <string.h>
 #ifdef BUILD_XLSXIO_STATIC
 #define ZIP_STATIC
@@ -1156,12 +1157,17 @@ DLL_EXPORT_XLSXIO int xlsxioread_sheet_next_cell_string (xlsxioreadersheet sheet
   return (result ? 1 : 0);
 }
 
-DLL_EXPORT_XLSXIO int xlsxioread_sheet_next_cell_int (xlsxioreadersheet sheethandle, long* pvalue)
+DLL_EXPORT_XLSXIO int xlsxioread_sheet_next_cell_int (xlsxioreadersheet sheethandle, int64_t* pvalue)
 {
   char* result;
+  int status;
   if ((result = xlsxioread_sheet_next_cell(sheethandle)) != NULL) {
-    if (pvalue)
-      *pvalue = strtol(result, NULL, 10);
+    if (pvalue) {
+      status = sscanf(result, "%" PRIi64, pvalue);
+      if (status == EOF || status == 0)
+        *pvalue = 0;
+      //alternative: use strtoimax()
+    }
   }
   return (result ? 1 : 0);
 }
