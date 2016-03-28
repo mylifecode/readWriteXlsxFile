@@ -1,5 +1,9 @@
 0.1.7
 
+2016-03-28  Brecht Sanders  https://github.com/brechtsanders/
+
+  * changed integer type to int64_t in xlsxiowrite_add_cell_int() and xlsxioread_sheet_next_cell_int()
+
 0.1.6
 
 2016-03-24  Brecht Sanders  https://github.com/brechtsanders/
