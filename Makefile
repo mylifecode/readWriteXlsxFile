@@ -121,15 +121,15 @@ ifdef DOXYGEN
 endif
 
 install: all doc
-	$(MKDIR) $(PREFIX)/include $(PREFIX)/lib
+	$(MKDIR) $(PREFIX)/include $(PREFIX)/lib $(PREFIX)/bin
 	$(CP) include/*.h $(PREFIX)/include/
 	$(CP) *$(LIBEXT) $(PREFIX)/lib/
 ifeq ($(OS),Windows_NT)
-	$(MKDIR) $(PREFIX)/bin
 	$(CP) *$(SOEXT) $(PREFIX)/bin/
 else
 	$(CP) *$(SOEXT) $(PREFIX)/lib/
 endif
+	$(CP) $(TOOLS_BIN) $(PREFIX)/bin/
 ifdef DOXYGEN
 	$(CPDIR) doc/man $(PREFIX)/
 endif
