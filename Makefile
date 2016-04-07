@@ -60,6 +60,7 @@ else
 OS_LINK_FLAGS = -shared -Wl,-soname,$@ $(STRIPFLAG)
 endif
 
+TOOLS_BIN = xlsxio_xlsx2csv$(BINEXT)
 EXAMPLES_BIN = example_xlsxio_write_getversion$(BINEXT) example_xlsxio_write$(BINEXT) example_xlsxio_read$(BINEXT) example_xlsxio_read_advanced$(BINEXT)
 
 COMMON_PACKAGE_FILES = README.md LICENSE.txt Changelog.txt
@@ -67,7 +68,7 @@ SOURCE_PACKAGE_FILES = $(COMMON_PACKAGE_FILES) Makefile doc/Doxyfile include/*.h
 
 default: all
 
-all: static-lib shared-lib
+all: static-lib shared-lib tools
 
 %.o: %.c
 	$(CC) -c -o $@ $< $(CFLAGS) 
@@ -94,6 +95,8 @@ $(LIBPREFIX)xlsxio_write$(LIBEXT): $(XLSXIOWRITE_OBJ:%.o=%.static.o)
 $(LIBPREFIX)xlsxio_write$(SOEXT): $(XLSXIOWRITE_OBJ:%.o=%.shared.o)
 	$(CC) -o $@ $(OS_LINK_FLAGS) $^ $(XLSXIOWRITE_LDFLAGS) $(LDFLAGS) $(LIBS)
 
+examples: $(EXAMPLES_BIN)
+
 example_xlsxio_write_getversion$(BINEXT): $(LIBPREFIX)xlsxio_write$(LIBEXT) examples/example_xlsxio_write_getversion.static.o
 	$(CC) -o $@ examples/$(@:%$(BINEXT)=%.static.o) $(LIBPREFIX)xlsxio_write$(LIBEXT) $(XLSXIOWRITE_LDFLAGS) $(LDFLAGS)
 
@@ -106,7 +109,10 @@ example_xlsxio_read$(BINEXT): $(LIBPREFIX)xlsxio_read$(LIBEXT) examples/example_
 example_xlsxio_read_advanced$(BINEXT): $(LIBPREFIX)xlsxio_read$(LIBEXT) examples/example_xlsxio_read_advanced.static.o
 	$(CC) -o $@ examples/$(@:%$(BINEXT)=%.static.o) $(LIBPREFIX)xlsxio_read$(LIBEXT) $(XLSXIOREAD_LDFLAGS) $(LDFLAGS)
 
-examples: $(EXAMPLES_BIN)
+tools: $(TOOLS_BIN)
+
+xlsxio_xlsx2csv$(BINEXT): $(LIBPREFIX)xlsxio_read$(LIBEXT) src/xlsxio_xlsx2csv.o
+	$(CC) -o $@ src/$(@:%$(BINEXT)=%.o) $(LIBPREFIX)xlsxio_read$(LIBEXT) $(XLSXIOREAD_LDFLAGS) $(LDFLAGS)
 
 .PHONY: doc
 doc:
@@ -144,6 +150,6 @@ binarypackage: version
 
 .PHONY: clean
 clean:
-	$(RM) lib/*.o examples/*.o src/*.o *$(LIBEXT) *$(SOEXT) $(EXAMPLES_BIN) version xlsxio-*.tar.xz doc/doxygen_sqlite3.db
+	$(RM) lib/*.o examples/*.o src/*.o *$(LIBEXT) *$(SOEXT) $(TOOLS_BIN) $(EXAMPLES_BIN) version xlsxio-*.tar.xz doc/doxygen_sqlite3.db
 	$(RMDIR) doc/html doc/man
 

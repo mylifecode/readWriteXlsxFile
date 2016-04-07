@@ -1,13 +1,37 @@
+/*****************************************************************************
+Copyright (C)  2016  Brecht Sanders  All Rights Reserved
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+*****************************************************************************/
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
 #include "xlsxio_read.h"
+#include "xlsxio_version.h"
 
 struct xlsx_list_sheets_data {
   xlsxioreader xlsxioread;
   FILE* dst;
   int nobom;
+  const char* newline;
   char separator;
   char quote;
   const char* filename;
@@ -16,7 +40,7 @@ struct xlsx_list_sheets_data {
 int sheet_row_callback (size_t row, size_t maxcol, void* callbackdata)
 {
   struct xlsx_list_sheets_data* data = (struct xlsx_list_sheets_data*)callbackdata;
-  fprintf(data->dst, "\r\n");
+  fprintf(data->dst, data->newline);
   return 0;
 }
 
@@ -86,8 +110,12 @@ void show_help ()
     "Parameters:\n"
     "  -h          \tdisplay command line help\n"
     "  -s separator\tspecify separator to use (default is comma)\n"
-    "  -n          \tdon't write UTF-8 BOM signature\n"
+    "  -b          \tdon't write UTF-8 BOM signature\n"
+    "  -n          \tuse UNIX style line breaks\n"
     "  xlsxfile    \tpath to .xlsx file (multiple may be specified)\n"
+    "Description:\n"
+    "Exports all sheets in all specified .xlsx files to individual CSV files.\n"
+    "Version: " XLSXIO_VERSION_STRING "\n"
     "\n"
   );
 }
@@ -99,6 +127,7 @@ int main (int argc, char* argv[])
   xlsxioreader xlsxioread;
   struct xlsx_list_sheets_data sheetdata = {
     .nobom = 0,
+    .newline = "\r\n",
     .separator = ',',
     .quote = '"',
   };
@@ -123,19 +152,22 @@ int main (int argc, char* argv[])
           if (param)
             sheetdata.separator = param[0];
           continue;
-        case 'n' :
+        case 'b' :
           sheetdata.nobom = 1;
+          continue;
+        case 'n' :
+          sheetdata.newline = "\n";
           continue;
       }
     }
-    //open file
+    //open .xlsx file
     if ((xlsxioread = xlsxioread_open(argv[i])) != NULL) {
-      //iterate through available sheets
       sheetdata.xlsxioread = xlsxioread;
       sheetdata.filename = argv[i];
+      //iterate through available sheets
       printf("Processing file: %s\n", argv[i]);
       xlsxioread_list_sheets(xlsxioread, xlsx_list_sheets_callback, &sheetdata);
-      //clean up
+      //close .xlsx file
       xlsxioread_close(xlsxioread);
     }
   }

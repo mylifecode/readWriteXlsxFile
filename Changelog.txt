@@ -3,6 +3,7 @@
 2016-04-07  Brecht Sanders  https://github.com/brechtsanders/
 
   * fixed issue with callback data pointer in row callback function
+  * added xlsxio_xlsx2csv command line utility
 
 0.1.7
 
