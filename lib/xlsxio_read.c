@@ -715,7 +715,7 @@ void data_sheet_expat_callback_find_row_end (void* callbackdata, const XML_Char*
     //process end of row
     if (!(data->flags & XLSXIOREAD_NO_CALLBACK)) {
       if (data->sheet_row_callback) {
-        if ((*data->sheet_row_callback)(data->rownr, data->colnr, callbackdata)) {
+        if ((*data->sheet_row_callback)(data->rownr, data->colnr, data->callbackdata)) {
           XML_StopParser(data->xmlparser, XML_FALSE);
           return;
         }
@@ -760,7 +760,7 @@ void data_sheet_expat_callback_find_cell_start (void* callbackdata, const XML_Ch
             }
             //finish empty row
             if (data->sheet_row_callback) {
-              if ((*data->sheet_row_callback)(data->rownr, data->cols, callbackdata)) {
+              if ((*data->sheet_row_callback)(data->rownr, data->cols, data->callbackdata)) {
                 XML_StopParser(data->xmlparser, XML_FALSE);
                 return;
               }
