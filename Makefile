@@ -64,7 +64,7 @@ TOOLS_BIN = xlsxio_xlsx2csv$(BINEXT)
 EXAMPLES_BIN = example_xlsxio_write_getversion$(BINEXT) example_xlsxio_write$(BINEXT) example_xlsxio_read$(BINEXT) example_xlsxio_read_advanced$(BINEXT)
 
 COMMON_PACKAGE_FILES = README.md LICENSE.txt Changelog.txt
-SOURCE_PACKAGE_FILES = $(COMMON_PACKAGE_FILES) Makefile doc/Doxyfile include/*.h lib/*.c examples/*.c build/*.cbp
+SOURCE_PACKAGE_FILES = $(COMMON_PACKAGE_FILES) Makefile doc/Doxyfile include/*.h lib/*.c src/*.c examples/*.c build/*.cbp
 
 default: all
 
@@ -97,22 +97,22 @@ $(LIBPREFIX)xlsxio_write$(SOEXT): $(XLSXIOWRITE_OBJ:%.o=%.shared.o)
 
 examples: $(EXAMPLES_BIN)
 
-example_xlsxio_write_getversion$(BINEXT): $(LIBPREFIX)xlsxio_write$(LIBEXT) examples/example_xlsxio_write_getversion.static.o
+example_xlsxio_write_getversion$(BINEXT): examples/example_xlsxio_write_getversion.static.o $(LIBPREFIX)xlsxio_write$(LIBEXT)
 	$(CC) -o $@ examples/$(@:%$(BINEXT)=%.static.o) $(LIBPREFIX)xlsxio_write$(LIBEXT) $(XLSXIOWRITE_LDFLAGS) $(LDFLAGS)
 
-example_xlsxio_write$(BINEXT): $(LIBPREFIX)xlsxio_write$(LIBEXT) examples/example_xlsxio_write.static.o
+example_xlsxio_write$(BINEXT): examples/example_xlsxio_write.static.o $(LIBPREFIX)xlsxio_write$(LIBEXT)
 	$(CC) -o $@ examples/$(@:%$(BINEXT)=%.static.o) $(LIBPREFIX)xlsxio_write$(LIBEXT) $(XLSXIOWRITE_LDFLAGS) $(LDFLAGS)
 
-example_xlsxio_read$(BINEXT): $(LIBPREFIX)xlsxio_read$(LIBEXT) examples/example_xlsxio_read.static.o
+example_xlsxio_read$(BINEXT): examples/example_xlsxio_read.static.o $(LIBPREFIX)xlsxio_read$(LIBEXT)
 	$(CC) -o $@ examples/$(@:%$(BINEXT)=%.static.o) $(LIBPREFIX)xlsxio_read$(LIBEXT) $(XLSXIOREAD_LDFLAGS) $(LDFLAGS)
 
-example_xlsxio_read_advanced$(BINEXT): $(LIBPREFIX)xlsxio_read$(LIBEXT) examples/example_xlsxio_read_advanced.static.o
+example_xlsxio_read_advanced$(BINEXT): examples/example_xlsxio_read_advanced.static.o $(LIBPREFIX)xlsxio_read$(LIBEXT)
 	$(CC) -o $@ examples/$(@:%$(BINEXT)=%.static.o) $(LIBPREFIX)xlsxio_read$(LIBEXT) $(XLSXIOREAD_LDFLAGS) $(LDFLAGS)
 
 tools: $(TOOLS_BIN)
 
-xlsxio_xlsx2csv$(BINEXT): $(LIBPREFIX)xlsxio_read$(LIBEXT) src/xlsxio_xlsx2csv.o
-	$(CC) -o $@ src/$(@:%$(BINEXT)=%.o) $(LIBPREFIX)xlsxio_read$(LIBEXT) $(XLSXIOREAD_LDFLAGS) $(LDFLAGS)
+xlsxio_xlsx2csv$(BINEXT): src/xlsxio_xlsx2csv.static.o $(LIBPREFIX)xlsxio_read$(LIBEXT)
+	$(CC) -o $@ $< $(LIBPREFIX)xlsxio_read$(LIBEXT) $(XLSXIOREAD_LDFLAGS) $(LDFLAGS)
 
 .PHONY: doc
 doc:
