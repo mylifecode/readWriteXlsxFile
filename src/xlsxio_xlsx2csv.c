@@ -40,7 +40,7 @@ struct xlsx_data {
 int sheet_row_callback (size_t row, size_t maxcol, void* callbackdata)
 {
   struct xlsx_data* data = (struct xlsx_data*)callbackdata;
-  fprintf(data->dst, data->newline);
+  fprintf(data->dst, "%s", data->newline);
   return 0;
 }
 
