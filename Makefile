@@ -42,14 +42,16 @@ DOXYGEN := $(shell which doxygen)
 
 XLSXIOREAD_OBJ = lib/xlsxio_read.o
 XLSXIOREAD_LDFLAGS = -lzip -lexpat
+XLSXIOREAD_SHARED_LDFLAGS =
 XLSXIOWRITE_OBJ = lib/xlsxio_write.o
 XLSXIOWRITE_LDFLAGS = -lzip
+XLSXIOWRITE_SHARED_LDFLAGS =
 ifneq ($(OS),Windows_NT)
 SHARED_CFLAGS += -fPIC
 endif
 ifeq ($(OS),Windows_NT)
-XLSXIOREAD_LDFLAGS += -Wl,--out-implib,$@$(LIBEXT)
-XLSXIOWRITE_LDFLAGS += -Wl,--out-implib,$@$(LIBEXT)
+XLSXIOREAD_SHARED_LDFLAGS += -Wl,--out-implib,$@$(LIBEXT)
+XLSXIOWRITE_SHARED_LDFLAGS += -Wl,--out-implib,$@$(LIBEXT)
 else ifeq ($(OS),Darwin)
 else
 XLSXIOWRITE_LDFLAGS += -pthread
@@ -60,7 +62,7 @@ else
 OS_LINK_FLAGS = -shared -Wl,-soname,$@ $(STRIPFLAG)
 endif
 
-TOOLS_BIN = xlsxio_xlsx2csv$(BINEXT)
+TOOLS_BIN = xlsxio_xlsx2csv$(BINEXT) xlsxio_csv2xlsx$(BINEXT)
 EXAMPLES_BIN = example_xlsxio_write_getversion$(BINEXT) example_xlsxio_write$(BINEXT) example_xlsxio_read$(BINEXT) example_xlsxio_read_advanced$(BINEXT)
 
 COMMON_PACKAGE_FILES = README.md LICENSE.txt Changelog.txt
@@ -87,13 +89,13 @@ $(LIBPREFIX)xlsxio_read$(LIBEXT): $(XLSXIOREAD_OBJ:%.o=%.static.o)
 	$(AR) cru $@ $^
 
 $(LIBPREFIX)xlsxio_read$(SOEXT): $(XLSXIOREAD_OBJ:%.o=%.shared.o)
-	$(CC) -o $@ $(OS_LINK_FLAGS) $^ $(XLSXIOREAD_LDFLAGS) $(LDFLAGS) $(LIBS)
+	$(CC) -o $@ $(OS_LINK_FLAGS) $^ $(XLSXIOREAD_SHARED_LDFLAGS) $(XLSXIOREAD_LDFLAGS) $(LDFLAGS) $(LIBS)
 
 $(LIBPREFIX)xlsxio_write$(LIBEXT): $(XLSXIOWRITE_OBJ:%.o=%.static.o)
 	$(AR) cru $@ $^
 
 $(LIBPREFIX)xlsxio_write$(SOEXT): $(XLSXIOWRITE_OBJ:%.o=%.shared.o)
-	$(CC) -o $@ $(OS_LINK_FLAGS) $^ $(XLSXIOWRITE_LDFLAGS) $(LDFLAGS) $(LIBS)
+	$(CC) -o $@ $(OS_LINK_FLAGS) $^ $(XLSXIOWRITE_SHARED_LDFLAGS) $(XLSXIOWRITE_LDFLAGS) $(LDFLAGS) $(LIBS)
 
 examples: $(EXAMPLES_BIN)
 
@@ -113,6 +115,9 @@ tools: $(TOOLS_BIN)
 
 xlsxio_xlsx2csv$(BINEXT): src/xlsxio_xlsx2csv.static.o $(LIBPREFIX)xlsxio_read$(LIBEXT)
 	$(CC) -o $@ $< $(LIBPREFIX)xlsxio_read$(LIBEXT) $(XLSXIOREAD_LDFLAGS) $(LDFLAGS)
+
+xlsxio_csv2xlsx$(BINEXT): src/xlsxio_csv2xlsx.static.o $(LIBPREFIX)xlsxio_write$(LIBEXT)
+	$(CC) -o $@ $< $(LIBPREFIX)xlsxio_write$(LIBEXT) $(XLSXIOWRITE_LDFLAGS) $(LDFLAGS)
 
 .PHONY: doc
 doc:
