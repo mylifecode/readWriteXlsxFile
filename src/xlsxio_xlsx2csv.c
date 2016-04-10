@@ -114,7 +114,7 @@ void show_help ()
     "  -n          \tuse UNIX style line breaks\n"
     "  xlsxfile    \tpath to .xlsx file (multiple may be specified)\n"
     "Description:\n"
-    "Converts all sheets in all specified .xlsx files to individual CSV files.\n"
+    "Converts all sheets in all specified .xlsx files to individual CSV (Comma Separated Values) files.\n"
     "Version: " XLSXIO_VERSION_STRING "\n"
     "\n"
   );

@@ -50,7 +50,7 @@ void show_help ()
     "  -t          \ttread top row as header row\n"
     "  csvfile     \tpath to CSV file (multiple may be specified)\n"
     "Description:\n"
-    "Converts all specified CSV files to .xlsx.\n"
+    "Converts all specified CSV (Comma Separated Values) files to .xlsx files.\n"
     "Version: " XLSXIO_VERSION_STRING "\n"
     "\n"
   );

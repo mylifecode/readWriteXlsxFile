@@ -36,6 +36,12 @@ Writing .xlsx files:
 - on the fly file generation without the need to buffer data in memory
 - no support for shared strings (all values are written as inline strings)
 
+Command Line Utilities
+----------------------
+Some command line utilties are included:
+- xlsxio_xlsx2csv: converts all sheets in all specified .xlsx files to individual CSV (Comma Separated Values) files.
+- xlsxio_csv2xlsx: converts all specified CSV (Comma Separated Values) files to .xlsx files.
+
 Dependancies
 ------------
 This project has the following depencancies:
