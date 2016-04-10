@@ -27,7 +27,7 @@ THE SOFTWARE.
 #include "xlsxio_read.h"
 #include "xlsxio_version.h"
 
-struct xlsx_list_sheets_data {
+struct xlsx_data {
   xlsxioreader xlsxioread;
   FILE* dst;
   int nobom;
@@ -39,14 +39,14 @@ struct xlsx_list_sheets_data {
 
 int sheet_row_callback (size_t row, size_t maxcol, void* callbackdata)
 {
-  struct xlsx_list_sheets_data* data = (struct xlsx_list_sheets_data*)callbackdata;
+  struct xlsx_data* data = (struct xlsx_data*)callbackdata;
   fprintf(data->dst, data->newline);
   return 0;
 }
 
 int sheet_cell_callback (size_t row, size_t col, const char* value, void* callbackdata)
 {
-  struct xlsx_list_sheets_data* data = (struct xlsx_list_sheets_data*)callbackdata;
+  struct xlsx_data* data = (struct xlsx_data*)callbackdata;
   if (col > 1)
     fprintf(data->dst, "%c", data->separator);
   if (value) {
@@ -74,7 +74,7 @@ int sheet_cell_callback (size_t row, size_t col, const char* value, void* callba
 int xlsx_list_sheets_callback (const char* name, void* callbackdata)
 {
   char* filename;
-  struct xlsx_list_sheets_data* data = (struct xlsx_list_sheets_data*)callbackdata;
+  struct xlsx_data* data = (struct xlsx_data*)callbackdata;
   //determine output file
   if ((filename = (char*)malloc(strlen(data->filename) + strlen(name) + 6)) == NULL ){
     fprintf(stderr, "Memory allocation error\n");
@@ -89,7 +89,7 @@ int xlsx_list_sheets_callback (const char* name, void* callbackdata)
     if ((data->dst = fopen(filename, "wb")) == NULL) {
       fprintf(stderr, "Error creating output file: %s\n", filename);
     } else {
-      //write UTF-8 BOM
+      //write UTF-8 BOM header
       if (!data->nobom)
         fprintf(data->dst, "\xEF\xBB\xBF");
       //process data
@@ -114,7 +114,7 @@ void show_help ()
     "  -n          \tuse UNIX style line breaks\n"
     "  xlsxfile    \tpath to .xlsx file (multiple may be specified)\n"
     "Description:\n"
-    "Exports all sheets in all specified .xlsx files to individual CSV files.\n"
+    "Converts all sheets in all specified .xlsx files to individual CSV files.\n"
     "Version: " XLSXIO_VERSION_STRING "\n"
     "\n"
   );
@@ -125,7 +125,7 @@ int main (int argc, char* argv[])
   int i;
   char* param;
   xlsxioreader xlsxioread;
-  struct xlsx_list_sheets_data sheetdata = {
+  struct xlsx_data sheetdata = {
     .nobom = 0,
     .newline = "\r\n",
     .separator = ',',

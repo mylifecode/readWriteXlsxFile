@@ -20,5 +20,8 @@
 		<Project filename="xlsxio_xlsx2csv.cbp">
 			<Depends filename="libxlsxio_read_shared.cbp" />
 		</Project>
+		<Project filename="xlsxio_csv2xlsx.cbp">
+			<Depends filename="libxlsxio_write_shared.cbp" />
+		</Project>
 	</Workspace>
 </CodeBlocks_workspace_file>
