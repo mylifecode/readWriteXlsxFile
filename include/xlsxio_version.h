@@ -45,9 +45,9 @@ THE SOFTWARE.
 /*! \brief major version number */
 #define XLSXIO_VERSION_MAJOR 0
 /*! \brief minor version number */
-#define XLSXIO_VERSION_MINOR 1
+#define XLSXIO_VERSION_MINOR 2
 /*! \brief micro version number */
-#define XLSXIO_VERSION_MICRO 9
+#define XLSXIO_VERSION_MICRO 0
 /*! @} */
 
 /*! \cond PRIVATE */
