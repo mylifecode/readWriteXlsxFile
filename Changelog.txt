@@ -3,6 +3,7 @@
 2016-04-10  Brecht Sanders  https://github.com/brechtsanders/
 
   * added xlsxio_csv2xlsx command line utility
+  * fixed warning in xlsxio_xlsx2csv when compiling with clang
 
 0.1.8
 
