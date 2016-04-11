@@ -453,7 +453,7 @@ DLL_EXPORT_XLSXIO xlsxiowriter xlsxiowrite_open (const char* filename, const cha
     }
     handle->pipe_read = fdopen(pipefd[0], "rb");
     handle->pipe_write = fdopen(pipefd[1], "wb");
-    //remove filename if it already exists
+    //remove filename first if it already exists
     unlink(filename);
     //create and start thread that will receive data via pipe
 #ifdef USE_WINTHREADS

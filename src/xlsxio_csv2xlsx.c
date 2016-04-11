@@ -24,6 +24,9 @@ THE SOFTWARE.
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
+#ifdef _WIN32
+#include <fcntl.h>      //O_BINARY
+#endif
 #include "xlsxio_write.h"
 #include "xlsxio_version.h"
 
@@ -92,7 +95,12 @@ int main (int argc, char* argv[])
       }
     }
     //open CSV file
-    if ((src = fopen(argv[i], "rb")) == NULL) {
+    if (strcmp(argv[i], "-") == 0) {
+      src = stdin;
+#ifdef _WIN32
+      setmode(fileno(stdin), O_BINARY);
+#endif
+    } else if ((src = fopen(argv[i], "rb")) == NULL) {
       fprintf(stderr, "Error opening file: %s\n", argv[i]);
     } else {
       char* sheetname;

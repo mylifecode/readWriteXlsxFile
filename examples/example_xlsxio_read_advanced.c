@@ -1,3 +1,33 @@
+/*****************************************************************************
+Copyright (C)  2016  Brecht Sanders  All Rights Reserved
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+*****************************************************************************/
+
+/**
+ * @file example_xlsxio_read_advanced.c
+ * @brief XLSX I/O example illustrating how to read from an .xlsx file.
+ * @author Brecht Sanders
+ *
+ * This example reads data from an .xslx file using the callback method.
+ */
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -5,10 +35,12 @@
 
 const char* filename = "example.xlsx";
 
+//calback data structure for listing sheets
 struct xlsx_list_sheets_data {
   char* firstsheet;
 };
 
+//calback function for listing sheets
 int xlsx_list_sheets_callback (const char* name, void* callbackdata)
 {
   struct xlsx_list_sheets_data* data = (struct xlsx_list_sheets_data*)callbackdata;
@@ -18,12 +50,14 @@ int xlsx_list_sheets_callback (const char* name, void* callbackdata)
   return 0;
 }
 
+//calback function for end of row
 int sheet_row_callback (size_t row, size_t maxcol, void* callbackdata)
 {
   printf("\n");
   return 0;
 }
 
+//calback function for cell data
 int sheet_cell_callback (size_t row, size_t col, const char* value, void* callbackdata)
 {
   if (col > 1)
@@ -43,11 +77,11 @@ int main (int argc, char* argv[])
   }
   //list available sheets
   struct xlsx_list_sheets_data sheetdata;
-  printf("Available sheets:\n");
   sheetdata.firstsheet = NULL;
+  printf("Available sheets:\n");
   xlsxioread_list_sheets(xlsxioread, xlsx_list_sheets_callback, &sheetdata);
 
-  //perform tests
+  //read data
   xlsxioread_process(xlsxioread, sheetdata.firstsheet, XLSXIOREAD_SKIP_EMPTY_ROWS, sheet_cell_callback, sheet_row_callback, NULL);
 
   //clean up

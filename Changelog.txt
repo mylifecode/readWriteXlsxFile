@@ -1,5 +1,15 @@
 0.2.0
 
+2016-04-11  Brecht Sanders  https://github.com/brechtsanders/
+
+  * added more comments in example files
+  * renamed the following for better naming consistency:
+      + XLSXIO_READ_NAME to XLSXIOREAD_NAME
+      + XLSXIO_READ_FULLNAME to XLSXIOREAD_FULLNAME
+      + XLSXIO_WRITE_NAME to XLSXIOWRITE_NAME
+      + XLSXIO_WRITE_FULLNAME to XLSXIOWRITE_FULLNAME
+  * added support to xlsxio_csv2xlsx to use - as standard input
+
 0.1.9
 
 2016-04-10  Brecht Sanders  https://github.com/brechtsanders/
