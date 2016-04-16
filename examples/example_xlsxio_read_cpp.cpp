@@ -4,92 +4,165 @@
 #include <string>
 #include "xlsxio_read.h"
 
-const char* filename = "example.xlsx";
-
-
-
+/*! \class XLSXIOReader
+ *  \brief class for reading data from an .xlsx file
+ *\details C++ wrapper for xlsxioread_ functions.
+ */
 class XLSXIOReader
 {
  private:
   xlsxioreader handle;
  public:
+
+  /*! \brief XLSXIOReader constructor, opens .xlsx file
+   * \param  filename      path of .xlsx file to open
+   * \sa     xlsxioread_open()
+   */
   XLSXIOReader (const char* filename);
+
+  /*! \brief XLSXIOReader destructor, closes .xlsx file
+   * \sa     xlsxioread_close()
+   */
   ~XLSXIOReader ();
+
+  /*! \brief opens
+   * \param  sheetname     worksheet name (NULL for first sheet)
+   * \param  flags         XLSXIOREAD_SKIP_ flag(s) to determine how data is processed
+   * \return XLSXIOReaderSheet object or NULL in case of error
+   * \sa     xlsxioread_sheet_open()
+   */
   class XLSXIOReaderSheet* OpenSheet (const char* sheetname, unsigned int flags);
 };
 
 
 
+/*! \class XLSXIOReaderSheet
+ *  \brief class for reading data from a sheet in an .xlsx file
+ *\details C++ wrapper for xlsxioread_sheet_ functions.
+ */
 class XLSXIOReaderSheet
 {
   friend class XLSXIOReader;
  private:
   xlsxioreadersheet sheethandle;
+  XLSXIOReaderSheet (xlsxioreadersheet sheet);
   XLSXIOReaderSheet (xlsxioreader xlsxhandle, const char* sheetname, unsigned int flags);
  public:
+
+  /*! \brief XLSXIOReaderSheet, closes sheet
+   * \sa     xlsxioread_sheet_close()
+   */
   ~XLSXIOReaderSheet ();
+
+  /*! \brief start reading the next row of data
+   * \sa     xlsxioread_sheet_next_row()
+   * \sa     GetNextCell()
+   */
   bool GetNextRow ();
+
+  /*! \brief read the next column cell
+   * \return value (caller must free the result) or NULL if no more cells are available in the current row
+   * \sa     xlsxioread_sheet_next_cell()
+   * \sa     GetNextRow()
+   */
   char* GetNextCell ();
+
+  /*! \brief read the next column cell as a dynamically allocated string value
+   * \param  value         reference where value will be stored (caller must free the result)
+   * \return true if cell data was available, otherwise false
+   * \sa     xlsxioread_sheet_next_cell_string()
+   * \sa     GetNextRow()
+   */
   bool GetNextCellString (char*& value);
+
+  /*! \brief read the next column cell as a string value
+   * \param  value         reference where value will be stored
+   * \return true if cell data was available, otherwise false
+   * \sa     xlsxioread_sheet_next_cell_string()
+   * \sa     GetNextRow()
+   */
   bool GetNextCellString (std::string& value);
+
+  /*! \brief read the next column cell as an integer value
+   * \param  value         reference where value will be stored
+   * \return true if cell data was available, otherwise false
+   * \sa     xlsxioread_sheet_next_cell_int()
+   * \sa     GetNextRow()
+   */
   bool GetNextCellInt (int64_t& value);
+
+  /*! \brief read the next column cell as a floating point value
+   * \param  value         reference where value will be stored
+   * \return true if cell data was available, otherwise false
+   * \sa     xlsxioread_sheet_next_cell_float()
+   * \sa     GetNextRow()
+   */
   bool GetNextCellFloat (double& value);
+
+  /*! \brief read the next column cell as a date/time value
+   * \param  value         reference where value will be stored
+   * \return true if cell data was available, otherwise false
+   * \sa     xlsxioread_sheet_next_cell_datetime()
+   * \sa     GetNextRow()
+   */
   bool GetNextCellDateTime (time_t& value);
-  inline XLSXIOReaderSheet& operator >> (char*& value) { GetNextCellString(value); return *this; }
-  inline XLSXIOReaderSheet& operator >> (std::string& value) { GetNextCellString(value); return *this; }
-  inline XLSXIOReaderSheet& operator >> (int64_t& value) { GetNextCellInt(value); return *this; }
-  //inline XLSXIOReaderSheet& operator >> (int& value) { int64_t l; GetNextCellInt(l); l = value; return *this; }
-  //inline XLSXIOReaderSheet& operator >> (long& value) { int64_t l; GetNextCellInt(l); l = value; return *this; }
-  //inline XLSXIOReaderSheet& operator >> (long long& value) { int64_t l; GetNextCellInt(l); l = value; return *this; }
-  //inline XLSXIOReaderSheet& operator >> (unsigned int& value) { int64_t l; GetNextCellInt(l); l = value; return *this; }
-  //inline XLSXIOReaderSheet& operator >> (unsigned long& value) { int64_t l; GetNextCellInt(l); l = value; return *this; }
-  //inline XLSXIOReaderSheet& operator >> (unsigned long long& value) { int64_t l; GetNextCellInt(l); l = value; return *this; }
-  inline XLSXIOReaderSheet& operator >> (double& value) { GetNextCellFloat(value); return *this; }
-  //inline XLSXIOReaderSheet& operator >> (time_t& value) { GetNextCellString(value); return *this; }
+
+  /*! \brief extraction operators
+   * \sa     GetNextCellString()
+   * \name   operator>>
+   * \{
+   */
+  XLSXIOReaderSheet& operator >> (char*& value);
+  XLSXIOReaderSheet& operator >> (std::string& value);
+  XLSXIOReaderSheet& operator >> (int64_t& value);
+  XLSXIOReaderSheet& operator >> (double& value);
+  //inline XLSXIOReaderSheet& operator >> (time_t& value);
+  /*! @} */
 };
 
 
 
-XLSXIOReader::XLSXIOReader (const char* filename)
+inline XLSXIOReader::XLSXIOReader (const char* filename)
 {
   handle = xlsxioread_open(filename);
 }
 
-XLSXIOReader::~XLSXIOReader ()
+inline XLSXIOReader::~XLSXIOReader ()
 {
   xlsxioread_close(handle);
 }
 
-
-
-class XLSXIOReaderSheet* XLSXIOReader::OpenSheet (const char* sheetname, unsigned int flags)
+inline class XLSXIOReaderSheet* XLSXIOReader::OpenSheet (const char* sheetname, unsigned int flags)
 {
-  return new XLSXIOReaderSheet(handle, sheetname, flags);
+  xlsxioreadersheet sheethandle;
+  if ((sheethandle = xlsxioread_sheet_open(handle, sheetname, flags)) == NULL)
+    return NULL;
+  return new XLSXIOReaderSheet(sheethandle);
 }
 
 
 
-XLSXIOReaderSheet::XLSXIOReaderSheet (xlsxioreader xlsxhandle, const char* sheetname, unsigned int flags)
+inline XLSXIOReaderSheet::XLSXIOReaderSheet (xlsxioreadersheet sheet)
+: sheethandle(sheet)
 {
-  sheethandle = xlsxioread_sheet_open(xlsxhandle, sheetname, flags);
 }
 
-XLSXIOReaderSheet::~XLSXIOReaderSheet ()
+inline XLSXIOReaderSheet::~XLSXIOReaderSheet ()
 {
   xlsxioread_sheet_close(sheethandle);
 }
 
-bool XLSXIOReaderSheet::GetNextRow ()
+inline bool XLSXIOReaderSheet::GetNextRow ()
 {
   return (xlsxioread_sheet_next_row(sheethandle) != 0);
 }
 
-char* XLSXIOReaderSheet::GetNextCell ()
+inline char* XLSXIOReaderSheet::GetNextCell ()
 {
   return xlsxioread_sheet_next_cell(sheethandle);
 }
 
-bool XLSXIOReaderSheet::GetNextCellString (char*& value)
+inline bool XLSXIOReaderSheet::GetNextCellString (char*& value)
 {
   if (!xlsxioread_sheet_next_cell_string(sheethandle, &value)) {
     value = NULL;
@@ -98,7 +171,7 @@ bool XLSXIOReaderSheet::GetNextCellString (char*& value)
   return true;
 }
 
-bool XLSXIOReaderSheet::GetNextCellString (std::string& value)
+inline bool XLSXIOReaderSheet::GetNextCellString (std::string& value)
 {
   char* result;
   if (!xlsxioread_sheet_next_cell_string(sheethandle, &result)) {
@@ -110,7 +183,7 @@ bool XLSXIOReaderSheet::GetNextCellString (std::string& value)
   return true;
 }
 
-bool XLSXIOReaderSheet::GetNextCellInt (int64_t& value)
+inline bool XLSXIOReaderSheet::GetNextCellInt (int64_t& value)
 {
   if (!xlsxioread_sheet_next_cell_int(sheethandle, &value)) {
     value = 0;
@@ -119,7 +192,7 @@ bool XLSXIOReaderSheet::GetNextCellInt (int64_t& value)
   return true;
 }
 
-bool XLSXIOReaderSheet::GetNextCellFloat (double& value)
+inline bool XLSXIOReaderSheet::GetNextCellFloat (double& value)
 {
   if (!xlsxioread_sheet_next_cell_float(sheethandle, &value)) {
     value = 0;
@@ -128,7 +201,7 @@ bool XLSXIOReaderSheet::GetNextCellFloat (double& value)
   return true;
 }
 
-bool XLSXIOReaderSheet::GetNextCellDateTime (time_t& value)
+inline bool XLSXIOReaderSheet::GetNextCellDateTime (time_t& value)
 {
   if (!xlsxioread_sheet_next_cell_datetime(sheethandle, &value)) {
     value = 0;
@@ -137,7 +210,41 @@ bool XLSXIOReaderSheet::GetNextCellDateTime (time_t& value)
   return true;
 }
 
+XLSXIOReaderSheet& XLSXIOReaderSheet::operator >> (char*& value)
+{
+  GetNextCellString(value);
+  return *this;
+}
 
+XLSXIOReaderSheet& XLSXIOReaderSheet::operator >> (std::string& value)
+{
+  GetNextCellString(value);
+  return *this;
+}
+
+XLSXIOReaderSheet& XLSXIOReaderSheet::operator >> (int64_t& value)
+{
+  GetNextCellInt(value);
+  return *this;
+}
+
+XLSXIOReaderSheet& XLSXIOReaderSheet::operator >> (double& value)
+{
+  GetNextCellFloat(value);
+  return *this;
+}
+
+/*
+XLSXIOReaderSheet& XLSXIOReaderSheet::operator >> (time_t& value)
+{
+  GetNextCellDateTime(value);
+  return *this;
+}
+*/
+
+
+
+const char* filename = "example.xlsx";
 
 int main (int argc, char* argv[])
 {

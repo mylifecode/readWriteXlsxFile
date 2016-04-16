@@ -72,21 +72,15 @@ class XLSXIOWriter
    * \name   operator<<
    * \{
    */
-  inline XLSXIOWriter& operator << (const char* value) { AddCellString(value); return *this; }
-  inline XLSXIOWriter& operator << (const std::string& value) { AddCellString(value.c_str()); return *this; }
-  inline XLSXIOWriter& operator << (int64_t value) { AddCellInt(value); return *this; }
-  //inline XLSXIOWriter& operator << (int value) { AddCellInt(value); return *this; }
-  //inline XLSXIOWriter& operator << (long value) { AddCellInt(value); return *this; }
-  //inline XLSXIOWriter& operator << (long long value) { AddCellInt(value); return *this; }
-  //inline XLSXIOWriter& operator << (unsigned int value) { AddCellInt(value); return *this; }
-  //inline XLSXIOWriter& operator << (unsigned long value) { AddCellInt(value); return *this; }
-  //inline XLSXIOWriter& operator << (unsigned long long value) { AddCellInt(value); return *this; }
-  inline XLSXIOWriter& operator << (float value) { AddCellFloat(value); return *this; }
-  inline XLSXIOWriter& operator << (double value) { AddCellFloat(value); return *this; }
-  //inline XLSXIOWriter& operator << (time_t value) { AddCellDateTime(value); return *this; }
+  XLSXIOWriter& operator << (const char* value);
+  XLSXIOWriter& operator << (const std::string& value);
+  XLSXIOWriter& operator << (int64_t value);
+  XLSXIOWriter& operator << (double value);
+  //XLSXIOWriter& operator << (time_t value);
   /*! @} */
 
   /*! \brief mark the end of a row (next cell will start on a new row)
+   * \sa     xlsxiowrite_next_row()
    * \sa     AddCellString()
    */
   void NextRow ();
@@ -95,48 +89,80 @@ class XLSXIOWriter
 
 
 
-XLSXIOWriter::XLSXIOWriter (const char* filename, const char* sheetname, size_t detectionrows)
+inline XLSXIOWriter::XLSXIOWriter (const char* filename, const char* sheetname, size_t detectionrows)
 {
   unlink(filename);
   handle = xlsxiowrite_open(filename, sheetname);
   xlsxiowrite_set_detection_rows(handle, detectionrows);
 }
 
-XLSXIOWriter::~XLSXIOWriter ()
+inline XLSXIOWriter::~XLSXIOWriter ()
 {
   xlsxiowrite_close(handle);
 }
 
-void XLSXIOWriter::SetRowHeight (size_t height)
+inline void XLSXIOWriter::SetRowHeight (size_t height)
 {
   xlsxiowrite_set_row_height(handle, height);
 }
 
-void XLSXIOWriter::AddColumn (const char* name, int width)
+inline void XLSXIOWriter::AddColumn (const char* name, int width)
 {
   xlsxiowrite_add_column(handle, name, width);
 }
 
-void XLSXIOWriter::AddCellString (const char* value)
+inline void XLSXIOWriter::AddCellString (const char* value)
 {
   xlsxiowrite_add_cell_string(handle, value);
 }
 
-void XLSXIOWriter::AddCellInt (long long value)
+inline void XLSXIOWriter::AddCellInt (long long value)
 {
   xlsxiowrite_add_cell_int(handle, value);
 }
 
-void XLSXIOWriter::AddCellFloat (double value)
+inline void XLSXIOWriter::AddCellFloat (double value)
 {
   xlsxiowrite_add_cell_float(handle, value);
 }
-void XLSXIOWriter::AddCellDateTime (time_t value)
+
+inline void XLSXIOWriter::AddCellDateTime (time_t value)
 {
   xlsxiowrite_add_cell_datetime(handle, value);
 }
 
-void XLSXIOWriter::NextRow ()
+inline XLSXIOWriter& XLSXIOWriter::operator << (const char* value)
+{
+  AddCellString(value); return *this;
+}
+
+inline XLSXIOWriter& XLSXIOWriter::operator << (const std::string& value)
+{
+  AddCellString(value.c_str());
+  return *this;
+}
+
+inline XLSXIOWriter& XLSXIOWriter::operator << (int64_t value)
+{
+  AddCellInt(value);
+  return *this;
+}
+
+inline XLSXIOWriter& XLSXIOWriter::operator << (double value)
+{
+  AddCellFloat(value);
+  return *this;
+}
+
+/*
+inline XLSXIOWriter& XLSXIOWriter::operator << (time_t value)
+{
+  AddCellDateTime(value);
+  return *this;
+}
+*/
+
+inline void XLSXIOWriter::NextRow ()
 {
   xlsxiowrite_next_row(handle);
 }

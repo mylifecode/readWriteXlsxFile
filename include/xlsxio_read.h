@@ -195,7 +195,7 @@ typedef struct xlsxio_read_sheet_struct* xlsxioreadersheet;
  * \param  handle        read handle for .xlsx object
  * \param  sheetname     worksheet name (NULL for first sheet)
  * \param  flags         XLSXIOREAD_SKIP_ flag(s) to determine how data is processed
- * \return read handle for worksheet object
+ * \return read handle for worksheet object or NULL in case of error
  * \sa     xlsxioread_sheet_close()
  * \sa     xlsxioread_open()
  */
