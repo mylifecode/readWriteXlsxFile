@@ -1,5 +1,13 @@
 0.2.0
 
+2016-04-35  Brecht Sanders  https://github.com/brechtsanders/
+
+  * added lastModifiedBy property (set to "libxlsxio_write <version>")
+
+2016-04-16  Brecht Sanders  https://github.com/brechtsanders/
+
+  * added C++ classes: XLSXIOWriter, XLSXIOReader, XLSXIOReaderSheet
+
 2016-04-11  Brecht Sanders  https://github.com/brechtsanders/
 
   * added more comments in example files

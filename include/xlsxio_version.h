@@ -61,13 +61,13 @@ THE SOFTWARE.
 #define XLSXIO_VERSION_STRING XLSXIO_VERSION_STRINGIZE(XLSXIO_VERSION_MAJOR, XLSXIO_VERSION_MINOR, XLSXIO_VERSION_MICRO)
 
 /*! \brief string with name of XLSX I/O reading library */
-#define XLSXIOREAD_NAME "libxlsxio_read "
+#define XLSXIOREAD_NAME "libxlsxio_read"
 /*! \brief string with name of XLSX I/O writing library */
 #define XLSXIOWRITE_NAME "libxlsxio_write"
 
 /*! \brief string with name and version of XLSX I/O reading library \hideinitializer */
-#define XLSXIOREAD_FULLNAME (XLSXIOREAD_NAME " " XLSXIO_VERSION_STRING)
+#define XLSXIOREAD_FULLNAME XLSXIOREAD_NAME " " XLSXIO_VERSION_STRING
 /*! \brief string with name and version of XLSX I/O writing library \hideinitializer */
-#define XLSXIOWRITE_FULLNAME (XLSXIOWRITE_NAME " " XLSXIO_VERSION_STRING)
+#define XLSXIOWRITE_FULLNAME XLSXIOWRITE_NAME " " XLSXIO_VERSION_STRING
 
 #endif

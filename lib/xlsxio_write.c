@@ -92,8 +92,11 @@ const char* content_types_xml =
 
 const char* docprops_core_xml =
   "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\r\n"
-  "<cp:coreProperties xmlns:cp=\"http://schemas.openxmlformats.org/package/2006/metadata/core-properties\">"
-  "</cp:coreProperties>";
+  "<coreProperties xmlns=\"http://schemas.openxmlformats.org/package/2006/metadata/core-properties\">"
+  //"<creator>" XLSXIOWRITE_FULLNAME "</creator>"
+  "<lastModifiedBy>" XLSXIOWRITE_FULLNAME "</lastModifiedBy>"
+  //"<modified>2016-04-24T17:50:35Z</modified>"
+  "</coreProperties>";
 
 const char* docprops_app_xml =
   "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\r\n"
@@ -120,14 +123,14 @@ const char* styles_xml =
   "<family val=\"2\"/>\r\n"
   //"<scheme val=\"minor\"/>\r\n"
   "</font>\r\n"
-"<font>\r\n"
-"<b/><u/>"
-"<sz val=\"10\"/>\r\n"
-//"<color theme=\"1\"/>\r\n"
-"<name val=\"Consolas\"/>\r\n"
-"<family val=\"2\"/>\r\n"
-//"<scheme val=\"minor\"/>\r\n"
-"</font>\r\n"
+  "<font>\r\n"
+  "<b/><u/>"
+  "<sz val=\"10\"/>\r\n"
+  //"<color theme=\"1\"/>\r\n"
+  "<name val=\"Consolas\"/>\r\n"
+  "<family val=\"2\"/>\r\n"
+  //"<scheme val=\"minor\"/>\r\n"
+  "</font>\r\n"
   "</fonts>\r\n"
   "<fills count=\"1\">\r\n"
   "<fill/>\r\n"
@@ -141,7 +144,7 @@ const char* styles_xml =
   //"<bottom/>\r\n"
   //"<diagonal/>\r\n"
   "</border>\r\n"
-"<border><bottom style=\"thin\"><color indexed=\"64\"/></bottom></border>\r\n"
+  "<border><bottom style=\"thin\"><color indexed=\"64\"/></bottom></border>\r\n"
   "</borders>\r\n"
   //"<cellStyleXfs count=\"1\">\r\n"
   //"<xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\"/>\r\n"
