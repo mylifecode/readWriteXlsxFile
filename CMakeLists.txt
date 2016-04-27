@@ -16,6 +16,7 @@ ENDIF()
 SET(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMake" ${CMAKE_MODULE_PATH})
 FIND_PACKAGE(libzip REQUIRED)
 FIND_PACKAGE(expat REQUIRED)
+FIND_PACKAGE(doxygen)
 
 # build parameters
 #SET(CMAKE_CXX_FLAGS "-g -Wall")
@@ -87,6 +88,22 @@ IF(BUILD_EXAMPLES)
   ADD_EXECUTABLE(example_xlsxio_read_advanced examples/example_xlsxio_read_advanced.c)
   TARGET_LINK_LIBRARIES(example_xlsxio_read_advanced xlsxio_read_${EXELINKTYPE})
   SET(ALLTARGETS ${ALLTARGETS} example_xlsxio_read_advanced)
+ENDIF()
+
+IF(DOXYGEN_FOUND)
+  ADD_CUSTOM_TARGET(doc ALL
+    COMMAND ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/doc/Doxyfile
+    #WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    COMMENT "Generating API documentation with Doxygen"
+    VERBATIM
+  )
+  INSTALL(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/doc/man
+    DESTINATION .
+  )
+  INSTALL(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/doc/html
+    DESTINATION share/doc
+  )
 ENDIF()
 
 # install definitions

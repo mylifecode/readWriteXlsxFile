@@ -1,6 +1,10 @@
 0.2.0
 
-2016-04-35  Brecht Sanders  https://github.com/brechtsanders/
+2016-04-27  Brecht Sanders  https://github.com/brechtsanders/
+
+  * added CMake support
+
+2016-04-25  Brecht Sanders  https://github.com/brechtsanders/
 
   * added lastModifiedBy property (set to "libxlsxio_write <version>")
 
