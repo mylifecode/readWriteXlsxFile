@@ -1,10 +1,21 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 PROJECT(xlsxio)
 
+# parameters
+SET(BUILD_STATIC ON CACHE BOOL "Build static libraries" FORCE)
+SET(BUILD_SHARED ON CACHE BOOL "Build shared libraries" FORCE)
+
+# conditions
+IF(NOT BUILD_STATIC AND NOT BUILD_SHARED)
+  MESSAGE(FATAL_ERROR "Cannot build with both BUILD_STATIC and BUILD_SHARED disabled")
+ENDIF(NOT BUILD_STATIC AND NOT BUILD_SHARED)
+
+# dependancies
 SET(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMake" ${CMAKE_MODULE_PATH})
 FIND_PACKAGE(libzip REQUIRED)
 FIND_PACKAGE(expat REQUIRED)
 
+# build parameters
 #SET(CMAKE_CXX_FLAGS "-g -Wall")
 #ADD_SUBDIRECTORY(src)
 
@@ -13,28 +24,48 @@ FIND_PACKAGE(expat REQUIRED)
 #ENDIF
 
 INCLUDE_DIRECTORIES(include)
-#ADD_LIBRARY(xlsxio_read STATIC lib/xlsxio_read.c ${libzip_LIBRARIES} ${expat_LIBRARIES})
-#ADD_LIBRARY(xlsxio_write STATIC lib/xlsxio_write.c ${libzip_LIBRARIES})
 
+# build definitions
+SET(ALLTARGETS)
+if(BUILD_STATIC)
+  ADD_LIBRARY(xlsxio_read_static STATIC lib/xlsxio_read.c)
+  SET_TARGET_PROPERTIES(xlsxio_read_static PROPERTIES DEFINE_SYMBOL "BUILD_XLSXIO_STATIC")
+  SET_TARGET_PROPERTIES(xlsxio_read_static PROPERTIES OUTPUT_NAME xlsxio_read)
+  TARGET_LINK_LIBRARIES(xlsxio_read_static ${LIBZIP_LIBRARIES} ${EXPAT_LIBRARIES})
+  SET(ALLTARGETS ${ALLTARGETS} xlsxio_read_static)
+endif(BUILD_STATIC)
 
-ADD_LIBRARY(xlsxio_read_shared SHARED lib/xlsxio_read.c)
-ADD_LIBRARY(xlsxio_read_static STATIC lib/xlsxio_read.c)
-ADD_LIBRARY(xlsxio_write_shared SHARED lib/xlsxio_write.c)
-ADD_LIBRARY(xlsxio_write_static STATIC lib/xlsxio_write.c ${LIBZIP_LIBRARIES})
-SET_TARGET_PROPERTIES(xlsxio_read_shared PROPERTIES DEFINE_SYMBOL "BUILD_XLSXIO_DLL")
-SET_TARGET_PROPERTIES(xlsxio_read_static PROPERTIES DEFINE_SYMBOL "BUILD_XLSXIO_STATIC")
-SET_TARGET_PROPERTIES(xlsxio_read_shared PROPERTIES OUTPUT_NAME xlsxio_read)
-SET_TARGET_PROPERTIES(xlsxio_read_static PROPERTIES OUTPUT_NAME xlsxio_read)
-TARGET_LINK_LIBRARIES(xlsxio_read_shared ${LIBZIP_LIBRARIES} ${EXPAT_LIBRARIES})
-TARGET_LINK_LIBRARIES(xlsxio_read_static ${LIBZIP_LIBRARIES} ${EXPAT_LIBRARIES})
-SET_TARGET_PROPERTIES(xlsxio_write_shared PROPERTIES DEFINE_SYMBOL "BUILD_XLSXIO_DLL")
-SET_TARGET_PROPERTIES(xlsxio_write_static PROPERTIES DEFINE_SYMBOL "BUILD_XLSXIO_STATIC")
-SET_TARGET_PROPERTIES(xlsxio_write_shared PROPERTIES OUTPUT_NAME xlsxio_write)
-SET_TARGET_PROPERTIES(xlsxio_write_static PROPERTIES OUTPUT_NAME xlsxio_write)
-TARGET_LINK_LIBRARIES(xlsxio_write_shared ${LIBZIP_LIBRARIES})
-TARGET_LINK_LIBRARIES(xlsxio_write_static ${LIBZIP_LIBRARIES})
+if(BUILD_SHARED)
+  ADD_LIBRARY(xlsxio_read_shared SHARED lib/xlsxio_read.c)
+  SET_TARGET_PROPERTIES(xlsxio_read_shared PROPERTIES DEFINE_SYMBOL "BUILD_XLSXIO_DLL")
+  SET_TARGET_PROPERTIES(xlsxio_read_shared PROPERTIES OUTPUT_NAME xlsxio_read)
+  TARGET_LINK_LIBRARIES(xlsxio_read_shared ${LIBZIP_LIBRARIES} ${EXPAT_LIBRARIES})
+  SET(ALLTARGETS ${ALLTARGETS} xlsxio_read_shared)
+if(BUILD_SHARED)
 
-INSTALL(TARGETS xlsxio_read_shared xlsxio_read_static xlsxio_write_shared xlsxio_write_static
-        ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
-        LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
-        RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
+if(BUILD_STATIC)
+  ADD_LIBRARY(xlsxio_write_static STATIC lib/xlsxio_write.c)
+  SET_TARGET_PROPERTIES(xlsxio_write_static PROPERTIES DEFINE_SYMBOL "BUILD_XLSXIO_STATIC")
+  SET_TARGET_PROPERTIES(xlsxio_write_static PROPERTIES OUTPUT_NAME xlsxio_write)
+  TARGET_LINK_LIBRARIES(xlsxio_write_static ${LIBZIP_LIBRARIES})
+  SET(ALLTARGETS ${ALLTARGETS} xlsxio_write_static)
+endif(BUILD_STATIC)
+
+endif(BUILD_SHARED)
+  ADD_LIBRARY(xlsxio_write_shared SHARED lib/xlsxio_write.c)
+  SET_TARGET_PROPERTIES(xlsxio_write_shared PROPERTIES DEFINE_SYMBOL "BUILD_XLSXIO_DLL")
+  SET_TARGET_PROPERTIES(xlsxio_write_shared PROPERTIES OUTPUT_NAME xlsxio_write)
+  TARGET_LINK_LIBRARIES(xlsxio_write_shared ${LIBZIP_LIBRARIES})
+  SET(ALLTARGETS ${ALLTARGETS} xlsxio_write_shared)
+endif(BUILD_SHARED)
+
+# install definitions
+INSTALL(TARGETS ${ALLTARGETS}
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
+)
+INSTALL(DIRECTORY include/
+  DESTINATION include 
+  FILES_MATCHING PATTERN "xlsxio*.h"
+)
