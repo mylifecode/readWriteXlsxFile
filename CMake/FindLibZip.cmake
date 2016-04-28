@@ -1,7 +1,7 @@
-FIND_PACKAGE(zlib)
+FIND_PACKAGE(ZLIB)
 
-FIND_PATH(LIBZIP_INCLUDE_DIR_zh NAMES zip.h)
-FIND_PATH(LIBZIP_INCLUDE_DIR_zch NAMES zipconf.h PATHS /lib/libzip/include)
+FIND_PATH(LIBZIP_INCLUDE_DIR_zh NAMES zip.h PATHS /include /usr/include /opt/local/include)
+FIND_PATH(LIBZIP_INCLUDE_DIR_zch NAMES zipconf.h PATHS /lib/libzip/include /usr/lib/libzip/include /opt/local/lib/libzip/include)
 FIND_LIBRARY(LIBZIP_LIBRARY NAMES zip)
 
 IF (LIBZIP_INCLUDE_DIR_zh AND LIBZIP_INCLUDE_DIR_zch AND LIBZIP_LIBRARY)

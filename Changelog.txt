@@ -1,8 +1,11 @@
 0.2.0
 
-2016-04-27  Brecht Sanders  https://github.com/brechtsanders/
+2016-04-28  Brecht Sanders  https://github.com/brechtsanders/
 
-  * added CMake support
+  * added CMake support and tested on multiple platforms:
+      + Windows 10 with MinGW compiler using MSYS shell
+      + Debian Linux 8.4
+      + OS X 10.11.3
 
 2016-04-25  Brecht Sanders  https://github.com/brechtsanders/
 
