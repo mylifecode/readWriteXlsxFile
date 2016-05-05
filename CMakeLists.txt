@@ -2,10 +2,10 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 PROJECT(xlsxio)
 
 # parameters
-SET(BUILD_STATIC ON CACHE BOOL "Build static libraries")
-SET(BUILD_SHARED ON CACHE BOOL "Build shared libraries")
-SET(BUILD_TOOLS ON CACHE BOOL "Build tools")
-SET(BUILD_EXAMPLES ON CACHE BOOL "Build examples")
+OPTION(BUILD_STATIC "Build static libraries" ON)
+OPTION(BUILD_SHARED "Build shared libraries" ON)
+OPTION(BUILD_TOOLS "Build tools" ON)
+OPTION(BUILD_EXAMPLES "Build examples" ON)
 
 # conditions
 IF(NOT BUILD_STATIC AND NOT BUILD_SHARED)
@@ -19,6 +19,7 @@ FIND_PACKAGE(EXPAT REQUIRED)
 FIND_PACKAGE(Doxygen)
 
 # build parameters
+OPTION(BUILD_DOCUMENTATION "Create and install API documentation (requires Doxygen)" ${DOXYGEN_FOUND})
 #SET(CMAKE_CXX_FLAGS "-g -Wall")
 #ADD_SUBDIRECTORY(src)
 
@@ -92,7 +93,10 @@ IF(BUILD_EXAMPLES)
   SET(ALLTARGETS ${ALLTARGETS} example_xlsxio_read_advanced)
 ENDIF()
 
-IF(DOXYGEN_FOUND)
+IF(BUILD_DOCUMENTATION)
+  IF(NOT DOXYGEN_FOUND)
+    MESSAGE(FATAL_ERROR "Doxygen is needed to build the documentation.")
+  ENDIF()
   ADD_CUSTOM_TARGET(doc ALL
     COMMAND ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/doc/Doxyfile
     #WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
