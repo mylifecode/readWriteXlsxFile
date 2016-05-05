@@ -10,7 +10,7 @@
 #endif
 #include <fcntl.h>
 #include <stdarg.h>
-#ifdef BUILD_XLSXIO_STATIC
+#if defined(BUILD_XLSXIO_STATIC) || defined(BUILD_XLSXIO_STATIC_DLL)
 #define ZIP_STATIC
 #endif
 #include <zip.h>
