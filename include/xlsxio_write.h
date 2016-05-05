@@ -35,7 +35,11 @@ THE SOFTWARE.
 #define INCLUDED_XLSXIO_WRITE_H
 
 #include <stdlib.h>
+#if defined(_MSC_VER) && _MSC_VER < 1600
+typedef signed __int64 int64_t;
+#else
 #include <stdint.h>
+#endif
 #include <time.h>
 
 /*! \cond PRIVATE */

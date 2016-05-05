@@ -2,10 +2,12 @@
 #include "xlsxio_version.h"
 #include <stdlib.h>
 #include <stdio.h>
-#include <inttypes.h>
 #include <string.h>
 #include <time.h>
+#ifndef _WIN32
+#include <inttypes.h>
 #include <unistd.h>
+#endif
 #include <fcntl.h>
 #include <stdarg.h>
 #ifdef BUILD_XLSXIO_STATIC

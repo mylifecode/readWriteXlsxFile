@@ -23,7 +23,7 @@ OPTION(BUILD_DOCUMENTATION "Create and install API documentation (requires Doxyg
 #SET(CMAKE_CXX_FLAGS "-g -Wall")
 #ADD_SUBDIRECTORY(src)
 
-IF(NOT WIN32)
+IF(NOT WIN32 AND NOT APPLE)
   SET(THREADLIB "-pthread")
 ENDIF()
 

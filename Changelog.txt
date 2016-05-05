@@ -1,3 +1,11 @@
+0.2.1
+
+2016-05-05  Brecht Sanders  https://github.com/brechtsanders/
+
+  * added CMake BUILD_DOCUMENTATION option (defaults to ON if Doxygen is detected)
+  * workaround for missing stdint.h/unistd.h on Visual C 
+  * removed -pthread when building for Apple
+
 0.2.0
 
 2016-04-28  Brecht Sanders  https://github.com/brechtsanders/
@@ -10,6 +18,10 @@
 2016-04-25  Brecht Sanders  https://github.com/brechtsanders/
 
   * added lastModifiedBy property (set to "libxlsxio_write <version>")
+
+2016-04-16  Brecht Sanders  https://github.com/brechtsanders/
+
+  * example C++ classes: XLSXIOWriter, XLSXIOReader, XLSXIOReaderSheet
 
 2016-04-11  Brecht Sanders  https://github.com/brechtsanders/
 

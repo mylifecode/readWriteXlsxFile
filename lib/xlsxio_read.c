@@ -1,7 +1,9 @@
 #include "xlsxio_read.h"
 #include "xlsxio_version.h"
 #include <stdlib.h>
+#ifndef _WIN32
 #include <inttypes.h>
+#endif
 #include <string.h>
 #ifdef BUILD_XLSXIO_STATIC
 #define ZIP_STATIC

@@ -30,7 +30,9 @@ THE SOFTWARE.
 
 #include <stdlib.h>
 #include <stdio.h>
+#ifndef _WIN32
 #include <unistd.h>
+#endif
 #include "xlsxio_write.h"
 
 const char* filename = "example.xlsx";
