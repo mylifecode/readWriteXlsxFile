@@ -4,8 +4,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
-#ifndef _WIN32
 #include <inttypes.h>
+#ifndef _WIN32
 #include <unistd.h>
 #endif
 #include <fcntl.h>
