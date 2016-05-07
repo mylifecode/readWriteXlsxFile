@@ -1,5 +1,10 @@
 0.2.2
 
+2016-05-07  Brecht Sanders  https://github.com/brechtsanders/
+
+  * fixed some compiler warnings
+  * only use DLL_EXPORT_XLSXIO in .h files (removed from .c files)
+
 0.2.1
 
 2016-05-05  Brecht Sanders  https://github.com/brechtsanders/

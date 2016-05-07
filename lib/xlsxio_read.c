@@ -21,7 +21,7 @@ typedef struct zip_file zip_file_t;
 #define stricmp strcasecmp
 #endif
 
-DLL_EXPORT_XLSXIO void xlsxioread_get_version (int* pmajor, int* pminor, int* pmicro)
+void xlsxioread_get_version (int* pmajor, int* pminor, int* pmicro)
 {
   if (pmajor)
     *pmajor = XLSXIO_VERSION_MAJOR;
@@ -31,7 +31,7 @@ DLL_EXPORT_XLSXIO void xlsxioread_get_version (int* pmajor, int* pminor, int* pm
     *pmicro = XLSXIO_VERSION_MICRO;
 }
 
-DLL_EXPORT_XLSXIO const char* xlsxioread_get_version_string ()
+const char* xlsxioread_get_version_string ()
 {
   return XLSXIO_VERSION_STRING;
 }
@@ -356,7 +356,7 @@ struct xlsxio_read_struct {
   zip_t* zip;
 };
 
-DLL_EXPORT_XLSXIO xlsxioreader xlsxioread_open (const char* filename)
+xlsxioreader xlsxioread_open (const char* filename)
 {
   xlsxioreader result;
   if ((result = (xlsxioreader)malloc(sizeof(struct xlsxio_read_struct))) != NULL) {
@@ -368,7 +368,7 @@ DLL_EXPORT_XLSXIO xlsxioreader xlsxioread_open (const char* filename)
   return result;
 }
 
-DLL_EXPORT_XLSXIO void xlsxioread_close (xlsxioreader handle)
+void xlsxioread_close (xlsxioreader handle)
 {
   if (handle) {
     zip_close(handle->zip);
@@ -480,7 +480,7 @@ void xlsxioread_list_sheets_callback (zip_t* zip, const char* filename, const ch
 }
 
 //list all worksheets
-DLL_EXPORT_XLSXIO void xlsxioread_list_sheets (xlsxioreader handle, xlsxioread_list_sheets_callback_fn callback, void* callbackdata)
+void xlsxioread_list_sheets (xlsxioreader handle, xlsxioread_list_sheets_callback_fn callback, void* callbackdata)
 {
   if (!handle || !callback)
     return;
@@ -907,7 +907,7 @@ struct xlsxio_read_sheet_struct {
   size_t paddingcol;
 };
 
-DLL_EXPORT_XLSXIO int xlsxioread_process (xlsxioreader handle, const char* sheetname, unsigned int flags, xlsxioread_process_cell_callback_fn cell_callback, xlsxioread_process_row_callback_fn row_callback, void* callbackdata)
+int xlsxioread_process (xlsxioreader handle, const char* sheetname, unsigned int flags, xlsxioread_process_cell_callback_fn cell_callback, xlsxioread_process_row_callback_fn row_callback, void* callbackdata)
 {
   int result = 0;
   //determine sheet file name
@@ -992,7 +992,7 @@ void xlsxioread_find_main_sheet_file_callback (zip_t* zip, const char* filename,
   *data = strdup(filename);
 }
 
-DLL_EXPORT_XLSXIO xlsxioreadersheetlist xlsxioread_sheetlist_open (xlsxioreader handle)
+xlsxioreadersheetlist xlsxioread_sheetlist_open (xlsxioreader handle)
 {
   //determine main sheet name
   char* mainsheetfile = NULL;
@@ -1016,7 +1016,7 @@ DLL_EXPORT_XLSXIO xlsxioreadersheetlist xlsxioread_sheetlist_open (xlsxioreader 
   return result;
 }
 
-DLL_EXPORT_XLSXIO void xlsxioread_sheetlist_close (xlsxioreadersheetlist sheetlisthandle)
+void xlsxioread_sheetlist_close (xlsxioreadersheetlist sheetlisthandle)
 {
   if (sheetlisthandle->xmlparser)
     XML_ParserFree(sheetlisthandle->xmlparser);
@@ -1027,7 +1027,7 @@ DLL_EXPORT_XLSXIO void xlsxioread_sheetlist_close (xlsxioreadersheetlist sheetli
 
 }
 
-DLL_EXPORT_XLSXIO const char* xlsxioread_sheetlist_next (xlsxioreadersheetlist sheetlisthandle)
+const char* xlsxioread_sheetlist_next (xlsxioreadersheetlist sheetlisthandle)
 {
   if (!sheetlisthandle->zipfile || !sheetlisthandle->xmlparser)
     return NULL;
@@ -1042,7 +1042,7 @@ DLL_EXPORT_XLSXIO const char* xlsxioread_sheetlist_next (xlsxioreadersheetlist s
 
 ////////////////////////////////////////////////////////////////////////
 
-DLL_EXPORT_XLSXIO xlsxioreadersheet xlsxioread_sheet_open (xlsxioreader handle, const char* sheetname, unsigned int flags)
+xlsxioreadersheet xlsxioread_sheet_open (xlsxioreader handle, const char* sheetname, unsigned int flags)
 {
   xlsxioreadersheet result;
   if ((result = (xlsxioreadersheet)malloc(sizeof(struct xlsxio_read_sheet_struct))) == NULL)
@@ -1057,7 +1057,7 @@ DLL_EXPORT_XLSXIO xlsxioreadersheet xlsxioread_sheet_open (xlsxioreader handle, 
   return result;
 }
 
-DLL_EXPORT_XLSXIO void xlsxioread_sheet_close (xlsxioreadersheet sheethandle)
+void xlsxioread_sheet_close (xlsxioreadersheet sheethandle)
 {
   if (!sheethandle)
     return;
@@ -1069,7 +1069,7 @@ DLL_EXPORT_XLSXIO void xlsxioread_sheet_close (xlsxioreadersheet sheethandle)
   free(sheethandle);
 }
 
-DLL_EXPORT_XLSXIO int xlsxioread_sheet_next_row (xlsxioreadersheet sheethandle)
+int xlsxioread_sheet_next_row (xlsxioreadersheet sheethandle)
 {
   enum XML_Status status;
   if (!sheethandle)
@@ -1091,7 +1091,7 @@ DLL_EXPORT_XLSXIO int xlsxioread_sheet_next_row (xlsxioreadersheet sheethandle)
   return (status == XML_STATUS_SUSPENDED ? 1 : 0);
 }
 
-DLL_EXPORT_XLSXIO char* xlsxioread_sheet_next_cell (xlsxioreadersheet sheethandle)
+char* xlsxioread_sheet_next_cell (xlsxioreadersheet sheethandle)
 {
   char* result;
   if (!sheethandle)
@@ -1148,7 +1148,7 @@ DLL_EXPORT_XLSXIO char* xlsxioread_sheet_next_cell (xlsxioreadersheet sheethandl
   return result;
 }
 
-DLL_EXPORT_XLSXIO int xlsxioread_sheet_next_cell_string (xlsxioreadersheet sheethandle, char** pvalue)
+int xlsxioread_sheet_next_cell_string (xlsxioreadersheet sheethandle, char** pvalue)
 {
   char* result;
   if (!sheethandle)
@@ -1159,7 +1159,7 @@ DLL_EXPORT_XLSXIO int xlsxioread_sheet_next_cell_string (xlsxioreadersheet sheet
   return (result ? 1 : 0);
 }
 
-DLL_EXPORT_XLSXIO int xlsxioread_sheet_next_cell_int (xlsxioreadersheet sheethandle, int64_t* pvalue)
+int xlsxioread_sheet_next_cell_int (xlsxioreadersheet sheethandle, int64_t* pvalue)
 {
   char* result;
   int status;
@@ -1174,7 +1174,7 @@ DLL_EXPORT_XLSXIO int xlsxioread_sheet_next_cell_int (xlsxioreadersheet sheethan
   return (result ? 1 : 0);
 }
 
-DLL_EXPORT_XLSXIO int xlsxioread_sheet_next_cell_float (xlsxioreadersheet sheethandle, double* pvalue)
+int xlsxioread_sheet_next_cell_float (xlsxioreadersheet sheethandle, double* pvalue)
 {
   char* result;
   if ((result = xlsxioread_sheet_next_cell(sheethandle)) != NULL) {
@@ -1184,7 +1184,7 @@ DLL_EXPORT_XLSXIO int xlsxioread_sheet_next_cell_float (xlsxioreadersheet sheeth
   return (result ? 1 : 0);
 }
 
-DLL_EXPORT_XLSXIO int xlsxioread_sheet_next_cell_datetime (xlsxioreadersheet sheethandle, time_t* pvalue)
+int xlsxioread_sheet_next_cell_datetime (xlsxioreadersheet sheethandle, time_t* pvalue)
 {
   char* result;
   if ((result = xlsxioread_sheet_next_cell(sheethandle)) != NULL) {

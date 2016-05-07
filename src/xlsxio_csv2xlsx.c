@@ -86,6 +86,8 @@ int main (int argc, char* argv[])
             param = argv[i] + 2;
           else if (i + 1 < argc && argv[i + 1])
             param = argv[++i];
+          else
+            param = NULL;
           if (param)
             separator = param[0];
           continue;
