@@ -10,7 +10,7 @@
 #endif
 #include <fcntl.h>
 #include <stdarg.h>
-#if defined(BUILD_XLSXIO_STATIC) || defined(BUILD_XLSXIO_STATIC_DLL)
+#if defined(STATIC) || defined(BUILD_XLSXIO_STATIC) || defined(BUILD_XLSXIO_STATIC_DLL) || (defined(BUILD_XLSXIO) && !defined(BUILD_XLSXIO_DLL))
 #define ZIP_STATIC
 #endif
 #include <zip.h>
@@ -20,6 +20,11 @@
 #else
 #define USE_PTHREADS
 #include <pthread.h>
+#endif
+
+#if defined(_MSC_VER)
+#undef DLL_EXPORT_XLSXIO
+#define DLL_EXPORT_XLSXIO
 #endif
 
 #ifndef ZIP_RDONLY
@@ -41,7 +46,7 @@ typedef struct zip_source zip_source_t;
 //#undef WITHOUT_XLSX_STYLES
 #define DEFAULT_BUFFERED_ROWS 5
 
-void xlsxiowrite_get_version (int* pmajor, int* pminor, int* pmicro)
+DLL_EXPORT_XLSXIO void xlsxiowrite_get_version (int* pmajor, int* pminor, int* pmicro)
 {
   if (pmajor)
     *pmajor = XLSXIO_VERSION_MAJOR;
@@ -51,7 +56,7 @@ void xlsxiowrite_get_version (int* pmajor, int* pminor, int* pmicro)
     *pmicro = XLSXIO_VERSION_MICRO;
 }
 
-const char* xlsxiowrite_get_version_string ()
+DLL_EXPORT_XLSXIO const char* xlsxiowrite_get_version_string ()
 {
   return XLSXIO_VERSION_STRING;
 }
@@ -428,7 +433,7 @@ void* thread_proc (void* arg)
 
 ////////////////////////////////////////////////////////////////////////
 
-xlsxiowriter xlsxiowrite_open (const char* filename, const char* sheetname)
+DLL_EXPORT_XLSXIO xlsxiowriter xlsxiowrite_open (const char* filename, const char* sheetname)
 {
   xlsxiowriter handle;
   if (!filename)
@@ -476,7 +481,7 @@ xlsxiowriter xlsxiowrite_open (const char* filename, const char* sheetname)
 
 void flush_buffer (xlsxiowriter handle);
 
-int xlsxiowrite_close (xlsxiowriter handle)
+DLL_EXPORT_XLSXIO int xlsxiowrite_close (xlsxiowriter handle)
 {
   struct column_info_struct* colinfo;
   struct column_info_struct* colinfonext;
@@ -690,7 +695,7 @@ void flush_buffer (xlsxiowriter handle)
   handle->sheetopen = 1;
 }
 
-void xlsxiowrite_set_detection_rows (xlsxiowriter handle, size_t rows)
+DLL_EXPORT_XLSXIO void xlsxiowrite_set_detection_rows (xlsxiowriter handle, size_t rows)
 {
   //abort if currently not buffering
   if (!handle->rowstobuffer || handle->sheetopen)
@@ -702,12 +707,12 @@ void xlsxiowrite_set_detection_rows (xlsxiowriter handle, size_t rows)
     flush_buffer(handle);
 }
 
-void xlsxiowrite_set_row_height (xlsxiowriter handle, size_t height)
+DLL_EXPORT_XLSXIO void xlsxiowrite_set_row_height (xlsxiowriter handle, size_t height)
 {
   handle->rowheight = height;
 }
 
-void xlsxiowrite_add_column (xlsxiowriter handle, const char* value, int width)
+DLL_EXPORT_XLSXIO void xlsxiowrite_add_column (xlsxiowriter handle, const char* value, int width)
 {
   struct column_info_struct** pcolinfo = handle->pcurrentcolumn;
   if (value)
@@ -720,7 +725,7 @@ void xlsxiowrite_add_column (xlsxiowriter handle, const char* value, int width)
     handle->freezetop = 1;
 }
 
-void xlsxiowrite_add_cell_string (xlsxiowriter handle, const char* value)
+DLL_EXPORT_XLSXIO void xlsxiowrite_add_cell_string (xlsxiowriter handle, const char* value)
 {
   if (value)
     write_cell_data(handle, NULL, "<c t=\"inlineStr\"" STYLE_ATTR(STYLE_TEXT) "><is><t>", "</t></is></c>", "%s", value);
@@ -728,17 +733,17 @@ void xlsxiowrite_add_cell_string (xlsxiowriter handle, const char* value)
     write_cell_data(handle, NULL, "<c" STYLE_ATTR(STYLE_TEXT) "/>", NULL, NULL);
 }
 
-void xlsxiowrite_add_cell_int (xlsxiowriter handle, int64_t value)
+DLL_EXPORT_XLSXIO void xlsxiowrite_add_cell_int (xlsxiowriter handle, int64_t value)
 {
   write_cell_data(handle, NULL, "<c" STYLE_ATTR(STYLE_INTEGER) "><v>", "</v></c>", "%" PRIi64, value);
 }
 
-void xlsxiowrite_add_cell_float (xlsxiowriter handle, double value)
+DLL_EXPORT_XLSXIO void xlsxiowrite_add_cell_float (xlsxiowriter handle, double value)
 {
   write_cell_data(handle, NULL, "<c" STYLE_ATTR(STYLE_GENERAL) "><v>", "</v></c>", "%.32G", value);
 }
 
-void xlsxiowrite_add_cell_datetime (xlsxiowriter handle, time_t value)
+DLL_EXPORT_XLSXIO void xlsxiowrite_add_cell_datetime (xlsxiowriter handle, time_t value)
 {
   double timestamp = ((double)(value) + .499) / 86400 + 25569; //conversion from Unix to Excel timestamp
   write_cell_data(handle, NULL, "<c" STYLE_ATTR(STYLE_DATETIME) "><v>", "</v></c>", "%.16G", timestamp);
@@ -755,7 +760,7 @@ MAC OS X (pre Office 2011):
     Excel Timestamp = (Unix Timestamp / 86400) + 24107
 */
 
-void xlsxiowrite_next_row (xlsxiowriter handle)
+DLL_EXPORT_XLSXIO void xlsxiowrite_next_row (xlsxiowriter handle)
 {
   if (!handle)
     return;

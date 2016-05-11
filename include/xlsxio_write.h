@@ -47,7 +47,7 @@ typedef signed __int64 int64_t;
 #ifdef _WIN32
 #if defined(BUILD_XLSXIO_DLL)
 #define DLL_EXPORT_XLSXIO __declspec(dllexport)
-#elif !defined(STATIC) && !defined(BUILD_XLSXIO_STATIC)
+#elif !defined(STATIC) && !defined(BUILD_XLSXIO_STATIC) && !defined(BUILD_XLSXIO)
 #define DLL_EXPORT_XLSXIO __declspec(dllimport)
 #else
 #define DLL_EXPORT_XLSXIO

@@ -1,3 +1,9 @@
+0.2.3
+
+2016-05-11  Brecht Sanders  https://github.com/brechtsanders/
+
+  * fixed CMake build to use proper static/shared defines
+
 0.2.2
 
 2016-05-07  Brecht Sanders  https://github.com/brechtsanders/
