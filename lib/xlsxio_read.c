@@ -1021,6 +1021,8 @@ DLL_EXPORT_XLSXIO xlsxioreadersheetlist xlsxioread_sheetlist_open (xlsxioreader 
 
 DLL_EXPORT_XLSXIO void xlsxioread_sheetlist_close (xlsxioreadersheetlist sheetlisthandle)
 {
+  if (!sheetlisthandle)
+    return;
   if (sheetlisthandle->xmlparser)
     XML_ParserFree(sheetlisthandle->xmlparser);
   if (sheetlisthandle->zipfile)

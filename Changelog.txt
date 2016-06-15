@@ -1,4 +1,14 @@
+0.2.5
+
+2016-06-15  Brecht Sanders  https://github.com/brechtsanders/
+
+  * use worrect formula for calculating column widths
+
 0.2.4
+
+2016-05-12  Brecht Sanders  https://github.com/brechtsanders/
+
+  * fixed crash in xlsxioread_sheetlist_close() when parameter is NULL
 
 0.2.3
 

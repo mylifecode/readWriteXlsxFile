@@ -46,6 +46,10 @@ typedef struct zip_source zip_source_t;
 //#undef WITHOUT_XLSX_STYLES
 #define DEFAULT_BUFFERED_ROWS 5
 
+#define FONT_CHAR_WIDTH 7
+//#define CALCULATE_COLUMN_WIDTH(characters) ((double)characters + .75)
+#define CALCULATE_COLUMN_WIDTH(characters) ((double)(long)(((long)characters * FONT_CHAR_WIDTH + 5) * 256 / FONT_CHAR_WIDTH) / 256.0)
+
 DLL_EXPORT_XLSXIO void xlsxiowrite_get_version (int* pmajor, int* pminor, int* pmicro)
 {
   if (pmajor)
@@ -675,7 +679,7 @@ void flush_buffer (xlsxiowriter handle)
           len = colinfo->maxwidth;
       }
       if (len)
-        fprintf(handle->pipe_write, "<col min=\"%i\" max=\"%i\" width=\"%.6G\" customWidth=\"1\"/>", col, col, (double)len + .75);
+        fprintf(handle->pipe_write, "<col min=\"%i\" max=\"%i\" width=\"%.6G\" customWidth=\"1\"/>", col, col, CALCULATE_COLUMN_WIDTH(len));
       else
         fprintf(handle->pipe_write, "<col min=\"%i\" max=\"%i\"/>", col, col);
       colinfo = colinfo->next;
