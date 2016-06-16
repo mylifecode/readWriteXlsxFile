@@ -51,7 +51,7 @@ void show_help ()
     "Parameters:\n"
     "  -h          \tdisplay command line help\n"
     "  -s separator\tspecify separator to use (default is comma)\n"
-    "  -d rows     \trows used for column width detection (default %i)\n"
+    "  -d rows     \trows used for column width detection (default is %i)\n"
     "  -t          \ttread top row as header row\n"
     "  csvfile     \tpath to CSV file (multiple may be specified)\n"
     "Description:\n"
