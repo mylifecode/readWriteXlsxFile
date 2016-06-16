@@ -49,6 +49,7 @@ typedef struct zip_source zip_source_t;
 #define FONT_CHAR_WIDTH 7
 //#define CALCULATE_COLUMN_WIDTH(characters) ((double)characters + .75)
 #define CALCULATE_COLUMN_WIDTH(characters) ((double)(long)(((long)characters * FONT_CHAR_WIDTH + 5) * 256 / FONT_CHAR_WIDTH) / 256.0)
+#define CALCULATE_COLUMN_HEIGHT(characters) ((double)characters * 12.75)
 
 DLL_EXPORT_XLSXIO void xlsxiowrite_get_version (int* pmajor, int* pminor, int* pmicro)
 {
@@ -570,12 +571,12 @@ void write_row_start (xlsxiowriter handle, const char* rowattr)
     if (!handle->rowheight)
       fprintf(handle->pipe_write, "<row%s>", (rowattr ? rowattr : ""));
     else
-      fprintf(handle->pipe_write, "<row ht=\"%.6G\" customHeight=\"1\"%s>", (double)handle->rowheight * 12.75, (rowattr ? rowattr : ""));
+      fprintf(handle->pipe_write, "<row ht=\"%.6G\" customHeight=\"1\"%s>", CALCULATE_COLUMN_HEIGHT(handle->rowheight), (rowattr ? rowattr : ""));
   } else {
     if (!handle->rowheight)
       append_data(&handle->buf, &handle->buflen, "<row%s>", (rowattr ? rowattr : ""));
     else
-      append_data(&handle->buf, &handle->buflen, "<row ht=\"%.6G\" customHeight=\"1\"%s>", (double)handle->rowheight * 12.75, (rowattr ? rowattr : ""));
+      append_data(&handle->buf, &handle->buflen, "<row ht=\"%.6G\" customHeight=\"1\"%s>",  CALCULATE_COLUMN_HEIGHT(handle->rowheight), (rowattr ? rowattr : ""));
   }
   handle->rowopen = 1;
 }
