@@ -1,5 +1,9 @@
 0.2.5
 
+2016-06-28  Brecht Sanders  https://github.com/brechtsanders/
+
+  * fix reading data from cells with mixed formatting (thanks to bcTekGuy)
+
 2016-06-16  Brecht Sanders  https://github.com/brechtsanders/
 
   * use correct formula for calculating column widths
