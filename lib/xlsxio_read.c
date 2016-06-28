@@ -302,6 +302,10 @@ void shared_strings_callback_find_shared_stringitem_start (void* callbackdata, c
 {
   struct shared_strings_callback_data* data = (struct shared_strings_callback_data*)callbackdata;
   if (stricmp(name, "si") == 0) {
+    if (data->text)
+      free(data->text);
+    data->text = NULL;
+    data->textlen = 0;
     XML_SetElementHandler(data->xmlparser, shared_strings_callback_find_shared_string_start, shared_strings_callback_find_sharedstringtable_end);
   }
 }
@@ -310,6 +314,11 @@ void shared_strings_callback_find_shared_stringitem_end (void* callbackdata, con
 {
   struct shared_strings_callback_data* data = (struct shared_strings_callback_data*)callbackdata;
   if (stricmp(name, "si") == 0) {
+    sharedstringlist_add_buffer(data->sharedstrings, data->text, data->textlen);
+    if (data->text)
+      free(data->text);
+    data->text = NULL;
+    data->textlen = 0;
     XML_SetElementHandler(data->xmlparser, shared_strings_callback_find_shared_stringitem_start, shared_strings_callback_find_sharedstringtable_end);
   } else {
     shared_strings_callback_find_sharedstringtable_end(callbackdata, name);
@@ -329,11 +338,6 @@ void shared_strings_callback_find_shared_string_end (void* callbackdata, const X
 {
   struct shared_strings_callback_data* data = (struct shared_strings_callback_data*)callbackdata;
   if (stricmp(name, "t") == 0) {
-    sharedstringlist_add_buffer(data->sharedstrings, data->text, data->textlen);
-    if (data->text)
-      free(data->text);
-    data->text = NULL;
-    data->textlen = 0;
     XML_SetElementHandler(data->xmlparser, shared_strings_callback_find_shared_string_start, shared_strings_callback_find_shared_stringitem_end);
     XML_SetCharacterDataHandler(data->xmlparser, NULL);
   } else {
