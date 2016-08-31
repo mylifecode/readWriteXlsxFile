@@ -608,6 +608,11 @@ struct data_sheet_callback_data {
   size_t celldatalen;
   cell_string_type_enum cell_string_type;
   unsigned int flags;
+  char* skiptag;                        //tag to skip
+  size_t skiptagcount;                  //nesting level for current tag to skip
+  XML_StartElementHandler skip_start;   //start handler to set after skipping
+  XML_EndElementHandler skip_end;       //end handler to set after skipping
+  XML_CharacterDataHandler skip_data;   //data handler to set after skipping
   xlsxioread_process_row_callback_fn sheet_row_callback;
   xlsxioread_process_cell_callback_fn sheet_cell_callback;
   void* callbackdata;
@@ -624,6 +629,11 @@ void data_sheet_callback_data_initialize (struct data_sheet_callback_data* data,
   data->celldatalen = 0;
   data->cell_string_type = none;
   data->flags = flags;
+  data->skiptag = NULL;
+  data->skiptagcount = 0;
+  data->skip_start = NULL;
+  data->skip_end = NULL;
+  data->skip_data = NULL;
   data->sheet_cell_callback = cell_callback;
   data->sheet_row_callback = row_callback;
   data->callbackdata = callbackdata;
@@ -633,6 +643,30 @@ void data_sheet_callback_data_cleanup (struct data_sheet_callback_data* data)
 {
   sharedstringlist_destroy(data->sharedstrings);
   free(data->celldata);
+  free(data->skiptag);
+}
+
+void data_sheet_expat_callback_skip_tag_start (void* callbackdata, const XML_Char* name, const XML_Char** atts)
+{
+  struct data_sheet_callback_data* data = (struct data_sheet_callback_data*)callbackdata;
+  if (name && stricmp(name, data->skiptag) == 0) {
+    //increment nesting level
+    data->skiptagcount++;
+  }
+}
+
+void data_sheet_expat_callback_skip_tag_end (void* callbackdata, const XML_Char* name)
+{
+  struct data_sheet_callback_data* data = (struct data_sheet_callback_data*)callbackdata;
+  if (!name || stricmp(name, data->skiptag) == 0) {
+    if (--data->skiptagcount == 0) {
+      //restore handlers when done skipping
+      XML_SetElementHandler(data->xmlparser, data->skip_start, data->skip_end);
+      XML_SetCharacterDataHandler(data->xmlparser, data->skip_data);
+      free(data->skiptag);
+      data->skiptag = NULL;
+    }
+  }
 }
 
 void data_sheet_expat_callback_find_worksheet_start (void* callbackdata, const XML_Char* name, const XML_Char** atts);
@@ -646,7 +680,6 @@ void data_sheet_expat_callback_find_cell_end (void* callbackdata, const XML_Char
 void data_sheet_expat_callback_find_value_start (void* callbackdata, const XML_Char* name, const XML_Char** atts);
 void data_sheet_expat_callback_find_value_end (void* callbackdata, const XML_Char* name);
 void data_sheet_expat_callback_value_data (void* callbackdata, const XML_Char* buf, int buflen);
-
 void data_sheet_expat_callback_find_worksheet_start (void* callbackdata, const XML_Char* name, const XML_Char** atts)
 {
   struct data_sheet_callback_data* data = (struct data_sheet_callback_data*)callbackdata;
@@ -686,7 +719,11 @@ void data_sheet_expat_callback_find_row_start (void* callbackdata, const XML_Cha
   struct data_sheet_callback_data* data = (struct data_sheet_callback_data*)callbackdata;
   if (stricmp(name, "row") == 0) {
     const XML_Char* hidden = get_expat_attr_by_name(atts, "hidden");
-    if (!hidden || atoi(hidden) == 0) {
+    if (!hidden || atoi(hidden) == 0) {//nesting level for current tag to skip
+//start handler to set after skipping
+//end handler to set after skipping
+//data handler to set after skipping
+
       data->rownr++;
       data->colnr = 0;
       XML_SetElementHandler(data->xmlparser, data_sheet_expat_callback_find_cell_start, data_sheet_expat_callback_find_row_end);
@@ -869,8 +906,16 @@ void data_sheet_expat_callback_find_value_start (void* callbackdata, const XML_C
   if (stricmp(name, "v") == 0 || stricmp(name, "t") == 0) {
     XML_SetElementHandler(data->xmlparser, NULL, data_sheet_expat_callback_find_value_end);
     XML_SetCharacterDataHandler(data->xmlparser, data_sheet_expat_callback_value_data);
-  } if (stricmp(name, "is") == 0) {
+  } else if (stricmp(name, "is") == 0) {
     data->cell_string_type = inline_string;
+  } else if (stricmp(name, "rPh") == 0) {
+    data->skiptag = strdup(name);
+    data->skiptagcount = 1;
+    data->skip_start = data_sheet_expat_callback_find_value_start;
+    data->skip_end = data_sheet_expat_callback_find_cell_end;
+    data->skip_data = NULL;
+    XML_SetElementHandler(data->xmlparser, data_sheet_expat_callback_skip_tag_start, data_sheet_expat_callback_skip_tag_end);
+    XML_SetCharacterDataHandler(data->xmlparser, NULL);
   }
 }
 
@@ -880,7 +925,7 @@ void data_sheet_expat_callback_find_value_end (void* callbackdata, const XML_Cha
   if (stricmp(name, "v") == 0 || stricmp(name, "t") == 0) {
     XML_SetElementHandler(data->xmlparser, data_sheet_expat_callback_find_value_start, data_sheet_expat_callback_find_cell_end);
     XML_SetCharacterDataHandler(data->xmlparser, NULL);
-  } if (stricmp(name, "is") == 0) {
+  } else if (stricmp(name, "is") == 0) {
     data->cell_string_type = none;
   } else {
     data_sheet_expat_callback_find_row_end(callbackdata, name);

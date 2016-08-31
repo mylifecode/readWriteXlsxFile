@@ -1,3 +1,9 @@
+0.2.6
+
+2016-08-31  Brecht Sanders  https://github.com/brechtsanders/
+
+  * skip phonetic data in <rPh> tag (often used in Asian spreadsheets)
+
 0.2.5
 
 2016-06-28  Brecht Sanders  https://github.com/brechtsanders/
