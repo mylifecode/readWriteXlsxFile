@@ -31,12 +31,20 @@ THE SOFTWARE.
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#if _WIN32
+#include <windows.h>
+#endif
 #include "xlsxio_read.h"
 
 const char* filename = "example.xlsx";
 
 int main (int argc, char* argv[])
 {
+#if _WIN32
+  //switch console to UTF-8
+  SetConsoleOutputCP(CP_UTF8);
+#endif
+
   xlsxioreader xlsxioread;
   //open .xlsx file for reading
   if ((xlsxioread = xlsxioread_open(filename)) == NULL) {

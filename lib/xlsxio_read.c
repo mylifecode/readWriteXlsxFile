@@ -272,7 +272,57 @@ struct shared_strings_callback_data {
   int intext;
   char* text;
   size_t textlen;
+  char* skiptag;                        //tag to skip
+  size_t skiptagcount;                  //nesting level for current tag to skip
+  XML_StartElementHandler skip_start;   //start handler to set after skipping
+  XML_EndElementHandler skip_end;       //end handler to set after skipping
+  XML_CharacterDataHandler skip_data;   //data handler to set after skipping
 };
+
+void shared_strings_callback_data_initialize (struct shared_strings_callback_data* data, struct sharedstringlist* sharedstrings)
+{
+  data->xmlparser = NULL;
+  data->zipfile = NULL;
+  data->sharedstrings = sharedstrings;
+  data->insst = 0;
+  data->insi = 0;
+  data->intext = 0;
+  data->text = NULL;
+  data->textlen = 0;
+  data->skiptag = NULL;
+  data->skiptagcount = 0;
+  data->skip_start = NULL;
+  data->skip_end = NULL;
+  data->skip_data = NULL;
+}
+
+void shared_strings_callback_data_cleanup (struct shared_strings_callback_data* data)
+{
+  free(data->text);
+}
+
+void shared_strings_callback_skip_tag_start (void* callbackdata, const XML_Char* name, const XML_Char** atts)
+{
+  struct shared_strings_callback_data* data = (struct shared_strings_callback_data*)callbackdata;
+  if (name && stricmp(name, data->skiptag) == 0) {
+    //increment nesting level
+    data->skiptagcount++;
+  }
+}
+
+void shared_strings_callback_skip_tag_end (void* callbackdata, const XML_Char* name)
+{
+  struct shared_strings_callback_data* data = (struct shared_strings_callback_data*)callbackdata;
+  if (!name || stricmp(name, data->skiptag) == 0) {
+    if (--data->skiptagcount == 0) {
+      //restore handlers when done skipping
+      XML_SetElementHandler(data->xmlparser, data->skip_start, data->skip_end);
+      XML_SetCharacterDataHandler(data->xmlparser, data->skip_data);
+      free(data->skiptag);
+      data->skiptag = NULL;
+    }
+  }
+}
 
 void shared_strings_callback_find_sharedstringtable_start (void* callbackdata, const XML_Char* name, const XML_Char** atts);
 void shared_strings_callback_find_sharedstringtable_end (void* callbackdata, const XML_Char* name);
@@ -331,6 +381,14 @@ void shared_strings_callback_find_shared_string_start (void* callbackdata, const
   if (stricmp(name, "t") == 0) {
     XML_SetElementHandler(data->xmlparser, NULL, shared_strings_callback_find_shared_string_end);
     XML_SetCharacterDataHandler(data->xmlparser, shared_strings_callback_string_data);
+  } else if (stricmp(name, "rPh") == 0) {
+    data->skiptag = strdup(name);
+    data->skiptagcount = 1;
+    data->skip_start = shared_strings_callback_find_shared_string_start;
+    data->skip_end = shared_strings_callback_find_shared_stringitem_end;
+    data->skip_data = NULL;
+    XML_SetElementHandler(data->xmlparser, shared_strings_callback_skip_tag_start, shared_strings_callback_skip_tag_end);
+    XML_SetCharacterDataHandler(data->xmlparser, NULL);
   }
 }
 
@@ -974,23 +1032,15 @@ DLL_EXPORT_XLSXIO int xlsxioread_process (xlsxioreader handle, const char* sheet
 
   //process shared strings
   struct sharedstringlist* sharedstrings = sharedstringlist_create();
-  struct shared_strings_callback_data sharedstringsdata = {
-    .xmlparser = NULL,
-    .zipfile = NULL,
-    .sharedstrings = sharedstrings,
-    .insst = 0,
-    .insi = 0,
-    .intext = 0,
-    .text = NULL,
-    .textlen = 0
-  };
+  struct shared_strings_callback_data sharedstringsdata;
+  shared_strings_callback_data_initialize(&sharedstringsdata, sharedstrings);
   if (expat_process_zip_file(handle->zip, getrelscallbackdata.sharedstringsfile, shared_strings_callback_find_sharedstringtable_start, NULL, NULL, &sharedstringsdata, &sharedstringsdata.xmlparser) != 0) {
     //no shared strings found
     free(sharedstringsdata.text);
     sharedstringlist_destroy(sharedstrings);
     sharedstrings = NULL;
   }
-  free(sharedstringsdata.text);
+  shared_strings_callback_data_cleanup(&sharedstringsdata);
 
   //process sheet
   if (!(flags & XLSXIOREAD_NO_CALLBACK)) {
