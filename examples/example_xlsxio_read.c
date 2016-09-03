@@ -40,8 +40,8 @@ const char* filename = "example.xlsx";
 
 int main (int argc, char* argv[])
 {
-#if _WIN32
-  //switch console to UTF-8
+#ifdef _WIN32
+  //switch Windows console to UTF-8
   SetConsoleOutputCP(CP_UTF8);
 #endif
 

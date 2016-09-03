@@ -1,3 +1,9 @@
+0.2.7
+
+2016-09-03  Brecht Sanders  https://github.com/brechtsanders/
+
+  * skip phonetic data in <rPh> tag also in shared strings
+
 0.2.6
 
 2016-08-31  Brecht Sanders  https://github.com/brechtsanders/
