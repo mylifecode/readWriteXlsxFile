@@ -299,6 +299,7 @@ void shared_strings_callback_data_initialize (struct shared_strings_callback_dat
 void shared_strings_callback_data_cleanup (struct shared_strings_callback_data* data)
 {
   free(data->text);
+  free(data->skiptag);
 }
 
 void shared_strings_callback_skip_tag_start (void* callbackdata, const XML_Char* name, const XML_Char** atts)
