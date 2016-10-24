@@ -616,10 +616,10 @@ void write_cell_data (xlsxiowriter handle, const char* rowattr, const char* pref
       fprintf(handle->pipe_write, "%s", suffix);
   } else {
     //add cell data to buffer
-    if (prefix) {
+    if (prefix)
       append_data(&handle->buf, &handle->buflen, "%s", prefix);
-    }
-    append_data(&handle->buf, &handle->buflen, "%s", data);
+    if (data)
+      append_data(&handle->buf, &handle->buflen, "%s", data);
     if (suffix)
       append_data(&handle->buf, &handle->buflen, "%s", suffix);
     //collect cell information

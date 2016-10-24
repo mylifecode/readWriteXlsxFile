@@ -1,3 +1,9 @@
+0.2.8
+
+2016-10-24  Brecht Sanders  https://github.com/brechtsanders/
+
+  * skip issue where "(null)" is written if cell data is NULL
+
 0.2.7
 
 2016-09-03  Brecht Sanders  https://github.com/brechtsanders/
