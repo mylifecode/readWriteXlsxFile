@@ -85,6 +85,7 @@ DLL_EXPORT_XLSXIO const char* xlsxiowrite_get_version_string ()
 #define XML_FILENAME_XL_WORKBOOK        "workbook.xml"
 #define XML_FILENAME_XL_STYLES          "styles.xml"
 #define XML_FILENAME_XL_WORKSHEET1      "sheet1.xml"
+#define XML_SHEETNAME_MAXLEN            31
 
 const char* content_types_xml =
   "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\r\n"
@@ -397,7 +398,11 @@ void* thread_proc (void* arg)
     char* sheetname = NULL;
     if (handle->sheetname) {
       sheetname = strdup(handle->sheetname);
-      fix_xml_special_chars(&sheetname);
+      if (sheetname) {
+        if (strlen(sheetname) > XML_SHEETNAME_MAXLEN)
+          sheetname[XML_SHEETNAME_MAXLEN] = 0;
+        fix_xml_special_chars(&sheetname);
+      }
     }
     zip_add_dynamic_content_string(handle->zip, XML_FOLDER_XL XML_FILENAME_XL_WORKBOOK, workbook_xml, (sheetname ? sheetname : "Sheet1"));
     free(sheetname);

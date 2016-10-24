@@ -3,6 +3,7 @@
 2016-10-24  Brecht Sanders  https://github.com/brechtsanders/
 
   * skip issue where "(null)" is written if cell data is NULL
+  * limit sheet name to 31 characters
 
 0.2.7
 
