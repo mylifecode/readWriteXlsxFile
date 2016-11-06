@@ -38,7 +38,7 @@ THE SOFTWARE.
 #ifndef INCLUDED_XLSXIO_VERSION_H
 #define INCLUDED_XLSXIO_VERSION_H
 
-/*! \brief possible values for the flags parameter of xlsxioread_process()
+/*! \brief version number constants
  * \sa     xlsxioread_get_version()
  * \sa     xlsxiowrite_get_version()
  * \name   XLSXIO_VERSION_*
