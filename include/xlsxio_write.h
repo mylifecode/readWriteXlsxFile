@@ -62,7 +62,7 @@ typedef signed __int64 int64_t;
 extern "C" {
 #endif
 
-/*! \brief get xlsxio_write version string
+/*! \brief get xlsxio_write version
  * \param  pmajor        pointer to integer that will receive major version number
  * \param  pminor        pointer to integer that will receive minor version number
  * \param  pmicro        pointer to integer that will receive micro version number
