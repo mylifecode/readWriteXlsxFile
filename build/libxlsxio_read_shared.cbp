@@ -108,6 +108,10 @@
 		<Unit filename="../lib/xlsxio_read.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="../lib/xlsxio_read_sharedstrings.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/xlsxio_read_sharedstrings.h" />
 		<Extensions>
 			<code_completion />
 			<envvars />

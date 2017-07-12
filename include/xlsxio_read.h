@@ -37,7 +37,6 @@ THE SOFTWARE.
 #define INCLUDED_XLSXIO_READ_H
 
 #include <stdlib.h>
-#include <stdlib.h>
 #if defined(_MSC_VER) && _MSC_VER < 1600
 typedef signed __int64 int64_t;
 #else

@@ -1,3 +1,10 @@
+0.2.9
+
+2017-07-12  Brecht Sanders  https://github.com/brechtsanders/
+
+  * use strcasecmp instead of stricmp
+  * move shared strings functionality from xlsxio_read.c to seperate file
+
 0.2.8
 
 2016-10-24  Brecht Sanders  https://github.com/brechtsanders/
