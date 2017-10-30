@@ -3,6 +3,7 @@
 2017-10-31  Brecht Sanders  https://github.com/brechtsanders/
 
   * added xlsxioread_open_memory() to read file from memory buffer
+  * fixed xlsxio_read_sharedstrings.c not being compiled in Makefile
 
 0.2.9
 
