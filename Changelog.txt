@@ -1,3 +1,9 @@
+0.2.10
+
+2017-10-31  Brecht Sanders  https://github.com/brechtsanders/
+
+  * added xlsxioread_open_memory() to read file from memory buffer
+
 0.2.9
 
 2017-07-12  Brecht Sanders  https://github.com/brechtsanders/

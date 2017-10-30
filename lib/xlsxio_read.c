@@ -15,12 +15,6 @@
 #define DLL_EXPORT_XLSXIO
 #endif
 
-#ifndef ZIP_RDONLY
-typedef struct zip zip_t;
-typedef struct zip_file zip_file_t;
-#define ZIP_RDONLY 0
-#endif
-
 #if defined(_MSC_VER) || (defined(__MINGW32__) && !defined(__MINGW64__))
 #define strcasecmp stricmp
 #endif
@@ -214,9 +208,27 @@ DLL_EXPORT_XLSXIO xlsxioreader xlsxioread_open (const char* filename)
   return result;
 }
 
+DLL_EXPORT_XLSXIO xlsxioreader xlsxioread_open_memory (const void* data, uint64_t datalen, int freedata)
+{
+  xlsxioreader result;
+  zip_source_t* zipsrc;
+  if ((zipsrc = zip_source_buffer_create(data, datalen, freedata, NULL)) == NULL) {
+    return NULL;
+  }
+  if ((result = (xlsxioreader)malloc(sizeof(struct xlsxio_read_struct))) != NULL) {
+    if ((result->zip = zip_open_from_source(zipsrc, ZIP_RDONLY, NULL)) == NULL) {
+      zip_source_free(zipsrc);
+      free(result);
+      return NULL;
+    }
+  }
+  return result;
+}
+
 DLL_EXPORT_XLSXIO void xlsxioread_close (xlsxioreader handle)
 {
   if (handle) {
+    //note: no need to call zip_source_free() after successful use in zip_open_from_source()
     zip_close(handle->zip);
     free(handle);
   }

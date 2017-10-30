@@ -40,7 +40,7 @@ CP = cp -f
 CPDIR = cp -rf
 DOXYGEN := $(shell which doxygen)
 
-XLSXIOREAD_OBJ = lib/xlsxio_read.o
+XLSXIOREAD_OBJ = lib/xlsxio_read.o lib/xlsxio_read_sharedstrings.o
 XLSXIOREAD_LDFLAGS = -lzip -lexpat
 XLSXIOREAD_SHARED_LDFLAGS =
 XLSXIOWRITE_OBJ = lib/xlsxio_write.o
@@ -61,6 +61,11 @@ OS_LINK_FLAGS = -dynamiclib -o $@
 else
 OS_LINK_FLAGS = -shared -Wl,-soname,$@ $(STRIPFLAG)
 endif
+
+## lines below to compile Windows DLLs with no dependancies
+#CFLAGS += -DZIP_STATIC
+#XLSXIOREAD_LDFLAGS += -static -lz -lbz2
+#XLSXIOWRITE_LDFLAGS += -static -lz -lbz2
 
 TOOLS_BIN = xlsxio_xlsx2csv$(BINEXT) xlsxio_csv2xlsx$(BINEXT)
 EXAMPLES_BIN = example_xlsxio_write_getversion$(BINEXT) example_xlsxio_write$(BINEXT) example_xlsxio_read$(BINEXT) example_xlsxio_read_advanced$(BINEXT)

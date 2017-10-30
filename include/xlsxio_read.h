@@ -39,6 +39,7 @@ THE SOFTWARE.
 #include <stdlib.h>
 #if defined(_MSC_VER) && _MSC_VER < 1600
 typedef signed __int64 int64_t;
+typedef unsigned __int64 uint64_t;
 #else
 #include <stdint.h>
 #endif
@@ -87,6 +88,15 @@ typedef struct xlsxio_read_struct* xlsxioreader;
  * \sa     xlsxioread_close()
  */
 DLL_EXPORT_XLSXIO xlsxioreader xlsxioread_open (const char* filename);
+
+/*! \brief open .xlsx from memory buffer
+ * \param  data          memory buffer containing .xlsx file (data must remain valid as long as any xlsxioread_ functions are called)
+ * \param  datalen       size of memory buffer containing .xlsx file
+ * \param  freedata      if non-zero data will be freed by xlsxioread_close()
+ * \return read handle for .xlsx object or NULL on error
+ * \sa     xlsxioread_close()
+ */
+DLL_EXPORT_XLSXIO xlsxioreader xlsxioread_open_memory (const void* data, uint64_t datalen, int freedata);
 
 /*! \brief close .xlsx file
  * \param  handle        read handle for .xlsx object

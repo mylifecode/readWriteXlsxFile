@@ -28,11 +28,18 @@ THE SOFTWARE.
  * This example reads data from an .xslx file using the simple method.
  */
 
+//#define PROCESS_FROM_MEMORY
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #if _WIN32
 #include <windows.h>
+#endif
+#ifdef PROCESS_FROM_MEMORY
+#include <stdio.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #endif
 #include "xlsxio_read.h"
 
@@ -46,11 +53,40 @@ int main (int argc, char* argv[])
 #endif
 
   xlsxioreader xlsxioread;
+
+#ifndef PROCESS_FROM_MEMORY
   //open .xlsx file for reading
   if ((xlsxioread = xlsxioread_open(filename)) == NULL) {
     fprintf(stderr, "Error opening .xlsx file\n");
     return 1;
   }
+#else
+  {
+    //load file in memory
+    int filehandle;
+    char* buf = NULL;
+    size_t buflen = 0;
+    if ((filehandle = open(filename, O_RDONLY | O_BINARY)) != -1) {
+      struct stat fileinfo;
+      if (fstat(filehandle, &fileinfo) == 0) {
+        if ((buf = malloc(fileinfo.st_size)) != NULL) {
+          if (fileinfo.st_size > 0 && read(filehandle, buf, fileinfo.st_size) == fileinfo.st_size) {
+            buflen = fileinfo.st_size;
+          }
+        }
+      }
+      close(filehandle);
+    }
+    if (!buf || buflen == 0) {
+      fprintf(stderr, "Error loading .xlsx file\n");
+      return 1;
+    }
+    if ((xlsxioread = xlsxioread_open_memory(buf, buflen, 1)) == NULL) {
+      fprintf(stderr, "Error processing .xlsx data\n");
+      return 1;
+    }
+  }
+#endif
 
   //list available sheets
   xlsxioreadersheetlist sheetlist;
