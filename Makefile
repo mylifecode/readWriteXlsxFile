@@ -71,7 +71,7 @@ TOOLS_BIN = xlsxio_xlsx2csv$(BINEXT) xlsxio_csv2xlsx$(BINEXT)
 EXAMPLES_BIN = example_xlsxio_write_getversion$(BINEXT) example_xlsxio_write$(BINEXT) example_xlsxio_read$(BINEXT) example_xlsxio_read_advanced$(BINEXT)
 
 COMMON_PACKAGE_FILES = README.md LICENSE.txt Changelog.txt
-SOURCE_PACKAGE_FILES = $(COMMON_PACKAGE_FILES) Makefile CMakeLists.txt CMake/ doc/Doxyfile include/*.h lib/*.c src/*.c examples/*.c build/*.cbp
+SOURCE_PACKAGE_FILES = $(COMMON_PACKAGE_FILES) Makefile CMakeLists.txt CMake/ doc/Doxyfile include/*.h lib/*.c lib/*.h src/*.c examples/*.c build/*.cbp
 
 default: all
 
