@@ -62,10 +62,14 @@ else
 OS_LINK_FLAGS = -shared -Wl,-soname,$@ $(STRIPFLAG)
 endif
 
-## lines below to compile Windows DLLs with no dependancies
-#CFLAGS += -DZIP_STATIC
-#XLSXIOREAD_LDFLAGS += -static -lz -lbz2
-#XLSXIOWRITE_LDFLAGS += -static -lz -lbz2
+ifdef STATICDLL
+ifeq ($(OS),Windows_NT)
+# lines below to compile Windows DLLs with no dependancies
+CFLAGS += -DZIP_STATIC
+XLSXIOREAD_LDFLAGS += -static -lz -lbz2
+XLSXIOWRITE_LDFLAGS += -static -lz -lbz2
+endif
+endif
 
 TOOLS_BIN = xlsxio_xlsx2csv$(BINEXT) xlsxio_csv2xlsx$(BINEXT)
 EXAMPLES_BIN = example_xlsxio_write_getversion$(BINEXT) example_xlsxio_write$(BINEXT) example_xlsxio_read$(BINEXT) example_xlsxio_read_advanced$(BINEXT)
@@ -154,7 +158,7 @@ package: version
 
 .PHONY: package
 binarypackage: version
-	$(MAKE) PREFIX=binarypackage_temp install
+	$(MAKE) PREFIX=binarypackage_temp install STATICDLL=1
 	tar cfJ "xlsxio-$(shell cat version)-$(OS).tar.xz" --transform="s?^binarypackage_temp/??" $(COMMON_PACKAGE_FILES) binarypackage_temp/*
 	rm -rf binarypackage_temp
 
