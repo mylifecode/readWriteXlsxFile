@@ -1,3 +1,4 @@
+#define PROCESS_FROM_FILEHANDLE
 /*****************************************************************************
 Copyright (C)  2016  Brecht Sanders  All Rights Reserved
 
@@ -41,7 +42,53 @@ THE SOFTWARE.
 #include <sys/stat.h>
 #include <fcntl.h>
 #endif
+#ifdef PROCESS_FROM_FILEHANDLE
+#include <io.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#endif
 #include "xlsxio_read.h"
+
+#if !defined(XML_UNICODE_WCHAR_T) && !defined(XML_UNICODE)
+
+//UTF-8 version
+#define X(s) s
+/*
+#define XML_Char_icmp strcasecmp
+#define XML_Char_len strlen
+#define XML_Char_dup strdup
+#define XML_Char_cpy strcpy
+#define XML_Char_poscpy(d,p,s,l) memcpy(d + p, s, l)
+#define XML_Char_malloc(n) ((char*)malloc(n))
+#define XML_Char_realloc(m,n) ((char*)realloc((m), (n)))
+#define XML_Char_tol(s) strtol((s), NULL, 10)
+#define XML_Char_tod(s) strtod((s), NULL)
+#define XML_Char_strtol strtol
+#define XML_Char_sscanf sscanf
+*/
+#define XML_Char_printf printf
+
+#else
+
+//UTF-16 version
+#define X(s) L##s
+/*
+#define XML_Char_icmp wcscasecmp
+#define XML_Char_len wcslen
+#define XML_Char_dup wcsdup
+#define XML_Char_cpy wcscpy
+#define XML_Char_poscpy(d,p,s,l) memcpy(d + (p) * sizeof(XML_Char), s, (l) * sizeof(XML_Char))
+#define XML_Char_malloc(n) ((XML_Char*)malloc((n) * sizeof(XML_Char)))
+#define XML_Char_realloc(m,n) ((XML_Char*)realloc((m), (n) * sizeof(XML_Char)))
+#define XML_Char_tol(s) wcstol((s), NULL, 10)
+#define XML_Char_tod(s) wcstod((s), NULL)
+#define XML_Char_strtol wcstol
+#define XML_Char_sscanf swscanf
+*/
+#define XML_Char_printf wprintf
+
+#endif
 
 const char* filename = "example.xlsx";
 
@@ -54,13 +101,9 @@ int main (int argc, char* argv[])
 
   xlsxioreader xlsxioread;
 
-#ifndef PROCESS_FROM_MEMORY
-  //open .xlsx file for reading
-  if ((xlsxioread = xlsxioread_open(filename)) == NULL) {
-    fprintf(stderr, "Error opening .xlsx file\n");
-    return 1;
-  }
-#else
+  XML_Char_printf(X("XLSX I/O library version %s\n"), xlsxioread_get_version_string());
+
+#if defined(PROCESS_FROM_MEMORY)
   {
     //load file in memory
     int filehandle;
@@ -86,25 +129,42 @@ int main (int argc, char* argv[])
       return 1;
     }
   }
+#elif defined(PROCESS_FROM_FILEHANDLE)
+  //open .xlsx file for reading
+  int filehandle;
+  if ((filehandle = open(filename, O_RDONLY | O_BINARY, 0)) == -1) {
+    fprintf(stderr, "Error opening .xlsx file\n");
+    return 1;
+  }
+  if ((xlsxioread = xlsxioread_open_filehandle(filehandle)) == NULL) {
+    fprintf(stderr, "Error reading .xlsx file\n");
+    return 1;
+  }
+#else
+  //open .xlsx file for reading
+  if ((xlsxioread = xlsxioread_open(filename)) == NULL) {
+    fprintf(stderr, "Error opening .xlsx file\n");
+    return 1;
+  }
 #endif
 
   //list available sheets
   xlsxioreadersheetlist sheetlist;
-  const char* sheetname;
+  const XLSXCHAR* sheetname;
   printf("Available sheets:\n");
   if ((sheetlist = xlsxioread_sheetlist_open(xlsxioread)) != NULL) {
     while ((sheetname = xlsxioread_sheetlist_next(sheetlist)) != NULL) {
-      printf(" - %s\n", sheetname);
+      XML_Char_printf(X(" - %s\n"), sheetname);
     }
     xlsxioread_sheetlist_close(sheetlist);
   }
 
   //read values from first sheet
-  char* value;
+  XLSXCHAR* value;
   xlsxioreadersheet sheet = xlsxioread_sheet_open(xlsxioread, NULL, XLSXIOREAD_SKIP_EMPTY_ROWS);
   while (xlsxioread_sheet_next_row(sheet)) {
     while ((value = xlsxioread_sheet_next_cell(sheet)) != NULL) {
-      printf("%s\t", value);
+      XML_Char_printf(X("%s\t"), value);
       free(value);
     }
     printf("\n");

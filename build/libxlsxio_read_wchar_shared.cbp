@@ -2,16 +2,16 @@
 <CodeBlocks_project_file>
 	<FileVersion major="1" minor="6" />
 	<Project>
-		<Option title="libxlsxio_write_shared" />
+		<Option title="libxlsxio_read_shared_wchar" />
 		<Option pch_mode="2" />
 		<Option compiler="gcc" />
 		<Build>
 			<Target title="Debug">
-				<Option output="bin/Debug/libxlsxio_write" imp_lib="$(TARGET_OUTPUT_DIR)$(TARGET_OUTPUT_BASENAME).dll" def_file="$(TARGET_OUTPUT_DIR)$(TARGET_OUTPUT_BASENAME)" prefix_auto="1" extension_auto="1" />
+				<Option output="bin/Debug/libxlsxio_read_w" imp_lib="$(TARGET_OUTPUT_DIR)$(TARGET_OUTPUT_BASENAME).dll" def_file="$(TARGET_OUTPUT_DIR)$(TARGET_OUTPUT_BASENAME)" prefix_auto="1" extension_auto="1" />
 				<Option object_output="obj/Debug/" />
 				<Option type="3" />
 				<Option compiler="gcc" />
-				<Option host_application="bin/Debug/example_xlsxio_write" />
+				<Option host_application="bin/Debug/example_xlsxio_read" />
 				<Option run_host_application_in_terminal="0" />
 				<Option createDefFile="1" />
 				<Option createStaticLib="1" />
@@ -20,11 +20,11 @@
 				</Compiler>
 			</Target>
 			<Target title="Release">
-				<Option output="bin/Release/libxlsxio_write" imp_lib="$(TARGET_OUTPUT_DIR)$(TARGET_OUTPUT_BASENAME).dll" def_file="$(TARGET_OUTPUT_DIR)$(TARGET_OUTPUT_BASENAME)" prefix_auto="1" extension_auto="1" />
+				<Option output="bin/Release/libxlsxio_read_w" imp_lib="$(TARGET_OUTPUT_DIR)$(TARGET_OUTPUT_BASENAME).dll" def_file="$(TARGET_OUTPUT_DIR)$(TARGET_OUTPUT_BASENAME)" prefix_auto="1" extension_auto="1" />
 				<Option object_output="obj/Release/" />
 				<Option type="3" />
 				<Option compiler="gcc" />
-				<Option host_application="bin/Release/example_xlsxio_write" />
+				<Option host_application="bin/Release/example_xlsxio_read" />
 				<Option run_host_application_in_terminal="0" />
 				<Option createDefFile="1" />
 				<Option createStaticLib="1" />
@@ -36,11 +36,11 @@
 				</Linker>
 			</Target>
 			<Target title="Debug64">
-				<Option output="bin/Debug64/libxlsxio_write" imp_lib="$(TARGET_OUTPUT_DIR)$(TARGET_OUTPUT_BASENAME).dll" def_file="$(TARGET_OUTPUT_DIR)$(TARGET_OUTPUT_BASENAME)" prefix_auto="1" extension_auto="1" />
+				<Option output="bin/Debug64/libxlsxio_read_w" imp_lib="$(TARGET_OUTPUT_DIR)$(TARGET_OUTPUT_BASENAME).dll" def_file="$(TARGET_OUTPUT_DIR)$(TARGET_OUTPUT_BASENAME)" prefix_auto="1" extension_auto="1" />
 				<Option object_output="obj/Debug64/" />
 				<Option type="3" />
 				<Option compiler="MINGW64" />
-				<Option host_application="bin/Debug64/example_xlsxio_write" />
+				<Option host_application="bin/Debug64/example_xlsxio_read" />
 				<Option run_host_application_in_terminal="0" />
 				<Option createDefFile="1" />
 				<Option createStaticLib="1" />
@@ -49,11 +49,11 @@
 				</Compiler>
 			</Target>
 			<Target title="Release64">
-				<Option output="bin/Release64/libxlsxio_write" imp_lib="$(TARGET_OUTPUT_DIR)$(TARGET_OUTPUT_BASENAME).dll" def_file="$(TARGET_OUTPUT_DIR)$(TARGET_OUTPUT_BASENAME)" prefix_auto="1" extension_auto="1" />
+				<Option output="bin/Release64/libxlsxio_read_w" imp_lib="$(TARGET_OUTPUT_DIR)$(TARGET_OUTPUT_BASENAME).dll" def_file="$(TARGET_OUTPUT_DIR)$(TARGET_OUTPUT_BASENAME)" prefix_auto="1" extension_auto="1" />
 				<Option object_output="obj/Release64/" />
 				<Option type="3" />
 				<Option compiler="MINGW64" />
-				<Option host_application="bin/Release64/example_xlsxio_write" />
+				<Option host_application="bin/Release64/example_xlsxio_read" />
 				<Option run_host_application_in_terminal="0" />
 				<Option createDefFile="1" />
 				<Option createStaticLib="1" />
@@ -65,11 +65,11 @@
 				</Linker>
 			</Target>
 			<Target title="Debug32">
-				<Option output="bin/Debug32/libxlsxio_write" imp_lib="$(TARGET_OUTPUT_DIR)$(TARGET_OUTPUT_BASENAME).dll" def_file="$(TARGET_OUTPUT_DIR)$(TARGET_OUTPUT_BASENAME)" prefix_auto="1" extension_auto="1" />
+				<Option output="bin/Debug32/libxlsxio_read_w" imp_lib="$(TARGET_OUTPUT_DIR)$(TARGET_OUTPUT_BASENAME).dll" def_file="$(TARGET_OUTPUT_DIR)$(TARGET_OUTPUT_BASENAME)" prefix_auto="1" extension_auto="1" />
 				<Option object_output="obj/Debug32/" />
 				<Option type="3" />
 				<Option compiler="MINGW32" />
-				<Option host_application="bin/Debug32/example_xlsxio_write" />
+				<Option host_application="bin/Debug32/example_xlsxio_read" />
 				<Option run_host_application_in_terminal="0" />
 				<Option createDefFile="1" />
 				<Option createStaticLib="1" />
@@ -78,11 +78,11 @@
 				</Compiler>
 			</Target>
 			<Target title="Release32">
-				<Option output="bin/Release32/libxlsxio_write" imp_lib="$(TARGET_OUTPUT_DIR)$(TARGET_OUTPUT_BASENAME).dll" def_file="$(TARGET_OUTPUT_DIR)$(TARGET_OUTPUT_BASENAME)" prefix_auto="1" extension_auto="1" />
+				<Option output="bin/Release32/libxlsxio_read_w" imp_lib="$(TARGET_OUTPUT_DIR)$(TARGET_OUTPUT_BASENAME).dll" def_file="$(TARGET_OUTPUT_DIR)$(TARGET_OUTPUT_BASENAME)" prefix_auto="1" extension_auto="1" />
 				<Option object_output="obj/Release32/" />
 				<Option type="3" />
 				<Option compiler="MINGW32" />
-				<Option host_application="bin/Release32/example_xlsxio_write" />
+				<Option host_application="bin/Release32/example_xlsxio_read" />
 				<Option run_host_application_in_terminal="0" />
 				<Option createDefFile="1" />
 				<Option createStaticLib="1" />
@@ -97,17 +97,23 @@
 		<Compiler>
 			<Add option="-Wall" />
 			<Add option="-DBUILD_XLSXIO_DLL" />
+			<Add option="-DXML_UNICODE" />
 			<Add directory="../include" />
 		</Compiler>
 		<Linker>
-			<Add option="--shared" />
+			<Add library="expatw" />
 			<Add library="zip" />
 		</Linker>
+		<Unit filename="../include/xlsxio_read.h" />
 		<Unit filename="../include/xlsxio_version.h" />
-		<Unit filename="../include/xlsxio_write.h" />
-		<Unit filename="../lib/xlsxio_write.c">
+		<Unit filename="../lib/xlsxio_private.h" />
+		<Unit filename="../lib/xlsxio_read.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="../lib/xlsxio_read_sharedstrings.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../lib/xlsxio_read_sharedstrings.h" />
 		<Extensions>
 			<code_completion />
 			<envvars />

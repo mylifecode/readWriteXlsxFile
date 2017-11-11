@@ -23,5 +23,12 @@
 		<Project filename="xlsxio_csv2xlsx.cbp">
 			<Depends filename="libxlsxio_write_shared.cbp" />
 		</Project>
+		<Project filename="libxlsxio_write_wchar.cbp" />
+		<Project filename="libxlsxio_write_wchar_shared.cbp" />
+		<Project filename="libxlsxio_read_wchar.cbp" />
+		<Project filename="libxlsxio_read_wchar_shared.cbp" />
+		<Project filename="example_xlsxio_read_wchar.cbp">
+			<Depends filename="libxlsxio_read_wchar.cbp" />
+		</Project>
 	</Workspace>
 </CodeBlocks_workspace_file>

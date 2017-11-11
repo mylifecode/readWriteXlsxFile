@@ -105,6 +105,7 @@
 		</Linker>
 		<Unit filename="../include/xlsxio_read.h" />
 		<Unit filename="../include/xlsxio_version.h" />
+		<Unit filename="../lib/xlsxio_private.h" />
 		<Unit filename="../lib/xlsxio_read.c">
 			<Option compilerVar="CC" />
 		</Unit>

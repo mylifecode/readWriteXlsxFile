@@ -91,6 +91,7 @@
 		<Compiler>
 			<Add option="-Wall" />
 			<Add directory="../include" />
+			<Add directory="../lib" />
 		</Compiler>
 		<Unit filename="../examples/example_xlsxio_read_advanced.c">
 			<Option compilerVar="CC" />

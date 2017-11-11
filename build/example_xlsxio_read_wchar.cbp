@@ -2,12 +2,12 @@
 <CodeBlocks_project_file>
 	<FileVersion major="1" minor="6" />
 	<Project>
-		<Option title="example_xlsxio_read" />
+		<Option title="example_xlsxio_read_wchar" />
 		<Option pch_mode="2" />
 		<Option compiler="gcc" />
 		<Build>
 			<Target title="Debug">
-				<Option output="bin/Debug/example_xlsxio_read" prefix_auto="1" extension_auto="1" />
+				<Option output="bin/Debug/example_xlsxio_read_wchar" prefix_auto="1" extension_auto="1" />
 				<Option object_output="obj/Debug/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
@@ -20,7 +20,7 @@
 				</Linker>
 			</Target>
 			<Target title="Release">
-				<Option output="bin/Release/example_xlsxio_read" prefix_auto="1" extension_auto="1" />
+				<Option output="bin/Release/example_xlsxio_read_wchar" prefix_auto="1" extension_auto="1" />
 				<Option object_output="obj/Release/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
@@ -34,7 +34,7 @@
 				</Linker>
 			</Target>
 			<Target title="Debug64">
-				<Option output="bin/Debug64/example_xlsxio_read" prefix_auto="1" extension_auto="1" />
+				<Option output="bin/Debug64/example_xlsxio_read_wchar" prefix_auto="1" extension_auto="1" />
 				<Option object_output="obj/Debug64/" />
 				<Option type="1" />
 				<Option compiler="MINGW64" />
@@ -47,7 +47,7 @@
 				</Linker>
 			</Target>
 			<Target title="Release64">
-				<Option output="bin/Release64/example_xlsxio_read" prefix_auto="1" extension_auto="1" />
+				<Option output="bin/Release64/example_xlsxio_read_wchar" prefix_auto="1" extension_auto="1" />
 				<Option object_output="obj/Release64/" />
 				<Option type="1" />
 				<Option compiler="MINGW64" />
@@ -61,7 +61,7 @@
 				</Linker>
 			</Target>
 			<Target title="Debug32">
-				<Option output="bin/Debug32/example_xlsxio_read" prefix_auto="1" extension_auto="1" />
+				<Option output="bin/Debug32/example_xlsxio_read_wchar" prefix_auto="1" extension_auto="1" />
 				<Option object_output="obj/Debug32/" />
 				<Option type="1" />
 				<Option compiler="MINGW32" />
@@ -74,7 +74,7 @@
 				</Linker>
 			</Target>
 			<Target title="Release32">
-				<Option output="bin/Release32/example_xlsxio_read" prefix_auto="1" extension_auto="1" />
+				<Option output="bin/Release32/example_xlsxio_read_wchar" prefix_auto="1" extension_auto="1" />
 				<Option object_output="obj/Release32/" />
 				<Option type="1" />
 				<Option compiler="MINGW32" />
@@ -90,6 +90,7 @@
 		</Build>
 		<Compiler>
 			<Add option="-Wall" />
+			<Add option="-DXML_UNICODE" />
 			<Add directory="../include" />
 			<Add directory="../lib" />
 		</Compiler>

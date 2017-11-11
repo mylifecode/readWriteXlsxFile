@@ -49,11 +49,15 @@ THE SOFTWARE.
 /*! \brief minor version number */
 #define XLSXIO_VERSION_MINOR 2
 /*! \brief micro version number */
-#define XLSXIO_VERSION_MICRO 10
+#define XLSXIO_VERSION_MICRO 11
 /*! @} */
 
 /*! \cond PRIVATE */
+#ifndef XML_UNICODE_WCHAR_T
 #define XLSXIO_VERSION_STRINGIZE_(major, minor, micro) #major"."#minor"."#micro
+#else
+#define XLSXIO_VERSION_STRINGIZE_(major, minor, micro) L ## #major"."#minor"."#micro
+#endif
 #define XLSXIO_VERSION_STRINGIZE(major, minor, micro) XLSXIO_VERSION_STRINGIZE_(major, minor, micro)
 /*! \endcond */
 

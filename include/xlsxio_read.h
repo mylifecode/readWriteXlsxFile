@@ -45,6 +45,17 @@ typedef unsigned __int64 uint64_t;
 #endif
 #include <time.h>
 
+#ifndef XLSXIOCHAR
+#if defined(XLSXIOCHAR)
+#warning Building with XML_UNICODE_WCHAR_T and -fshort-wchar is not supported unless all other linked libraries and programs are also compiled with -fshort-wchar
+#elif defined(XML_UNICODE)
+#include <wchar.h>
+#define XLSXIOCHAR wchar_t
+#else
+#define XLSXIOCHAR char
+#endif
+#endif
+
 /*! \cond PRIVATE */
 #ifndef DLL_EXPORT_XLSXIO
 #ifdef _WIN32
@@ -77,7 +88,7 @@ DLL_EXPORT_XLSXIO void xlsxioread_get_version (int* pmajor, int* pminor, int* pm
  * \return version string
  * \sa     xlsxiowrite_get_version()
  */
-DLL_EXPORT_XLSXIO const char* xlsxioread_get_version_string ();
+DLL_EXPORT_XLSXIO const XLSXIOCHAR* xlsxioread_get_version_string ();
 
 /*! \brief read handle for .xlsx object */
 typedef struct xlsxio_read_struct* xlsxioreader;
@@ -88,6 +99,13 @@ typedef struct xlsxio_read_struct* xlsxioreader;
  * \sa     xlsxioread_close()
  */
 DLL_EXPORT_XLSXIO xlsxioreader xlsxioread_open (const char* filename);
+
+/*! \brief open .xlsx file
+ * \param  filehandle    file handle of .xlsx file opened with read access in binary mode
+ * \return read handle for .xlsx object or NULL on error
+ * \sa     xlsxioread_close()
+ */
+DLL_EXPORT_XLSXIO xlsxioreader xlsxioread_open_filehandle (int filehandle);
 
 /*! \brief open .xlsx from memory buffer
  * \param  data          memory buffer containing .xlsx file (data must remain valid as long as any xlsxioread_ functions are called)
@@ -112,7 +130,7 @@ DLL_EXPORT_XLSXIO void xlsxioread_close (xlsxioreader handle);
  * \return zero to continue, non-zero to abort
  * \sa     xlsxioread_list_sheets()
  */
-typedef int (*xlsxioread_list_sheets_callback_fn)(const char* name, void* callbackdata);
+typedef int (*xlsxioread_list_sheets_callback_fn)(const XLSXIOCHAR* name, void* callbackdata);
 
 /*! \brief list worksheets in .xlsx file
  * \param  handle        read handle for .xlsx object
@@ -150,7 +168,7 @@ DLL_EXPORT_XLSXIO void xlsxioread_list_sheets (xlsxioreader handle, xlsxioread_l
  * \sa     xlsxioread_process()
  * \sa     xlsxioread_process_row_callback_fn
  */
-typedef int (*xlsxioread_process_cell_callback_fn)(size_t row, size_t col, const char* value, void* callbackdata);
+typedef int (*xlsxioread_process_cell_callback_fn)(size_t row, size_t col, const XLSXIOCHAR* value, void* callbackdata);
 
 /*! \brief type of pointer to callback function for processing the end of a worksheet row
  * \param  row           row number (first row is 1)
@@ -173,7 +191,7 @@ typedef int (*xlsxioread_process_row_callback_fn)(size_t row, size_t maxcol, voi
  * \sa     xlsxioread_process_row_callback_fn
  * \sa     xlsxioread_process_cell_callback_fn
  */
-DLL_EXPORT_XLSXIO int xlsxioread_process (xlsxioreader handle, const char* sheetname, unsigned int flags, xlsxioread_process_cell_callback_fn cell_callback, xlsxioread_process_row_callback_fn row_callback, void* callbackdata);
+DLL_EXPORT_XLSXIO int xlsxioread_process (xlsxioreader handle, const XLSXIOCHAR* sheetname, unsigned int flags, xlsxioread_process_cell_callback_fn cell_callback, xlsxioread_process_row_callback_fn row_callback, void* callbackdata);
 
 
 
@@ -193,12 +211,12 @@ DLL_EXPORT_XLSXIO xlsxioreadersheetlist xlsxioread_sheetlist_open (xlsxioreader 
  */
 DLL_EXPORT_XLSXIO void xlsxioread_sheetlist_close (xlsxioreadersheetlist sheetlisthandle);
 
-/*! \brief get next cell from worksheet
+/*! \brief get next worksheet name
  * \param  sheetlisthandle  read handle for worksheet object
  * \return name of worksheet or NULL if no more worksheets are available
  * \sa     xlsxioread_sheetlist_open()
  */
-DLL_EXPORT_XLSXIO const char* xlsxioread_sheetlist_next (xlsxioreadersheetlist sheetlisthandle);
+DLL_EXPORT_XLSXIO const XLSXIOCHAR* xlsxioread_sheetlist_next (xlsxioreadersheetlist sheetlisthandle);
 
 
 
@@ -213,7 +231,7 @@ typedef struct xlsxio_read_sheet_struct* xlsxioreadersheet;
  * \sa     xlsxioread_sheet_close()
  * \sa     xlsxioread_open()
  */
-DLL_EXPORT_XLSXIO xlsxioreadersheet xlsxioread_sheet_open (xlsxioreader handle, const char* sheetname, unsigned int flags);
+DLL_EXPORT_XLSXIO xlsxioreadersheet xlsxioread_sheet_open (xlsxioreader handle, const XLSXIOCHAR* sheetname, unsigned int flags);
 
 /*! \brief close worksheet
  * \param  handle        read handle for worksheet object
@@ -233,7 +251,7 @@ DLL_EXPORT_XLSXIO int xlsxioread_sheet_next_row (xlsxioreadersheet sheethandle);
  * \return value (caller must free the result) or NULL if no more cells are available in the current row
  * \sa     xlsxioread_sheet_open()
  */
-DLL_EXPORT_XLSXIO char* xlsxioread_sheet_next_cell (xlsxioreadersheet sheethandle);
+DLL_EXPORT_XLSXIO XLSXIOCHAR* xlsxioread_sheet_next_cell (xlsxioreadersheet sheethandle);
 
 /*! \brief get next cell from worksheet as a string
  * \param  handle        read handle for worksheet object
@@ -242,7 +260,7 @@ DLL_EXPORT_XLSXIO char* xlsxioread_sheet_next_cell (xlsxioreadersheet sheethandl
  * \sa     xlsxioread_sheet_open()
  * \sa     xlsxioread_sheet_next_cell()
  */
-DLL_EXPORT_XLSXIO int xlsxioread_sheet_next_cell_string (xlsxioreadersheet sheethandle, char** pvalue);
+DLL_EXPORT_XLSXIO int xlsxioread_sheet_next_cell_string (xlsxioreadersheet sheethandle, XLSXIOCHAR** pvalue);
 
 /*! \brief get next cell from worksheet as an integer
  * \param  handle        read handle for worksheet object

@@ -1,3 +1,9 @@
+0.2.11
+
+2017-11-09  Brecht Sanders  https://github.com/brechtsanders/
+
+  * added xlsxioread_open_filehandle() to read file using file descriptor
+
 0.2.10
 
 2017-10-31  Brecht Sanders  https://github.com/brechtsanders/

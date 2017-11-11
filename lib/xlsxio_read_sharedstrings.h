@@ -10,16 +10,16 @@ extern "C" {
 #endif
 
 struct sharedstringlist {
-  char** strings;
+  XML_Char** strings;
   size_t numstrings;
 };
 
 struct sharedstringlist* sharedstringlist_create ();
 void sharedstringlist_destroy (struct sharedstringlist* sharedstrings);
 size_t sharedstringlist_size (struct sharedstringlist* sharedstrings);
-int sharedstringlist_add_buffer (struct sharedstringlist* sharedstrings, const char* data, size_t datalen);
-int sharedstringlist_add_string (struct sharedstringlist* sharedstrings, const char* data);
-const char* sharedstringlist_get (struct sharedstringlist* sharedstrings, size_t index);
+int sharedstringlist_add_buffer (struct sharedstringlist* sharedstrings, const XML_Char* data, size_t datalen);
+int sharedstringlist_add_string (struct sharedstringlist* sharedstrings, const XML_Char* data);
+const XML_Char* sharedstringlist_get (struct sharedstringlist* sharedstrings, size_t index);
 
 ////////////////////////////////////////////////////////////////////////
 
@@ -30,9 +30,9 @@ struct shared_strings_callback_data {
   int insst;
   int insi;
   int intext;
-  char* text;
+  XML_Char* text;
   size_t textlen;
-  char* skiptag;                        //tag to skip
+  XML_Char* skiptag;                    //tag to skip
   size_t skiptagcount;                  //nesting level for current tag to skip
   XML_StartElementHandler skip_start;   //start handler to set after skipping
   XML_EndElementHandler skip_end;       //end handler to set after skipping

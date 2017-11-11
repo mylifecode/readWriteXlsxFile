@@ -58,7 +58,7 @@ int sheet_row_callback (size_t row, size_t maxcol, void* callbackdata)
 }
 
 //calback function for cell data
-int sheet_cell_callback (size_t row, size_t col, const char* value, void* callbackdata)
+int sheet_cell_callback (size_t row, size_t col, const XLSXIOCHAR* value, void* callbackdata)
 {
   if (col > 1)
     printf("\t");
