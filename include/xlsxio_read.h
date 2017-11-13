@@ -45,14 +45,15 @@ typedef unsigned __int64 uint64_t;
 #endif
 #include <time.h>
 
+/*! \brief character type used (usually char, but when XML_UNICODE is defined wchar_t) */
 #ifndef XLSXIOCHAR
-#if defined(XLSXIOCHAR)
+#if defined(XML_UNICODE_WCHAR_T)
 #warning Building with XML_UNICODE_WCHAR_T and -fshort-wchar is not supported unless all other linked libraries and programs are also compiled with -fshort-wchar
-#elif defined(XML_UNICODE)
+#elif !defined(XML_UNICODE)
+#define XLSXIOCHAR char
+#else
 #include <wchar.h>
 #define XLSXIOCHAR wchar_t
-#else
-#define XLSXIOCHAR char
 #endif
 #endif
 

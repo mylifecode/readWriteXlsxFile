@@ -42,6 +42,7 @@ DOXYGEN := $(shell which doxygen)
 
 XLSXIOREAD_OBJ = lib/xlsxio_read.o lib/xlsxio_read_sharedstrings.o
 XLSXIOREAD_LDFLAGS = -lzip -lexpat
+XLSXIOREADW_LDFLAGS = -lzip -lexpatw
 XLSXIOREAD_SHARED_LDFLAGS =
 XLSXIOWRITE_OBJ = lib/xlsxio_write.o
 XLSXIOWRITE_LDFLAGS = -lzip
@@ -67,9 +68,12 @@ ifeq ($(OS),Windows_NT)
 # lines below to compile Windows DLLs with no dependancies
 CFLAGS += -DZIP_STATIC
 XLSXIOREAD_LDFLAGS += -static -lz -lbz2
+XLSXIOREADW_LDFLAGS += -static -lz -lbz2
 XLSXIOWRITE_LDFLAGS += -static -lz -lbz2
 endif
 endif
+
+CFLAGS_W = $(CFLAGS) -DXML_UNICODE
 
 TOOLS_BIN = xlsxio_xlsx2csv$(BINEXT) xlsxio_csv2xlsx$(BINEXT)
 EXAMPLES_BIN = example_xlsxio_write_getversion$(BINEXT) example_xlsxio_write$(BINEXT) example_xlsxio_read$(BINEXT) example_xlsxio_read_advanced$(BINEXT)
@@ -82,10 +86,10 @@ default: all
 all: static-lib shared-lib tools
 
 %.o: %.c
-	$(CC) -c -o $@ $< $(CFLAGS) 
+	$(CC) -c -o $@ $< $(CFLAGS)
 
 %.static.o: %.c
-	$(CC) -c -o $@ $< $(STATIC_CFLAGS) $(CFLAGS) 
+	$(CC) -c -o $@ $< $(STATIC_CFLAGS) $(CFLAGS)
 
 %.shared.o: %.c
 	$(CC) -c -o $@ $< $(SHARED_CFLAGS) $(CFLAGS)
@@ -105,6 +109,20 @@ $(LIBPREFIX)xlsxio_write$(LIBEXT): $(XLSXIOWRITE_OBJ:%.o=%.static.o)
 
 $(LIBPREFIX)xlsxio_write$(SOEXT): $(XLSXIOWRITE_OBJ:%.o=%.shared.o)
 	$(CC) -o $@ $(OS_LINK_FLAGS) $^ $(XLSXIOWRITE_SHARED_LDFLAGS) $(XLSXIOWRITE_LDFLAGS) $(LDFLAGS) $(LIBS)
+
+wide: $(LIBPREFIX)xlsxio_readw$(LIBEXT) $(LIBPREFIX)xlsxio_readw$(SOEXT)
+
+%.wstatic.o: %.c
+	$(CC) -c -o $@ $< $(STATIC_CFLAGS) $(CFLAGS_W) 
+
+%.wshared.o: %.c
+	$(CC) -c -o $@ $< $(SHARED_CFLAGS) $(CFLAGS_W)
+
+$(LIBPREFIX)xlsxio_readw$(LIBEXT): $(XLSXIOREAD_OBJ:%.o=%.wstatic.o)
+	$(AR) cru $@ $^
+
+$(LIBPREFIX)xlsxio_readw$(SOEXT): $(XLSXIOREAD_OBJ:%.o=%.wshared.o)
+	$(CC) -o $@ $(OS_LINK_FLAGS) $^ $(XLSXIOREAD_SHARED_LDFLAGS) $(XLSXIOREADW_LDFLAGS) $(LDFLAGS) $(LIBS)
 
 examples: $(EXAMPLES_BIN)
 
