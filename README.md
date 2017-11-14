@@ -38,7 +38,7 @@ Writing .xlsx files:
 
 Command Line Utilities
 ----------------------
-Some command line utilties are included:
+Some command line utilities are included:
 - xlsxio_xlsx2csv: converts all sheets in all specified .xlsx files to individual CSV (Comma Separated Values) files.
 - xlsxio_csv2xlsx: converts all specified CSV (Comma Separated Values) files to .xlsx files.
 
