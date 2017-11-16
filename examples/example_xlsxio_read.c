@@ -120,7 +120,7 @@ int main (int argc, char* argv[])
 
   //list available sheets
   xlsxioreadersheetlist sheetlist;
-  const XLSXCHAR* sheetname;
+  const XLSXIOCHAR* sheetname;
   printf("Available sheets:\n");
   if ((sheetlist = xlsxioread_sheetlist_open(xlsxioread)) != NULL) {
     while ((sheetname = xlsxioread_sheetlist_next(sheetlist)) != NULL) {
@@ -130,7 +130,8 @@ int main (int argc, char* argv[])
   }
 
   //read values from first sheet
-  XLSXCHAR* value;
+  XLSXIOCHAR* value;
+  printf("Contents of first sheet:\n");
   xlsxioreadersheet sheet = xlsxioread_sheet_open(xlsxioread, NULL, XLSXIOREAD_SKIP_EMPTY_ROWS);
   while (xlsxioread_sheet_next_row(sheet)) {
     while ((value = xlsxioread_sheet_next_cell(sheet)) != NULL) {

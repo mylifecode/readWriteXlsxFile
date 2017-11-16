@@ -895,7 +895,6 @@ DLL_EXPORT_XLSXIO int xlsxioread_process (xlsxioreader handle, const XLSXIOCHAR*
   shared_strings_callback_data_initialize(&sharedstringsdata, sharedstrings);
   if (expat_process_zip_file(handle->zip, getrelscallbackdata.sharedstringsfile, shared_strings_callback_find_sharedstringtable_start, NULL, NULL, &sharedstringsdata, &sharedstringsdata.xmlparser) != 0) {
     //no shared strings found
-    free(sharedstringsdata.text);
     sharedstringlist_destroy(sharedstrings);
     sharedstrings = NULL;
   }

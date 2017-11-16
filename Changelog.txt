@@ -3,6 +3,7 @@
 2017-11-11  Brecht Sanders  https://github.com/brechtsanders/
 
   * added wchar_t support, requires building with -DXML_UNICODE and expat also built with -DXML_UNICODE
+  * fixed memory issue in xlsxioread_process()
 
 2017-11-09  Brecht Sanders  https://github.com/brechtsanders/
 
