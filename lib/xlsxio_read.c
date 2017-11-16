@@ -15,7 +15,7 @@
 
 //UTF-8 version
 #define XML_Char_dupchar strdup
-#define XML_Char_zip_fopen(z,f) zip_fopen(z, f, 0)
+#define XML_Char_zip_fopen(z,fn,fl) zip_fopen(z, fn, fl)
 
 #else
 
@@ -24,7 +24,7 @@ static XML_Char* XML_Char_dupchar(const char* s)
 {
   size_t len;
   XML_Char* result;
-  if (!s || (len = mbstowcs(NULL, s, 0)) == -1)
+  if (!s || (len = mbstowcs(NULL, s, 0)) < 0)
     return NULL;
   if ((result = XML_Char_malloc(len + 1)) != NULL) {
     if ((mbstowcs(result, s, len + 1) != len)) {
@@ -50,13 +50,13 @@ static char* chardupXML_Char(const XML_Char* s)
   return result;
 }
 
-static zip_file_t* XML_Char_zip_fopen (struct zip* archive, const XML_Char* filename)
+static zip_file_t* XML_Char_zip_fopen (struct zip* archive, const XML_Char* filename, int flags)
 {
   zip_file_t* result;
   char* s;
   if ((s = chardupXML_Char(filename)) == NULL)
     return NULL;
-  result = zip_fopen(archive, s, 0);
+  result = zip_fopen(archive, s, flags);
   free(s);
   return result;
 }
@@ -92,7 +92,7 @@ int expat_process_zip_file (zip_t* zip, const XML_Char* filename, XML_StartEleme
   char buf[BUFFER_SIZE];
   zip_int64_t buflen;
   enum XML_Status status = XML_STATUS_ERROR;
-  if ((zipfile = XML_Char_zip_fopen(zip, filename)) == NULL) {
+  if ((zipfile = XML_Char_zip_fopen(zip, filename, 0)) == NULL) {
     return -1;
   }
   parser = XML_ParserCreate(NULL);
@@ -102,8 +102,9 @@ int expat_process_zip_file (zip_t* zip, const XML_Char* filename, XML_StartEleme
   if (xmlparser)
     *xmlparser = parser;
   while ((buflen = zip_fread(zipfile, buf, sizeof(buf))) >= 0) {
-    if ((status = XML_Parse(parser, buf, (int)buflen, (buflen < sizeof(buf) ? 1 : 0))) == XML_STATUS_ERROR)
+    if ((status = XML_Parse(parser, buf, (int)buflen, (buflen < sizeof(buf) ? 1 : 0))) == XML_STATUS_ERROR) {
       break;
+    }
     if (xmlparser && status == XML_STATUS_SUSPENDED)
       return 0;
   }
@@ -172,7 +173,7 @@ XML_Char* get_relationship_filename (const XML_Char* filename)
     XML_Char_poscpy(result, 0, filename, i);
     XML_Char_poscpy(result, i, X("_rels/"), 6);
     XML_Char_poscpy(result, i + 6, filename + i, filenamelen - i);
-    XML_Char_poscpy(result, filenamelen + 6, X(".rels"), 5);
+    XML_Char_poscpy(result, filenamelen + 6, X(".rels"), 6);
   }
   return result;
 }
@@ -911,7 +912,7 @@ DLL_EXPORT_XLSXIO int xlsxioread_process (xlsxioreader handle, const XLSXIOCHAR*
     //use simplified interface by suspending the XML parser when data is found
     xlsxioreadersheet sheethandle = (xlsxioreadersheet)callbackdata;
     data_sheet_callback_data_initialize(&sheethandle->processcallbackdata, sharedstrings, flags, NULL, NULL, sheethandle);
-    if ((sheethandle->zipfile = XML_Char_zip_fopen(sheethandle->handle->zip, getrelscallbackdata.sheetfile)) == NULL) {
+    if ((sheethandle->zipfile = XML_Char_zip_fopen(sheethandle->handle->zip, getrelscallbackdata.sheetfile, 0)) == NULL) {
       result = 1;
     }
     if ((sheethandle->processcallbackdata.xmlparser = expat_process_zip_file_suspendable(sheethandle->zipfile, data_sheet_expat_callback_find_worksheet_start, NULL, NULL, &sheethandle->processcallbackdata)) == NULL) {
@@ -969,7 +970,7 @@ DLL_EXPORT_XLSXIO xlsxioreadersheetlist xlsxioread_sheetlist_open (xlsxioreader 
   result->sheetcallbackdata.callback = xlsxioread_list_sheets_resumable_callback;
   result->sheetcallbackdata.callbackdata = result;
   result->nextsheetname = NULL;
-  if ((result->zipfile = XML_Char_zip_fopen(handle->zip, mainsheetfile)) != NULL) {
+  if ((result->zipfile = XML_Char_zip_fopen(handle->zip, mainsheetfile, 0)) != NULL) {
     result->xmlparser = expat_process_zip_file_suspendable(result->zipfile, main_sheet_list_expat_callback_element_start, NULL, NULL, &result->sheetcallbackdata);
   }
   //clean up
@@ -1035,8 +1036,9 @@ DLL_EXPORT_XLSXIO void xlsxioread_sheet_close (xlsxioreadersheet sheethandle)
 DLL_EXPORT_XLSXIO int xlsxioread_sheet_next_row (xlsxioreadersheet sheethandle)
 {
   enum XML_Status status;
-  if (!sheethandle)
+  if (!sheethandle) {
     return 0;
+  }
   sheethandle->lastcolnr = 0;
   //when padding rows don't retrieve new data
   if (sheethandle->paddingrow) {
