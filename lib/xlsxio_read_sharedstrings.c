@@ -27,6 +27,7 @@ void sharedstringlist_destroy (struct sharedstringlist* sharedstrings)
     size_t i;
     for (i = 0; i < sharedstrings->numstrings; i++)
       free(sharedstrings->strings[i]);
+    free(sharedstrings->strings);
     free(sharedstrings);
   }
 }
@@ -52,8 +53,10 @@ int sharedstringlist_add_buffer (struct sharedstringlist* sharedstrings, const X
     XML_Char_poscpy(s, 0, data, datalen);
     s[datalen] = 0;
   }
-  if ((p = (XML_Char**)realloc(sharedstrings->strings, (sharedstrings->numstrings + 1) * sizeof(sharedstrings->strings[0]))) == NULL)
+  if ((p = (XML_Char**)realloc(sharedstrings->strings, (sharedstrings->numstrings + 1) * sizeof(sharedstrings->strings[0]))) == NULL) {
+    free(s);
     return 3;
+  }
   sharedstrings->strings = p;
   sharedstrings->strings[sharedstrings->numstrings++] = s;
   return 0;

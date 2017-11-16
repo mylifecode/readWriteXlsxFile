@@ -1,3 +1,9 @@
+0.2.12
+
+2017-11-16  Brecht Sanders  https://github.com/brechtsanders/
+
+  * fixed minor memory leak whean cleaning up shared string list
+
 0.2.11
 
 2017-11-11  Brecht Sanders  https://github.com/brechtsanders/
