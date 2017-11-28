@@ -38,12 +38,13 @@
 #else
 
 //UTF-16 version
+#include <wchar.h>
 #define X(s) L##s
 #define XML_Char_icmp wcscasecmp
 #define XML_Char_len wcslen
 #define XML_Char_dup wcsdup
 #define XML_Char_cpy wcscpy
-#define XML_Char_poscpy(d,p,s,l) memcpy(d + (p) * sizeof(XML_Char), s, (l) * sizeof(XML_Char))
+#define XML_Char_poscpy(d,p,s,l) wmemcpy(d + p, s, l)
 #define XML_Char_malloc(n) ((XML_Char*)malloc((n) * sizeof(XML_Char)))
 #define XML_Char_realloc(m,n) ((XML_Char*)realloc((m), (n) * sizeof(XML_Char)))
 #define XML_Char_tol(s) wcstol((s), NULL, 10)

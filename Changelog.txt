@@ -1,10 +1,12 @@
-0.2.12
+0.2.11
+
+2017-11-28  Brecht Sanders  https://github.com/brechtsanders/
+
+  * fixed bug in XML_Char_poscpy when compiled for UTF-16 (thanks to https://github.com/dsmccall)
 
 2017-11-16  Brecht Sanders  https://github.com/brechtsanders/
 
   * fixed minor memory leak whean cleaning up shared string list
-
-0.2.11
 
 2017-11-11  Brecht Sanders  https://github.com/brechtsanders/
 
