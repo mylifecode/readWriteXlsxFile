@@ -1,5 +1,9 @@
 0.2.11
 
+2017-12-31  Brecht Sanders  https://github.com/brechtsanders/
+
+  * fixed CMakeLists.txt for proper DLL builds on Windows
+
 2017-11-28  Brecht Sanders  https://github.com/brechtsanders/
 
   * fixed bug in XML_Char_poscpy when compiled for UTF-16 (thanks to https://github.com/dsmccall)

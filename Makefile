@@ -40,6 +40,15 @@ CP = cp -f
 CPDIR = cp -rf
 DOXYGEN := $(shell which doxygen)
 
+OSALIAS := $(OS)
+ifeq ($(OS),Windows_NT)
+ifneq (,$(findstring x86_64,$(shell gcc --version)))
+OSALIAS := win64
+else
+OSALIAS := win32
+endif
+endif
+
 XLSXIOREAD_OBJ = lib/xlsxio_read.o lib/xlsxio_read_sharedstrings.o
 XLSXIOREAD_LDFLAGS = -lzip -lexpat
 XLSXIOREADW_LDFLAGS = -lzip -lexpatw
@@ -177,7 +186,13 @@ package: version
 .PHONY: package
 binarypackage: version
 	$(MAKE) PREFIX=binarypackage_temp install STATICDLL=1
-	tar cfJ "xlsxio-$(shell cat version)-$(OS).tar.xz" --transform="s?^binarypackage_temp/??" $(COMMON_PACKAGE_FILES) binarypackage_temp/*
+ifneq ($(OS),Windows_NT)
+	tar cfJ "xlsxio-$(shell cat version)-$(OSALIAS).tar.xz" --transform="s?^binarypackage_temp/??" $(COMMON_PACKAGE_FILES) binarypackage_temp/*
+else
+	rm -f xlsxio-$(shell cat version)-$(OSALIAS).zip
+	cp -f $(COMMON_PACKAGE_FILES) binarypackage_temp/
+	cd binarypackage_temp && zip -r -9 "../xlsxio-$(shell cat version)-binary-$(OSALIAS).zip" $(COMMON_PACKAGE_FILES) * && cd ..
+endif
 	rm -rf binarypackage_temp
 
 .PHONY: clean

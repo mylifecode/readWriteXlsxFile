@@ -10,7 +10,7 @@
 #endif
 #include <fcntl.h>
 #include <stdarg.h>
-#if (defined(STATIC) || defined(BUILD_XLSXIO_STATIC) || defined(BUILD_XLSXIO_STATIC_DLL) || (defined(BUILD_XLSXIO) && !defined(BUILD_XLSXIO_DLL))) && !defined(ZIP_STATIC)
+#if (defined(STATIC) || defined(BUILD_XLSXIO_STATIC) || defined(BUILD_XLSXIO_STATIC_DLL) || (defined(BUILD_XLSXIO) && !defined(BUILD_XLSXIO_DLL) && !defined(BUILD_XLSXIO_SHARED))) && !defined(ZIP_STATIC)
 #define ZIP_STATIC
 #endif
 #include <zip.h>

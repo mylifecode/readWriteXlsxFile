@@ -60,7 +60,7 @@ typedef unsigned __int64 uint64_t;
 /*! \cond PRIVATE */
 #ifndef DLL_EXPORT_XLSXIO
 #ifdef _WIN32
-#if defined(BUILD_XLSXIO_DLL)
+#if defined(BUILD_XLSXIO_DLL) || defined(BUILD_XLSXIO_SHARED)
 #define DLL_EXPORT_XLSXIO __declspec(dllexport)
 #elif !defined(STATIC) && !defined(BUILD_XLSXIO_STATIC) && !defined(BUILD_XLSXIO)
 #define DLL_EXPORT_XLSXIO __declspec(dllimport)
