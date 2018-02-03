@@ -82,6 +82,11 @@ XLSXIOWRITE_LDFLAGS += -static -lz -lbz2
 endif
 endif
 
+LIBLIST := xlsxio_read xlsxio_write
+ifdef WIDE
+LIBLIST += xlsxio_readw
+endif
+
 CFLAGS_W = $(CFLAGS) -DXML_UNICODE
 
 TOOLS_BIN = xlsxio_xlsx2csv$(BINEXT) xlsxio_csv2xlsx$(BINEXT)
@@ -103,9 +108,9 @@ all: static-lib shared-lib tools
 %.shared.o: %.c
 	$(CC) -c -o $@ $< $(SHARED_CFLAGS) $(CFLAGS)
 
-static-lib: $(LIBPREFIX)xlsxio_read$(LIBEXT) $(LIBPREFIX)xlsxio_write$(LIBEXT)
+static-lib: $(LIBLIST:%=$(LIBPREFIX)%$(LIBEXT))
 
-shared-lib: $(LIBPREFIX)xlsxio_read$(SOEXT) $(LIBPREFIX)xlsxio_write$(SOEXT)
+shared-lib: $(LIBLIST:%=$(LIBPREFIX)%$(SOEXT))
 
 $(LIBPREFIX)xlsxio_read$(LIBEXT): $(XLSXIOREAD_OBJ:%.o=%.static.o)
 	$(AR) cru $@ $^
@@ -119,7 +124,7 @@ $(LIBPREFIX)xlsxio_write$(LIBEXT): $(XLSXIOWRITE_OBJ:%.o=%.static.o)
 $(LIBPREFIX)xlsxio_write$(SOEXT): $(XLSXIOWRITE_OBJ:%.o=%.shared.o)
 	$(CC) -o $@ $(OS_LINK_FLAGS) $^ $(XLSXIOWRITE_SHARED_LDFLAGS) $(XLSXIOWRITE_LDFLAGS) $(LDFLAGS) $(LIBS)
 
-wide: $(LIBPREFIX)xlsxio_readw$(LIBEXT) $(LIBPREFIX)xlsxio_readw$(SOEXT)
+#wide: $(LIBPREFIX)xlsxio_readw$(LIBEXT) $(LIBPREFIX)xlsxio_readw$(SOEXT)
 
 %.wstatic.o: %.c
 	$(CC) -c -o $@ $< $(STATIC_CFLAGS) $(CFLAGS_W) 

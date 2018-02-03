@@ -1,3 +1,9 @@
+0.2.12
+
+2018-02-03  Brecht Sanders  https://github.com/brechtsanders/
+
+  * modified Makefile to support WIDE=1 parameter to built UTF-16 library (libxlsxio_readw)
+
 0.2.11
 
 2017-12-31  Brecht Sanders  https://github.com/brechtsanders/
