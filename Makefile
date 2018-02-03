@@ -190,7 +190,7 @@ package: version
 
 .PHONY: package
 binarypackage: version
-	$(MAKE) PREFIX=binarypackage_temp install STATICDLL=1
+	$(MAKE) PREFIX=binarypackage_temp install STATICDLL=1 WIDE=1
 ifneq ($(OS),Windows_NT)
 	tar cfJ "xlsxio-$(shell cat version)-$(OSALIAS).tar.xz" --transform="s?^binarypackage_temp/??" $(COMMON_PACKAGE_FILES) binarypackage_temp/*
 else
