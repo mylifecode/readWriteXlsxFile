@@ -68,7 +68,8 @@ DLL_EXPORT_XLSXIO const char* xlsxiowrite_get_version_string ()
 
 ////////////////////////////////////////////////////////////////////////
 
-#define WITHOUT_XLSX_SHAREDSTRINGS
+//#define WITHOUT_XLSX_SHAREDSTRINGS
+#define WITHOUT_XLSX_THEMES
 //#define WITHOUT_XLSX_FOLDERS
 
 #define XML_HEADER                      "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
@@ -76,6 +77,7 @@ DLL_EXPORT_XLSXIO const char* xlsxiowrite_get_version_string ()
 #ifndef WITHOUT_XLSX_FOLDERS
 #define XML_FOLDER_DOCPROPS             "docProps/"
 #define XML_FOLDER_XL                   "xl/"
+#define XML_FOLDER_THEMES               "theme/"
 #define XML_FOLDER_WORKSHEETS           "worksheets/"
 #else
 #define XML_FOLDER_DOCPROPS             ""
@@ -89,6 +91,7 @@ DLL_EXPORT_XLSXIO const char* xlsxiowrite_get_version_string ()
 #define XML_FILENAME_XL_WORKBOOK_RELS   "workbook.xml.rels"
 #define XML_FILENAME_XL_WORKBOOK        "workbook.xml"
 #define XML_FILENAME_XL_STYLES          "styles.xml"
+#define XML_FILENAME_XL_THEME1          "theme1.xml"
 #define XML_FILENAME_XL_SHAREDSTRINGS   "sharedStrings.xml"
 #define XML_FILENAME_XL_WORKSHEET1      "sheet1.xml"
 #define XML_SHEETNAME_MAXLEN            31
@@ -105,9 +108,11 @@ const char* content_types_xml =
 #ifndef WITHOUT_XLSX_STYLES
   "<Override PartName=\"/" XML_FOLDER_XL XML_FILENAME_XL_STYLES "\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml\"/>"
 #endif
-  //"<Override PartName=\"/xl/theme/theme1.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.theme+xml\"/>"
+#ifndef WITHOUT_XLSX_THEMES
+  "<Override PartName=\"/" XML_FOLDER_XL XML_FOLDER_THEMES XML_FILENAME_XL_THEME1 "\" ContentType=\"application/vnd.openxmlformats-officedocument.theme+xml\"/>"
+#endif
 #ifndef WITHOUT_XLSX_SHAREDSTRINGS
-  "<Override PartName=\"" XML_FOLDER_XL XML_FILENAME_XL_SHAREDSTRINGS "\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml\"/>"
+  "<Override PartName=\"/" XML_FOLDER_XL XML_FILENAME_XL_SHAREDSTRINGS "\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml\"/>"
 #endif
   "<Override PartName=\"/" XML_FOLDER_XL XML_FOLDER_RELS XML_FILENAME_XL_WORKBOOK_RELS "\" ContentType=\"application/vnd.openxmlformats-package.relationships+xml\"/>"
   "<Override PartName=\"/" XML_FOLDER_XL XML_FOLDER_WORKSHEETS XML_FILENAME_XL_WORKSHEET1 "\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml\"/>"
@@ -193,31 +198,34 @@ const char* styles_xml =
   "</styleSheet>\r\n";
 #endif
 
-/*
+#ifndef WITHOUT_XLSX_THEMES
 const char* theme_xml =
   XML_HEADER "\r\n"
-  "<a:theme xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\" name=\"Office Theme\">\r\n"
-  "<a:themeElements><a:clrScheme name=\"Office\"><a:dk1><a:sysClr val=\"windowText\" lastClr=\"000000\"/></a:dk1><a:lt1><a:sysClr val=\"window\" lastClr=\"FFFFFF\"/></a:lt1><a:dk2><a:srgbClr val=\"1F497D\"/></a:dk2><a:lt2><a:srgbClr val=\"EEECE1\"/></a:lt2><a:accent1><a:srgbClr val=\"4F81BD\"/></a:accent1><a:accent2><a:srgbClr val=\"C0504D\"/></a:accent2><a:accent3><a:srgbClr val=\"9BBB59\"/></a:accent3><a:accent4><a:srgbClr val=\"8064A2\"/></a:accent4><a:accent5><a:srgbClr val=\"4BACC6\"/></a:accent5><a:accent6><a:srgbClr val=\"F79646\"/></a:accent6><a:hlink><a:srgbClr val=\"0000FF\"/></a:hlink><a:folHlink><a:srgbClr val=\"800080\"/></a:folHlink></a:clrScheme><a:fontScheme name=\"Office\"><a:majorFont><a:latin typeface=\"Cambria\"/><a:ea typeface=\"\"/><a:cs typeface=\"\"/><a:font script=\"Jpan\" typeface=\"ＭＳ Ｐゴシック\"/><a:font script=\"Hang\" typeface=\"맑은 고딕\"/><a:font script=\"Hans\" typeface=\"宋体\"/><a:font script=\"Hant\" typeface=\"新細明體\"/><a:font script=\"Arab\" typeface=\"Times New Roman\"/><a:font script=\"Hebr\" typeface=\"Times New Roman\"/><a:font script=\"Thai\" typeface=\"Tahoma\"/><a:font script=\"Ethi\" typeface=\"Nyala\"/><a:font script=\"Beng\" typeface=\"Vrinda\"/><a:font script=\"Gujr\" typeface=\"Shruti\"/><a:font script=\"Khmr\" typeface=\"MoolBoran\"/><a:font script=\"Knda\" typeface=\"Tunga\"/><a:font script=\"Guru\" typeface=\"Raavi\"/><a:font script=\"Cans\" typeface=\"Euphemia\"/><a:font script=\"Cher\" typeface=\"Plantagenet Cherokee\"/><a:font script=\"Yiii\" typeface=\"Microsoft Yi Baiti\"/><a:font script=\"Tibt\" typeface=\"Microsoft Himalaya\"/><a:font script=\"Thaa\" typeface=\"MV Boli\"/><a:font script=\"Deva\" typeface=\"Mangal\"/><a:font script=\"Telu\" typeface=\"Gautami\"/><a:font script=\"Taml\" typeface=\"Latha\"/><a:font script=\"Syrc\" typeface=\"Estrangelo Edessa\"/><a:font script=\"Orya\" typeface=\"Kalinga\"/><a:font script=\"Mlym\" typeface=\"Kartika\"/><a:font script=\"Laoo\" typeface=\"DokChampa\"/><a:font script=\"Sinh\" typeface=\"Iskoola Pota\"/><a:font script=\"Mong\" typeface=\"Mongolian Baiti\"/><a:font script=\"Viet\" typeface=\"Times New Roman\"/><a:font script=\"Uigh\" typeface=\"Microsoft Uighur\"/></a:majorFont><a:minorFont><a:latin typeface=\"Calibri\"/><a:ea typeface=\"\"/><a:cs typeface=\"\"/><a:font script=\"Jpan\" typeface=\"ＭＳ Ｐゴシック\"/><a:font script=\"Hang\" typeface=\"맑은 고딕\"/><a:font script=\"Hans\" typeface=\"宋体\"/><a:font script=\"Hant\" typeface=\"新細明體\"/><a:font script=\"Arab\" typeface=\"Arial\"/><a:font script=\"Hebr\" typeface=\"Arial\"/><a:font script=\"Thai\" typeface=\"Tahoma\"/><a:font script=\"Ethi\" typeface=\"Nyala\"/><a:font script=\"Beng\" typeface=\"Vrinda\"/><a:font script=\"Gujr\" typeface=\"Shruti\"/><a:font script=\"Khmr\" typeface=\"DaunPenh\"/><a:font script=\"Knda\" typeface=\"Tunga\"/><a:font script=\"Guru\" typeface=\"Raavi\"/><a:font script=\"Cans\" typeface=\"Euphemia\"/><a:font script=\"Cher\" typeface=\"Plantagenet Cherokee\"/><a:font script=\"Yiii\" typeface=\"Microsoft Yi Baiti\"/><a:font script=\"Tibt\" typeface=\"Microsoft Himalaya\"/><a:font script=\"Thaa\" typeface=\"MV Boli\"/><a:font script=\"Deva\" typeface=\"Mangal\"/><a:font script=\"Telu\" typeface=\"Gautami\"/><a:font script=\"Taml\" typeface=\"Latha\"/><a:font script=\"Syrc\" typeface=\"Estrangelo Edessa\"/><a:font script=\"Orya\" typeface=\"Kalinga\"/><a:font script=\"Mlym\" typeface=\"Kartika\"/><a:font script=\"Laoo\" typeface=\"DokChampa\"/><a:font script=\"Sinh\" typeface=\"Iskoola Pota\"/><a:font script=\"Mong\" typeface=\"Mongolian Baiti\"/><a:font script=\"Viet\" typeface=\"Arial\"/><a:font script=\"Uigh\" typeface=\"Microsoft Uighur\"/></a:minorFont></a:fontScheme><a:fmtScheme name=\"Office\"><a:fillStyleLst><a:solidFill><a:schemeClr val=\"phClr\"/></a:solidFill><a:gradFill rotWithShape=\"1\"><a:gsLst><a:gs pos=\"0\"><a:schemeClr val=\"phClr\"><a:tint val=\"50000\"/><a:satMod val=\"300000\"/></a:schemeClr></a:gs><a:gs pos=\"35000\"><a:schemeClr val=\"phClr\"><a:tint val=\"37000\"/><a:satMod val=\"300000\"/></a:schemeClr></a:gs><a:gs pos=\"100000\"><a:schemeClr val=\"phClr\"><a:tint val=\"15000\"/><a:satMod val=\"350000\"/></a:schemeClr></a:gs></a:gsLst><a:lin ang=\"16200000\" scaled=\"1\"/></a:gradFill><a:gradFill rotWithShape=\"1\"><a:gsLst><a:gs pos=\"0\"><a:schemeClr val=\"phClr\"><a:shade val=\"51000\"/><a:satMod val=\"130000\"/></a:schemeClr></a:gs><a:gs pos=\"80000\"><a:schemeClr val=\"phClr\"><a:shade val=\"93000\"/><a:satMod val=\"130000\"/></a:schemeClr></a:gs><a:gs pos=\"100000\"><a:schemeClr val=\"phClr\"><a:shade val=\"94000\"/><a:satMod val=\"135000\"/></a:schemeClr></a:gs></a:gsLst><a:lin ang=\"16200000\" scaled=\"0\"/></a:gradFill></a:fillStyleLst><a:lnStyleLst><a:ln w=\"9525\" cap=\"flat\" cmpd=\"sng\" algn=\"ctr\"><a:solidFill><a:schemeClr val=\"phClr\"><a:shade val=\"95000\"/><a:satMod val=\"105000\"/></a:schemeClr></a:solidFill><a:prstDash val=\"solid\"/></a:ln><a:ln w=\"25400\" cap=\"flat\" cmpd=\"sng\" algn=\"ctr\"><a:solidFill><a:schemeClr val=\"phClr\"/></a:solidFill><a:prstDash val=\"solid\"/></a:ln><a:ln w=\"38100\" cap=\"flat\" cmpd=\"sng\" algn=\"ctr\"><a:solidFill><a:schemeClr val=\"phClr\"/></a:solidFill><a:prstDash val=\"solid\"/></a:ln></a:lnStyleLst><a:effectStyleLst><a:effectStyle><a:effectLst><a:outerShdw blurRad=\"40000\" dist=\"20000\" dir=\"5400000\" rotWithShape=\"0\"><a:srgbClr val=\"000000\"><a:alpha val=\"38000\"/></a:srgbClr></a:outerShdw></a:effectLst></a:effectStyle><a:effectStyle><a:effectLst><a:outerShdw blurRad=\"40000\" dist=\"23000\" dir=\"5400000\" rotWithShape=\"0\"><a:srgbClr val=\"000000\"><a:alpha val=\"35000\"/></a:srgbClr></a:outerShdw></a:effectLst></a:effectStyle><a:effectStyle><a:effectLst><a:outerShdw blurRad=\"40000\" dist=\"23000\" dir=\"5400000\" rotWithShape=\"0\"><a:srgbClr val=\"000000\"><a:alpha val=\"35000\"/></a:srgbClr></a:outerShdw></a:effectLst><a:scene3d><a:camera prst=\"orthographicFront\"><a:rot lat=\"0\" lon=\"0\" rev=\"0\"/></a:camera><a:lightRig rig=\"threePt\" dir=\"t\"><a:rot lat=\"0\" lon=\"0\" rev=\"1200000\"/></a:lightRig></a:scene3d><a:sp3d><a:bevelT w=\"63500\" h=\"25400\"/></a:sp3d></a:effectStyle></a:effectStyleLst><a:bgFillStyleLst><a:solidFill><a:schemeClr val=\"phClr\"/></a:solidFill><a:gradFill rotWithShape=\"1\"><a:gsLst><a:gs pos=\"0\"><a:schemeClr val=\"phClr\"><a:tint val=\"40000\"/><a:satMod val=\"350000\"/></a:schemeClr></a:gs><a:gs pos=\"40000\"><a:schemeClr val=\"phClr\"><a:tint val=\"45000\"/><a:shade val=\"99000\"/><a:satMod val=\"350000\"/></a:schemeClr></a:gs><a:gs pos=\"100000\"><a:schemeClr val=\"phClr\"><a:shade val=\"20000\"/><a:satMod val=\"255000\"/></a:schemeClr></a:gs></a:gsLst><a:path path=\"circle\"><a:fillToRect l=\"50000\" t=\"-80000\" r=\"50000\" b=\"180000\"/></a:path></a:gradFill><a:gradFill rotWithShape=\"1\"><a:gsLst><a:gs pos=\"0\"><a:schemeClr val=\"phClr\"><a:tint val=\"80000\"/><a:satMod val=\"300000\"/></a:schemeClr></a:gs><a:gs pos=\"100000\"><a:schemeClr val=\"phClr\"><a:shade val=\"30000\"/><a:satMod val=\"200000\"/></a:schemeClr></a:gs></a:gsLst><a:path path=\"circle\"><a:fillToRect l=\"50000\" t=\"50000\" r=\"50000\" b=\"50000\"/></a:path></a:gradFill></a:bgFillStyleLst></a:fmtScheme></a:themeElements><a:objectDefaults/><a:extraClrSchemeLst/>\r\n"
-  "</a:theme>\r\n";
-*/
+  "<theme xmlns=\"http://schemas.openxmlformats.org/drawingml/2006/main\" name=\"Office Theme\">\r\n"
+  "<themeElements><clrScheme name=\"Office\"><dk1><sysClr val=\"windowText\" lastClr=\"000000\"/></dk1><lt1><sysClr val=\"window\" lastClr=\"FFFFFF\"/></lt1><dk2><srgbClr val=\"1F497D\"/></dk2><lt2><srgbClr val=\"EEECE1\"/></lt2><accent1><srgbClr val=\"4F81BD\"/></accent1><accent2><srgbClr val=\"C0504D\"/></accent2><accent3><srgbClr val=\"9BBB59\"/></accent3><accent4><srgbClr val=\"8064A2\"/></accent4><accent5><srgbClr val=\"4BACC6\"/></accent5><accent6><srgbClr val=\"F79646\"/></accent6><hlink><srgbClr val=\"0000FF\"/></hlink><folHlink><srgbClr val=\"800080\"/></folHlink></clrScheme><fontScheme name=\"Office\"><majorFont><latin typeface=\"Cambria\"/><ea typeface=\"\"/><cs typeface=\"\"/><font script=\"Jpan\" typeface=\"ＭＳ Ｐゴシック\"/><font script=\"Hang\" typeface=\"맑은 고딕\"/><font script=\"Hans\" typeface=\"宋体\"/><font script=\"Hant\" typeface=\"新細明體\"/><font script=\"Arab\" typeface=\"Times New Roman\"/><font script=\"Hebr\" typeface=\"Times New Roman\"/><font script=\"Thai\" typeface=\"Tahoma\"/><font script=\"Ethi\" typeface=\"Nyala\"/><font script=\"Beng\" typeface=\"Vrinda\"/><font script=\"Gujr\" typeface=\"Shruti\"/><font script=\"Khmr\" typeface=\"MoolBoran\"/><font script=\"Knda\" typeface=\"Tunga\"/><font script=\"Guru\" typeface=\"Raavi\"/><font script=\"Cans\" typeface=\"Euphemia\"/><font script=\"Cher\" typeface=\"Plantagenet Cherokee\"/><font script=\"Yiii\" typeface=\"Microsoft Yi Baiti\"/><font script=\"Tibt\" typeface=\"Microsoft Himalaya\"/><font script=\"Thaa\" typeface=\"MV Boli\"/><font script=\"Deva\" typeface=\"Mangal\"/><font script=\"Telu\" typeface=\"Gautami\"/><font script=\"Taml\" typeface=\"Latha\"/><font script=\"Syrc\" typeface=\"Estrangelo Edessa\"/><font script=\"Orya\" typeface=\"Kalinga\"/><font script=\"Mlym\" typeface=\"Kartika\"/><font script=\"Laoo\" typeface=\"DokChampa\"/><font script=\"Sinh\" typeface=\"Iskoola Pota\"/><font script=\"Mong\" typeface=\"Mongolian Baiti\"/><font script=\"Viet\" typeface=\"Times New Roman\"/><font script=\"Uigh\" typeface=\"Microsoft Uighur\"/></majorFont><minorFont><latin typeface=\"Calibri\"/><ea typeface=\"\"/><cs typeface=\"\"/><font script=\"Jpan\" typeface=\"ＭＳ Ｐゴシック\"/><font script=\"Hang\" typeface=\"맑은 고딕\"/><font script=\"Hans\" typeface=\"宋体\"/><font script=\"Hant\" typeface=\"新細明體\"/><font script=\"Arab\" typeface=\"Arial\"/><font script=\"Hebr\" typeface=\"Arial\"/><font script=\"Thai\" typeface=\"Tahoma\"/><font script=\"Ethi\" typeface=\"Nyala\"/><font script=\"Beng\" typeface=\"Vrinda\"/><font script=\"Gujr\" typeface=\"Shruti\"/><font script=\"Khmr\" typeface=\"DaunPenh\"/><font script=\"Knda\" typeface=\"Tunga\"/><font script=\"Guru\" typeface=\"Raavi\"/><font script=\"Cans\" typeface=\"Euphemia\"/><font script=\"Cher\" typeface=\"Plantagenet Cherokee\"/><font script=\"Yiii\" typeface=\"Microsoft Yi Baiti\"/><font script=\"Tibt\" typeface=\"Microsoft Himalaya\"/><font script=\"Thaa\" typeface=\"MV Boli\"/><font script=\"Deva\" typeface=\"Mangal\"/><font script=\"Telu\" typeface=\"Gautami\"/><font script=\"Taml\" typeface=\"Latha\"/><font script=\"Syrc\" typeface=\"Estrangelo Edessa\"/><font script=\"Orya\" typeface=\"Kalinga\"/><font script=\"Mlym\" typeface=\"Kartika\"/><font script=\"Laoo\" typeface=\"DokChampa\"/><font script=\"Sinh\" typeface=\"Iskoola Pota\"/><font script=\"Mong\" typeface=\"Mongolian Baiti\"/><font script=\"Viet\" typeface=\"Arial\"/><font script=\"Uigh\" typeface=\"Microsoft Uighur\"/></minorFont></fontScheme><fmtScheme name=\"Office\"><fillStyleLst><solidFill><schemeClr val=\"phClr\"/></solidFill><gradFill rotWithShape=\"1\"><gsLst><gs pos=\"0\"><schemeClr val=\"phClr\"><tint val=\"50000\"/><satMod val=\"300000\"/></schemeClr></gs><gs pos=\"35000\"><schemeClr val=\"phClr\"><tint val=\"37000\"/><satMod val=\"300000\"/></schemeClr></gs><gs pos=\"100000\"><schemeClr val=\"phClr\"><tint val=\"15000\"/><satMod val=\"350000\"/></schemeClr></gs></gsLst><lin ang=\"16200000\" scaled=\"1\"/></gradFill><gradFill rotWithShape=\"1\"><gsLst><gs pos=\"0\"><schemeClr val=\"phClr\"><shade val=\"51000\"/><satMod val=\"130000\"/></schemeClr></gs><gs pos=\"80000\"><schemeClr val=\"phClr\"><shade val=\"93000\"/><satMod val=\"130000\"/></schemeClr></gs><gs pos=\"100000\"><schemeClr val=\"phClr\"><shade val=\"94000\"/><satMod val=\"135000\"/></schemeClr></gs></gsLst><lin ang=\"16200000\" scaled=\"0\"/></gradFill></fillStyleLst><lnStyleLst><ln w=\"9525\" cap=\"flat\" cmpd=\"sng\" algn=\"ctr\"><solidFill><schemeClr val=\"phClr\"><shade val=\"95000\"/><satMod val=\"105000\"/></schemeClr></solidFill><prstDash val=\"solid\"/></ln><ln w=\"25400\" cap=\"flat\" cmpd=\"sng\" algn=\"ctr\"><solidFill><schemeClr val=\"phClr\"/></solidFill><prstDash val=\"solid\"/></ln><ln w=\"38100\" cap=\"flat\" cmpd=\"sng\" algn=\"ctr\"><solidFill><schemeClr val=\"phClr\"/></solidFill><prstDash val=\"solid\"/></ln></lnStyleLst><effectStyleLst><effectStyle><effectLst><outerShdw blurRad=\"40000\" dist=\"20000\" dir=\"5400000\" rotWithShape=\"0\"><srgbClr val=\"000000\"><alpha val=\"38000\"/></srgbClr></outerShdw></effectLst></effectStyle><effectStyle><effectLst><outerShdw blurRad=\"40000\" dist=\"23000\" dir=\"5400000\" rotWithShape=\"0\"><srgbClr val=\"000000\"><alpha val=\"35000\"/></srgbClr></outerShdw></effectLst></effectStyle><effectStyle><effectLst><outerShdw blurRad=\"40000\" dist=\"23000\" dir=\"5400000\" rotWithShape=\"0\"><srgbClr val=\"000000\"><alpha val=\"35000\"/></srgbClr></outerShdw></effectLst><scene3d><camera prst=\"orthographicFront\"><rot lat=\"0\" lon=\"0\" rev=\"0\"/></camera><lightRig rig=\"threePt\" dir=\"t\"><rot lat=\"0\" lon=\"0\" rev=\"1200000\"/></lightRig></scene3d><sp3d><bevelT w=\"63500\" h=\"25400\"/></sp3d></effectStyle></effectStyleLst><bgFillStyleLst><solidFill><schemeClr val=\"phClr\"/></solidFill><gradFill rotWithShape=\"1\"><gsLst><gs pos=\"0\"><schemeClr val=\"phClr\"><tint val=\"40000\"/><satMod val=\"350000\"/></schemeClr></gs><gs pos=\"40000\"><schemeClr val=\"phClr\"><tint val=\"45000\"/><shade val=\"99000\"/><satMod val=\"350000\"/></schemeClr></gs><gs pos=\"100000\"><schemeClr val=\"phClr\"><shade val=\"20000\"/><satMod val=\"255000\"/></schemeClr></gs></gsLst><path path=\"circle\"><fillToRect l=\"50000\" t=\"-80000\" r=\"50000\" b=\"180000\"/></path></gradFill><gradFill rotWithShape=\"1\"><gsLst><gs pos=\"0\"><schemeClr val=\"phClr\"><tint val=\"80000\"/><satMod val=\"300000\"/></schemeClr></gs><gs pos=\"100000\"><schemeClr val=\"phClr\"><shade val=\"30000\"/><satMod val=\"200000\"/></schemeClr></gs></gsLst><path path=\"circle\"><fillToRect l=\"50000\" t=\"50000\" r=\"50000\" b=\"50000\"/></path></gradFill></bgFillStyleLst></fmtScheme></themeElements><objectDefaults/><extraClrSchemeLst/>\r\n"
+  "</theme>\r\n";
+#endif
 
 #ifndef WITHOUT_XLSX_SHAREDSTRINGS
 const char* sharedstrings_xml =
   XML_HEADER "\r\n"
+  "<sst xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\"/>";
   //"<sst xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" count=\"0\" uniqueCount=\"0\"/>\r\n";
-  "<sst xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" count=\"1\" uniqueCount=\"1\">\r\n"
-  "<si><t></t></si>"
-  "</sst>";
+  //"<sst xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" count=\"1\" uniqueCount=\"1\">\r\n"
+  //"<si><t></t></si>"
+  //"</sst>";
 #endif
 
 const char* workbook_rels_xml =
   XML_HEADER "\r\n"
   "<Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\">"
-  //"<Relationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme\" Target=\"theme/theme1.xml\"/>"
+  "<Relationship Id=\"rId3\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet\" Target=\"" XML_FOLDER_WORKSHEETS XML_FILENAME_XL_WORKSHEET1 "\"/>"
+#ifndef WITHOUT_XLSX_THEMES
+  "<Relationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme\" Target=\"" XML_FOLDER_THEMES XML_FILENAME_XL_THEME1 "\"/>"
+#endif
 #ifndef WITHOUT_XLSX_STYLES
   "<Relationship Id=\"rId2\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles\" Target=\"" XML_FILENAME_XL_STYLES "\"/>"
 #endif
-  "<Relationship Id=\"rId3\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet\" Target=\"" XML_FOLDER_WORKSHEETS XML_FILENAME_XL_WORKSHEET1 "\"/>"
 #ifndef WITHOUT_XLSX_SHAREDSTRINGS
   "<Relationship Id=\"rId4\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings\" Target=\"" XML_FILENAME_XL_SHAREDSTRINGS "\"/>"
 #endif
@@ -229,6 +237,7 @@ const char* workbook_xml =
   //"<workbookPr/>"
   "<bookViews>"
   "<workbookView/>"
+  //"<workbookView xWindow=\"0\" yWindow=\"0\"/>"
   "</bookViews>"
   "<sheets>"
   "<sheet name=\"%s\" sheetId=\"1\" r:id=\"rId3\"/>"
@@ -238,6 +247,7 @@ const char* workbook_xml =
 const char* worksheet_xml_begin =
   XML_HEADER "\r\n"
   "<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">";
+  //"<dimension ref=\"A1\"/>"
 
 const char* worksheet_xml_freeze_top_row =
   "<sheetViews>"
@@ -407,7 +417,9 @@ void* thread_proc (void* arg)
 #ifndef WITHOUT_XLSX_STYLES
   zip_add_static_content_string(handle->zip, XML_FOLDER_XL XML_FILENAME_XL_STYLES, styles_xml);
 #endif
-  //zip_add_static_content_string(handle->zip, "xl/theme/theme1.xml", theme_xml);
+#ifndef WITHOUT_XLSX_THEMES
+  zip_add_static_content_string(handle->zip, XML_FOLDER_XL XML_FOLDER_THEMES XML_FILENAME_XL_THEME1, theme_xml);
+#endif
   zip_add_static_content_string(handle->zip, XML_FOLDER_XL XML_FOLDER_RELS XML_FILENAME_XL_WORKBOOK_RELS, workbook_rels_xml);
   { //TO DO: this crashes on Linux
     char* sheetname = NULL;
