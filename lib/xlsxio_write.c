@@ -68,7 +68,12 @@ DLL_EXPORT_XLSXIO const char* xlsxiowrite_get_version_string ()
 
 ////////////////////////////////////////////////////////////////////////
 
-#ifdef USE_EXCEL_FOLDERS
+#define WITHOUT_XLSX_SHAREDSTRINGS
+//#define WITHOUT_XLSX_FOLDERS
+
+#define XML_HEADER                      "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+#define XML_FOLDER_RELS                 "_rels/"
+#ifndef WITHOUT_XLSX_FOLDERS
 #define XML_FOLDER_DOCPROPS             "docProps/"
 #define XML_FOLDER_XL                   "xl/"
 #define XML_FOLDER_WORKSHEETS           "worksheets/"
@@ -78,20 +83,22 @@ DLL_EXPORT_XLSXIO const char* xlsxiowrite_get_version_string ()
 #define XML_FOLDER_WORKSHEETS           ""
 #endif
 #define XML_FILENAME_CONTENTTYPES       "[Content_Types].xml"
-#define XML_FILENAME_RELS               "_rels/.rels"
+#define XML_FILENAME_RELS               ".rels"
 #define XML_FILENAME_DOCPROPS_CORE      "core.xml"
 #define XML_FILENAME_DOCPROPS_APP       "app.xml"
-#define XML_FILENAME_XL_WORKBOOK_RELS   "_rels/workbook.xml.rels"
+#define XML_FILENAME_XL_WORKBOOK_RELS   "workbook.xml.rels"
 #define XML_FILENAME_XL_WORKBOOK        "workbook.xml"
 #define XML_FILENAME_XL_STYLES          "styles.xml"
+#define XML_FILENAME_XL_SHAREDSTRINGS   "sharedStrings.xml"
 #define XML_FILENAME_XL_WORKSHEET1      "sheet1.xml"
 #define XML_SHEETNAME_MAXLEN            31
 
 const char* content_types_xml =
-  "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\r\n"
+  XML_HEADER "\r\n"
   "<Types xmlns=\"http://schemas.openxmlformats.org/package/2006/content-types\">"
   "<Default Extension=\"rels\" ContentType=\"application/vnd.openxmlformats-package.relationships+xml\"/>"
   "<Default Extension=\"xml\" ContentType=\"application/xml\"/>"
+  "<Override PartName=\"/" XML_FOLDER_RELS XML_FILENAME_RELS "\" ContentType=\"application/vnd.openxmlformats-package.relationships+xml\"/>"
   "<Override PartName=\"/" XML_FOLDER_XL XML_FILENAME_XL_WORKBOOK "\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml\"/>"
   "<Override PartName=\"/" XML_FOLDER_DOCPROPS XML_FILENAME_DOCPROPS_CORE "\" ContentType=\"application/vnd.openxmlformats-package.core-properties+xml\"/>"
   "<Override PartName=\"/" XML_FOLDER_DOCPROPS XML_FILENAME_DOCPROPS_APP "\" ContentType=\"application/vnd.openxmlformats-officedocument.extended-properties+xml\"/>"
@@ -99,12 +106,15 @@ const char* content_types_xml =
   "<Override PartName=\"/" XML_FOLDER_XL XML_FILENAME_XL_STYLES "\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml\"/>"
 #endif
   //"<Override PartName=\"/xl/theme/theme1.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.theme+xml\"/>"
-  //"<Override PartName=\"/xl/sharedStrings.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml\"/>"
+#ifndef WITHOUT_XLSX_SHAREDSTRINGS
+  "<Override PartName=\"" XML_FOLDER_XL XML_FILENAME_XL_SHAREDSTRINGS "\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml\"/>"
+#endif
+  "<Override PartName=\"/" XML_FOLDER_XL XML_FOLDER_RELS XML_FILENAME_XL_WORKBOOK_RELS "\" ContentType=\"application/vnd.openxmlformats-package.relationships+xml\"/>"
   "<Override PartName=\"/" XML_FOLDER_XL XML_FOLDER_WORKSHEETS XML_FILENAME_XL_WORKSHEET1 "\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml\"/>"
   "</Types>";
 
 const char* docprops_core_xml =
-  "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\r\n"
+  XML_HEADER "\r\n"
   "<coreProperties xmlns=\"http://schemas.openxmlformats.org/package/2006/metadata/core-properties\">"
   //"<creator>" XLSXIOWRITE_FULLNAME "</creator>"
   "<lastModifiedBy>" XLSXIOWRITE_FULLNAME "</lastModifiedBy>"
@@ -112,12 +122,12 @@ const char* docprops_core_xml =
   "</coreProperties>";
 
 const char* docprops_app_xml =
-  "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\r\n"
+  XML_HEADER "\r\n"
   "<Properties xmlns=\"http://schemas.openxmlformats.org/officeDocument/2006/extended-properties\" xmlns:vt=\"http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes\">"
   "</Properties>";
 
 const char* rels_xml =
-  "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\r\n"
+  XML_HEADER "\r\n"
   "<Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\">"
   "<Relationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties\" Target=\"" XML_FOLDER_DOCPROPS XML_FILENAME_DOCPROPS_CORE "\"/>"
   "<Relationship Id=\"rId2\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties\" Target=\"" XML_FOLDER_DOCPROPS XML_FILENAME_DOCPROPS_APP "\"/>"
@@ -126,7 +136,7 @@ const char* rels_xml =
 
 #ifndef WITHOUT_XLSX_STYLES
 const char* styles_xml =
-  "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\r\n"
+  XML_HEADER "\r\n"
   "<styleSheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\">\r\n"
   "<fonts count=\"2\">\r\n"
   "<font>\r\n"
@@ -185,31 +195,36 @@ const char* styles_xml =
 
 /*
 const char* theme_xml =
-  "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\r\n"
+  XML_HEADER "\r\n"
   "<a:theme xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\" name=\"Office Theme\">\r\n"
   "<a:themeElements><a:clrScheme name=\"Office\"><a:dk1><a:sysClr val=\"windowText\" lastClr=\"000000\"/></a:dk1><a:lt1><a:sysClr val=\"window\" lastClr=\"FFFFFF\"/></a:lt1><a:dk2><a:srgbClr val=\"1F497D\"/></a:dk2><a:lt2><a:srgbClr val=\"EEECE1\"/></a:lt2><a:accent1><a:srgbClr val=\"4F81BD\"/></a:accent1><a:accent2><a:srgbClr val=\"C0504D\"/></a:accent2><a:accent3><a:srgbClr val=\"9BBB59\"/></a:accent3><a:accent4><a:srgbClr val=\"8064A2\"/></a:accent4><a:accent5><a:srgbClr val=\"4BACC6\"/></a:accent5><a:accent6><a:srgbClr val=\"F79646\"/></a:accent6><a:hlink><a:srgbClr val=\"0000FF\"/></a:hlink><a:folHlink><a:srgbClr val=\"800080\"/></a:folHlink></a:clrScheme><a:fontScheme name=\"Office\"><a:majorFont><a:latin typeface=\"Cambria\"/><a:ea typeface=\"\"/><a:cs typeface=\"\"/><a:font script=\"Jpan\" typeface=\"ＭＳ Ｐゴシック\"/><a:font script=\"Hang\" typeface=\"맑은 고딕\"/><a:font script=\"Hans\" typeface=\"宋体\"/><a:font script=\"Hant\" typeface=\"新細明體\"/><a:font script=\"Arab\" typeface=\"Times New Roman\"/><a:font script=\"Hebr\" typeface=\"Times New Roman\"/><a:font script=\"Thai\" typeface=\"Tahoma\"/><a:font script=\"Ethi\" typeface=\"Nyala\"/><a:font script=\"Beng\" typeface=\"Vrinda\"/><a:font script=\"Gujr\" typeface=\"Shruti\"/><a:font script=\"Khmr\" typeface=\"MoolBoran\"/><a:font script=\"Knda\" typeface=\"Tunga\"/><a:font script=\"Guru\" typeface=\"Raavi\"/><a:font script=\"Cans\" typeface=\"Euphemia\"/><a:font script=\"Cher\" typeface=\"Plantagenet Cherokee\"/><a:font script=\"Yiii\" typeface=\"Microsoft Yi Baiti\"/><a:font script=\"Tibt\" typeface=\"Microsoft Himalaya\"/><a:font script=\"Thaa\" typeface=\"MV Boli\"/><a:font script=\"Deva\" typeface=\"Mangal\"/><a:font script=\"Telu\" typeface=\"Gautami\"/><a:font script=\"Taml\" typeface=\"Latha\"/><a:font script=\"Syrc\" typeface=\"Estrangelo Edessa\"/><a:font script=\"Orya\" typeface=\"Kalinga\"/><a:font script=\"Mlym\" typeface=\"Kartika\"/><a:font script=\"Laoo\" typeface=\"DokChampa\"/><a:font script=\"Sinh\" typeface=\"Iskoola Pota\"/><a:font script=\"Mong\" typeface=\"Mongolian Baiti\"/><a:font script=\"Viet\" typeface=\"Times New Roman\"/><a:font script=\"Uigh\" typeface=\"Microsoft Uighur\"/></a:majorFont><a:minorFont><a:latin typeface=\"Calibri\"/><a:ea typeface=\"\"/><a:cs typeface=\"\"/><a:font script=\"Jpan\" typeface=\"ＭＳ Ｐゴシック\"/><a:font script=\"Hang\" typeface=\"맑은 고딕\"/><a:font script=\"Hans\" typeface=\"宋体\"/><a:font script=\"Hant\" typeface=\"新細明體\"/><a:font script=\"Arab\" typeface=\"Arial\"/><a:font script=\"Hebr\" typeface=\"Arial\"/><a:font script=\"Thai\" typeface=\"Tahoma\"/><a:font script=\"Ethi\" typeface=\"Nyala\"/><a:font script=\"Beng\" typeface=\"Vrinda\"/><a:font script=\"Gujr\" typeface=\"Shruti\"/><a:font script=\"Khmr\" typeface=\"DaunPenh\"/><a:font script=\"Knda\" typeface=\"Tunga\"/><a:font script=\"Guru\" typeface=\"Raavi\"/><a:font script=\"Cans\" typeface=\"Euphemia\"/><a:font script=\"Cher\" typeface=\"Plantagenet Cherokee\"/><a:font script=\"Yiii\" typeface=\"Microsoft Yi Baiti\"/><a:font script=\"Tibt\" typeface=\"Microsoft Himalaya\"/><a:font script=\"Thaa\" typeface=\"MV Boli\"/><a:font script=\"Deva\" typeface=\"Mangal\"/><a:font script=\"Telu\" typeface=\"Gautami\"/><a:font script=\"Taml\" typeface=\"Latha\"/><a:font script=\"Syrc\" typeface=\"Estrangelo Edessa\"/><a:font script=\"Orya\" typeface=\"Kalinga\"/><a:font script=\"Mlym\" typeface=\"Kartika\"/><a:font script=\"Laoo\" typeface=\"DokChampa\"/><a:font script=\"Sinh\" typeface=\"Iskoola Pota\"/><a:font script=\"Mong\" typeface=\"Mongolian Baiti\"/><a:font script=\"Viet\" typeface=\"Arial\"/><a:font script=\"Uigh\" typeface=\"Microsoft Uighur\"/></a:minorFont></a:fontScheme><a:fmtScheme name=\"Office\"><a:fillStyleLst><a:solidFill><a:schemeClr val=\"phClr\"/></a:solidFill><a:gradFill rotWithShape=\"1\"><a:gsLst><a:gs pos=\"0\"><a:schemeClr val=\"phClr\"><a:tint val=\"50000\"/><a:satMod val=\"300000\"/></a:schemeClr></a:gs><a:gs pos=\"35000\"><a:schemeClr val=\"phClr\"><a:tint val=\"37000\"/><a:satMod val=\"300000\"/></a:schemeClr></a:gs><a:gs pos=\"100000\"><a:schemeClr val=\"phClr\"><a:tint val=\"15000\"/><a:satMod val=\"350000\"/></a:schemeClr></a:gs></a:gsLst><a:lin ang=\"16200000\" scaled=\"1\"/></a:gradFill><a:gradFill rotWithShape=\"1\"><a:gsLst><a:gs pos=\"0\"><a:schemeClr val=\"phClr\"><a:shade val=\"51000\"/><a:satMod val=\"130000\"/></a:schemeClr></a:gs><a:gs pos=\"80000\"><a:schemeClr val=\"phClr\"><a:shade val=\"93000\"/><a:satMod val=\"130000\"/></a:schemeClr></a:gs><a:gs pos=\"100000\"><a:schemeClr val=\"phClr\"><a:shade val=\"94000\"/><a:satMod val=\"135000\"/></a:schemeClr></a:gs></a:gsLst><a:lin ang=\"16200000\" scaled=\"0\"/></a:gradFill></a:fillStyleLst><a:lnStyleLst><a:ln w=\"9525\" cap=\"flat\" cmpd=\"sng\" algn=\"ctr\"><a:solidFill><a:schemeClr val=\"phClr\"><a:shade val=\"95000\"/><a:satMod val=\"105000\"/></a:schemeClr></a:solidFill><a:prstDash val=\"solid\"/></a:ln><a:ln w=\"25400\" cap=\"flat\" cmpd=\"sng\" algn=\"ctr\"><a:solidFill><a:schemeClr val=\"phClr\"/></a:solidFill><a:prstDash val=\"solid\"/></a:ln><a:ln w=\"38100\" cap=\"flat\" cmpd=\"sng\" algn=\"ctr\"><a:solidFill><a:schemeClr val=\"phClr\"/></a:solidFill><a:prstDash val=\"solid\"/></a:ln></a:lnStyleLst><a:effectStyleLst><a:effectStyle><a:effectLst><a:outerShdw blurRad=\"40000\" dist=\"20000\" dir=\"5400000\" rotWithShape=\"0\"><a:srgbClr val=\"000000\"><a:alpha val=\"38000\"/></a:srgbClr></a:outerShdw></a:effectLst></a:effectStyle><a:effectStyle><a:effectLst><a:outerShdw blurRad=\"40000\" dist=\"23000\" dir=\"5400000\" rotWithShape=\"0\"><a:srgbClr val=\"000000\"><a:alpha val=\"35000\"/></a:srgbClr></a:outerShdw></a:effectLst></a:effectStyle><a:effectStyle><a:effectLst><a:outerShdw blurRad=\"40000\" dist=\"23000\" dir=\"5400000\" rotWithShape=\"0\"><a:srgbClr val=\"000000\"><a:alpha val=\"35000\"/></a:srgbClr></a:outerShdw></a:effectLst><a:scene3d><a:camera prst=\"orthographicFront\"><a:rot lat=\"0\" lon=\"0\" rev=\"0\"/></a:camera><a:lightRig rig=\"threePt\" dir=\"t\"><a:rot lat=\"0\" lon=\"0\" rev=\"1200000\"/></a:lightRig></a:scene3d><a:sp3d><a:bevelT w=\"63500\" h=\"25400\"/></a:sp3d></a:effectStyle></a:effectStyleLst><a:bgFillStyleLst><a:solidFill><a:schemeClr val=\"phClr\"/></a:solidFill><a:gradFill rotWithShape=\"1\"><a:gsLst><a:gs pos=\"0\"><a:schemeClr val=\"phClr\"><a:tint val=\"40000\"/><a:satMod val=\"350000\"/></a:schemeClr></a:gs><a:gs pos=\"40000\"><a:schemeClr val=\"phClr\"><a:tint val=\"45000\"/><a:shade val=\"99000\"/><a:satMod val=\"350000\"/></a:schemeClr></a:gs><a:gs pos=\"100000\"><a:schemeClr val=\"phClr\"><a:shade val=\"20000\"/><a:satMod val=\"255000\"/></a:schemeClr></a:gs></a:gsLst><a:path path=\"circle\"><a:fillToRect l=\"50000\" t=\"-80000\" r=\"50000\" b=\"180000\"/></a:path></a:gradFill><a:gradFill rotWithShape=\"1\"><a:gsLst><a:gs pos=\"0\"><a:schemeClr val=\"phClr\"><a:tint val=\"80000\"/><a:satMod val=\"300000\"/></a:schemeClr></a:gs><a:gs pos=\"100000\"><a:schemeClr val=\"phClr\"><a:shade val=\"30000\"/><a:satMod val=\"200000\"/></a:schemeClr></a:gs></a:gsLst><a:path path=\"circle\"><a:fillToRect l=\"50000\" t=\"50000\" r=\"50000\" b=\"50000\"/></a:path></a:gradFill></a:bgFillStyleLst></a:fmtScheme></a:themeElements><a:objectDefaults/><a:extraClrSchemeLst/>\r\n"
   "</a:theme>\r\n";
-
-const char* sharedstrings_xml =
-  "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\r\n"
-  "<sst xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" count=\"35\" uniqueCount=\"34\">\r\n"
-  "<si><t>Name</t></si><si><t>Expires</t></si><si><t>LastLogon</t></si><si><t>LastSetPassword</t></si><si><t>LastBadPassword</t></si><si><t>LockOut</t></si><si><t>Active</t></si><si><t>Created</t></si><si><t>LastChanged</t></si><si><t>Login</t></si><si><t>Logons</t></si><si><t>ADName</t></si><si><t>FirstName</t></si><si><t>LastName</t></si><si><t>PrimaryEmail</t></si><si><t>HomeDirectory</t></si><si><t>Notes</t></si><si><t>PasswordExpires</t></si><si><t/></si><si><t>Never</t></si><si><t>Firefighter (Realdolmen)</t></si><si><t>2016-02-28 00:00:00</t></si><si><t>2016-02-17 12:00:00</t></si><si><t>2015-12-24 09:41:29</t></si><si><t>2016-02-01 11:50:11</t></si><si><t>Enabled+Expired</t></si><si><t>2013-02-27 10:30:55</t></si><si><t>2016-02-26 08:51:27</t></si><si><t>zxBeweRD008_f</t></si><si><t>CN=Firefighter (Realdolmen),OU=Admin Accounts,OU=Domain Security,DC=ISIS,DC=LOCAL</t></si><si><t>Realdolmen</t></si><si><t>Firefighter</t></si><si><t>Realdolmen.Firefighter@alpro.com</t></si><si><t>consultant RealDolmen - managed services - no often used</t></si>\r\n"
-  "</sst>\r\n";
 */
 
+#ifndef WITHOUT_XLSX_SHAREDSTRINGS
+const char* sharedstrings_xml =
+  XML_HEADER "\r\n"
+  //"<sst xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" count=\"0\" uniqueCount=\"0\"/>\r\n";
+  "<sst xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" count=\"1\" uniqueCount=\"1\">\r\n"
+  "<si><t></t></si>"
+  "</sst>";
+#endif
+
 const char* workbook_rels_xml =
-  "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\r\n"
+  XML_HEADER "\r\n"
   "<Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\">"
   //"<Relationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme\" Target=\"theme/theme1.xml\"/>"
 #ifndef WITHOUT_XLSX_STYLES
   "<Relationship Id=\"rId2\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles\" Target=\"" XML_FILENAME_XL_STYLES "\"/>"
 #endif
   "<Relationship Id=\"rId3\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet\" Target=\"" XML_FOLDER_WORKSHEETS XML_FILENAME_XL_WORKSHEET1 "\"/>"
-  //"<Relationship Id=\"rId4\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings\" Target=\"sharedStrings.xml\"/>"
+#ifndef WITHOUT_XLSX_SHAREDSTRINGS
+  "<Relationship Id=\"rId4\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings\" Target=\"" XML_FILENAME_XL_SHAREDSTRINGS "\"/>"
+#endif
   "</Relationships>";
 
 const char* workbook_xml =
-  "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\r\n"
+  XML_HEADER "\r\n"
   "<workbook xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">"
   //"<workbookPr/>"
   "<bookViews>"
@@ -221,7 +236,7 @@ const char* workbook_xml =
   "</workbook>";
 
 const char* worksheet_xml_begin =
-  "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\r\n"
+  XML_HEADER "\r\n"
   "<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">";
 
 const char* worksheet_xml_freeze_top_row =
@@ -388,12 +403,12 @@ void* thread_proc (void* arg)
   zip_add_static_content_string(handle->zip, XML_FILENAME_CONTENTTYPES, content_types_xml);
   zip_add_static_content_string(handle->zip, XML_FOLDER_DOCPROPS XML_FILENAME_DOCPROPS_CORE, docprops_core_xml);
   zip_add_static_content_string(handle->zip, XML_FOLDER_DOCPROPS XML_FILENAME_DOCPROPS_APP, docprops_app_xml);
-  zip_add_static_content_string(handle->zip, XML_FILENAME_RELS, rels_xml);
+  zip_add_static_content_string(handle->zip, XML_FOLDER_RELS XML_FILENAME_RELS, rels_xml);
 #ifndef WITHOUT_XLSX_STYLES
   zip_add_static_content_string(handle->zip, XML_FOLDER_XL XML_FILENAME_XL_STYLES, styles_xml);
 #endif
   //zip_add_static_content_string(handle->zip, "xl/theme/theme1.xml", theme_xml);
-  zip_add_static_content_string(handle->zip, XML_FOLDER_XL XML_FILENAME_XL_WORKBOOK_RELS, workbook_rels_xml);
+  zip_add_static_content_string(handle->zip, XML_FOLDER_XL XML_FOLDER_RELS XML_FILENAME_XL_WORKBOOK_RELS, workbook_rels_xml);
   { //TO DO: this crashes on Linux
     char* sheetname = NULL;
     if (handle->sheetname) {
@@ -407,7 +422,9 @@ void* thread_proc (void* arg)
     zip_add_dynamic_content_string(handle->zip, XML_FOLDER_XL XML_FILENAME_XL_WORKBOOK, workbook_xml, (sheetname ? sheetname : "Sheet1"));
     free(sheetname);
   }
-  //zip_add_static_content_string(handle->zip, "xl/sharedStrings.xml", sharedstrings_xml);
+#ifndef WITHOUT_XLSX_SHAREDSTRINGS
+  zip_add_static_content_string(handle->zip, XML_FOLDER_XL XML_FILENAME_XL_SHAREDSTRINGS, sharedstrings_xml);
+#endif
 
   //add sheet content with pipe data as source
   zip_source_t* zipsrc = zip_source_filep(handle->zip, handle->pipe_read, 0, -1);
