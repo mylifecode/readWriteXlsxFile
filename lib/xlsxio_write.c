@@ -72,7 +72,8 @@ DLL_EXPORT_XLSXIO const char* xlsxiowrite_get_version_string ()
 #define WITHOUT_XLSX_THEMES
 //#define WITHOUT_XLSX_FOLDERS
 
-#define OPTIONAL_LINE_BREAK             "\r\n"
+//#define OPTIONAL_LINE_BREAK             "\r\n"
+#define OPTIONAL_LINE_BREAK             ""
 #define XML_HEADER                      "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\r\n"
 #define XML_FOLDER_RELS                 "_rels/"
 #ifndef WITHOUT_XLSX_FOLDERS
@@ -137,6 +138,8 @@ const char* docprops_core_xml =
 const char* docprops_app_xml =
   XML_HEADER
   "<Properties xmlns=\"http://schemas.openxmlformats.org/officeDocument/2006/extended-properties\" xmlns:vt=\"http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes\">" OPTIONAL_LINE_BREAK
+  "<Application>" XLSXIOWRITE_NAME "</Application>" OPTIONAL_LINE_BREAK
+  "<AppVersion>" XLSXIO_VERSION_STRING "</AppVersion>" OPTIONAL_LINE_BREAK
   "</Properties>" OPTIONAL_LINE_BREAK;
 
 const char* rels_xml =
@@ -244,8 +247,9 @@ const char* workbook_xml =
   "<workbook xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">" OPTIONAL_LINE_BREAK
   //"<workbookPr/>" OPTIONAL_LINE_BREAK
   "<bookViews>" OPTIONAL_LINE_BREAK
-  "<workbookView/>" OPTIONAL_LINE_BREAK
-  //"<workbookView xWindow=\"0\" yWindow=\"0\"/>" OPTIONAL_LINE_BREAK
+  //"<workbookView/>" OPTIONAL_LINE_BREAK
+  "<workbookView activeTab=\"0\"/>" OPTIONAL_LINE_BREAK
+  //"<workbookView activeTab=\"0\" xWindow=\"0\" yWindow=\"0\"/>" OPTIONAL_LINE_BREAK
   "</bookViews>" OPTIONAL_LINE_BREAK
   "<sheets>" OPTIONAL_LINE_BREAK
   "<sheet name=\"%s\" sheetId=\"1\" r:id=\"" XML_WORKBOOK_RELID_XL_WORKSHEET1 "\"/>" OPTIONAL_LINE_BREAK
@@ -275,6 +279,22 @@ const char* worksheet_xml_end =
 
 ////////////////////////////////////////////////////////////////////////
 
+zip_int64_t zip_file_add_custom (zip_t* zip, const char* filename, zip_source_t* zipsrc)
+{
+  zip_int64_t index;
+  if ((index = zip_file_add(zip, filename, zipsrc, ZIP_FL_OVERWRITE | ZIP_FL_ENC_UTF_8)) >= 0) {
+    zip_set_file_compression(zip, index, ZIP_CM_DEFLATE, 9);
+    //zip_set_file_compression(zip, index, ZIP_CM_DEFLATE, 5);
+    //zip_set_file_compression(zip, index, ZIP_CM_STORE, 0);
+    //zip_file_set_external_attributes(zip, index, 0, ZIP_OPSYS_DOS, 0);
+    zip_file_set_external_attributes(zip, index, 0, ZIP_OPSYS_VFAT, 0);
+    //zip_file_set_comment(zip, index, "Test", 4, ZIP_FL_ENC_UTF_8);
+    //zip_file_set_mtime(zip, index, time(NULL), 0);
+    //zip_file_extra_field_delete(zip, index, ZIP_EXTRA_FIELD_ALL, ZIP_FL_CENTRAL | ZIP_FL_LOCAL);
+  }
+  return index;
+}
+
 int zip_add_content_buffer (zip_t* zip, const char* filename, const char* buf, size_t buflen, int mustfree)
 {
   zip_source_t* zipsrc;
@@ -282,8 +302,7 @@ int zip_add_content_buffer (zip_t* zip, const char* filename, const char* buf, s
     fprintf(stderr, "Error creating file \"%s\" inside zip file\n", filename);/////
     return 1;
   }
-  //zip_set_file_compression(zip, zip_get_num_entries(zip, 0), ZIP_CM_DEFLATE, 9);
-  if (zip_file_add(zip, filename, zipsrc, ZIP_FL_OVERWRITE | ZIP_FL_ENC_UTF_8) < 0) {
+  if (zip_file_add_custom(zip, filename, zipsrc) < 0) {
     fprintf(stderr, "Error in zip_file_add\n");/////
     zip_source_free(zipsrc);
     return 2;
@@ -448,9 +467,8 @@ void* thread_proc (void* arg)
 #endif
 
   //add sheet content with pipe data as source
-  //zip_set_file_compression(handle->zip, zip_get_num_entries(handle->zip, 0), ZIP_CM_DEFLATE, 9);
   zip_source_t* zipsrc = zip_source_filep(handle->zip, handle->pipe_read, 0, -1);
-  if (zip_file_add(handle->zip, XML_FOLDER_XL XML_FOLDER_WORKSHEETS XML_FILENAME_XL_WORKSHEET1, zipsrc, ZIP_FL_OVERWRITE | ZIP_FL_ENC_UTF_8) < 0) {
+  if (zip_file_add_custom(handle->zip, XML_FOLDER_XL XML_FOLDER_WORKSHEETS XML_FILENAME_XL_WORKSHEET1, zipsrc) < 0) {
     zip_source_free(zipsrc);
     fprintf(stdout, "Error adding file");
   }
