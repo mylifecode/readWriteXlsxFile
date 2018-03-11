@@ -10,10 +10,25 @@
 #endif
 #include <fcntl.h>
 #include <stdarg.h>
+
+#ifdef USE_MINIZIP
+#include <minizip/zip.h>
+#define ZIPFILETYPE zipFile
+#else
 #if (defined(STATIC) || defined(BUILD_XLSXIO_STATIC) || defined(BUILD_XLSXIO_STATIC_DLL) || (defined(BUILD_XLSXIO) && !defined(BUILD_XLSXIO_DLL) && !defined(BUILD_XLSXIO_SHARED))) && !defined(ZIP_STATIC)
 #define ZIP_STATIC
 #endif
 #include <zip.h>
+#ifndef ZIP_RDONLY
+typedef struct zip zip_t;
+typedef struct zip_source zip_source_t;
+#endif
+#define ZIPFILETYPE zip_t
+#ifndef USE_LIBZIP
+#define USE_LIBZIP
+#endif
+#endif
+
 #if defined(_WIN32) && !defined(USE_PTHREADS)
 #define USE_WINTHREADS
 #include <windows.h>
@@ -25,11 +40,6 @@
 #if defined(_MSC_VER)
 #undef DLL_EXPORT_XLSXIO
 #define DLL_EXPORT_XLSXIO
-#endif
-
-#ifndef ZIP_RDONLY
-typedef struct zip zip_t;
-typedef struct zip_source zip_source_t;
 #endif
 
 #ifdef _WIN32
@@ -279,7 +289,8 @@ const char* worksheet_xml_end =
 
 ////////////////////////////////////////////////////////////////////////
 
-zip_int64_t zip_file_add_custom (zip_t* zip, const char* filename, zip_source_t* zipsrc)
+#ifdef USE_LIBZIP
+zip_int64_t zip_file_add_custom (ZIPFILETYPE* zip, const char* filename, zip_source_t* zipsrc)
 {
   zip_int64_t index;
   if ((index = zip_file_add(zip, filename, zipsrc, ZIP_FL_OVERWRITE | ZIP_FL_ENC_UTF_8)) >= 0) {
@@ -294,28 +305,43 @@ zip_int64_t zip_file_add_custom (zip_t* zip, const char* filename, zip_source_t*
   }
   return index;
 }
+#endif
 
-int zip_add_content_buffer (zip_t* zip, const char* filename, const char* buf, size_t buflen, int mustfree)
+int zip_add_content_buffer (ZIPFILETYPE* zip, const char* filename, const char* buf, size_t buflen, int mustfree)
 {
+#ifdef USE_MINIZIP
+  if (zipOpenNewFileInZip(zip, filename, NULL, NULL, 0, NULL, 0, NULL, Z_DEFLATED, 9) != ZIP_OK) {
+    fprintf(stderr, "Error creating file \"%s\" inside zip file\n", filename);/////
+    return 1;
+  }
+  if (zipWriteInFileInZip(zip, buf, buflen) != ZIP_OK) {
+    fprintf(stderr, "Error writing to file \"%s\" inside zip file\n", filename);/////
+    return 1;
+  }
+  zipCloseFileInZip(zip);
+  if (mustfree)
+    free((char*)buf);
+#else
   zip_source_t* zipsrc;
   if ((zipsrc = zip_source_buffer(zip, buf, buflen, mustfree)) == NULL) {
     fprintf(stderr, "Error creating file \"%s\" inside zip file\n", filename);/////
     return 1;
   }
   if (zip_file_add_custom(zip, filename, zipsrc) < 0) {
-    fprintf(stderr, "Error in zip_file_add\n");/////
+    fprintf(stderr, "Error in zip_file_add for file %s\n", filename);/////
     zip_source_free(zipsrc);
     return 2;
   }
+#endif
   return 0;
 }
 
-int zip_add_static_content_string (zip_t* zip, const char* filename, const char* data)
+int zip_add_static_content_string (ZIPFILETYPE* zip, const char* filename, const char* data)
 {
   return zip_add_content_buffer(zip, filename, data, strlen(data), 0);
 }
 
-int zip_add_dynamic_content_string (zip_t* zip, const char* filename, const char* data, ...)
+int zip_add_dynamic_content_string (ZIPFILETYPE* zip, const char* filename, const char* data, ...)
 {
   int result;
   char* buf;
@@ -400,7 +426,7 @@ struct column_info_struct {
 struct xlsxio_write_struct {
   char* filename;
   char* sheetname;
-  zip_t* zip;
+  ZIPFILETYPE* zip;
 #ifdef USE_WINTHREADS
   HANDLE thread;
 #else
@@ -428,7 +454,11 @@ void* thread_proc (void* arg)
 {
   xlsxiowriter handle = (xlsxiowriter)arg;
   //initialize zip file object
+#ifdef USE_MINIZIP
+  if ((handle->zip = zipOpen(handle->filename, 0)) == NULL) {
+#else
   if ((handle->zip = zip_open(handle->filename, ZIP_CREATE, NULL)) == NULL) {
+#endif
     free(handle);
     free(handle->filename);
 #ifdef USE_WINTHREADS
@@ -466,7 +496,29 @@ void* thread_proc (void* arg)
   zip_add_static_content_string(handle->zip, XML_FOLDER_XL XML_FILENAME_XL_SHAREDSTRINGS, sharedstrings_xml);
 #endif
 
-  //add sheet content with pipe data as source
+  //add sheet content file with pipe data
+#ifdef USE_MINIZIP
+#define MINIZIP_PIPE_BUFFER_SIZE 1024
+  if (zipOpenNewFileInZip(handle->zip, XML_FOLDER_XL XML_FOLDER_WORKSHEETS XML_FILENAME_XL_WORKSHEET1, NULL, NULL, 0, NULL, 0, NULL, Z_DEFLATED, 9) != ZIP_OK) {
+    fprintf(stdout, "Error adding file");
+  } else {
+    char* buf;
+    size_t buflen;
+    if ((buf = (char*)malloc(MINIZIP_PIPE_BUFFER_SIZE)) == NULL) {
+      fprintf(stderr, "Memory allocation error");/////
+    } else {
+      while ((buflen = fread(buf, 1, MINIZIP_PIPE_BUFFER_SIZE, handle->pipe_read)) > 0) {
+        if (zipWriteInFileInZip(handle->zip, buf, buflen) != ZIP_OK) {
+          fprintf(stderr, "Error writing file inside archive");/////
+          break;
+        }
+      }
+      free(buf);
+    }
+    zipCloseFileInZip(handle->zip);
+    fclose(handle->pipe_read);
+  }
+#else
   zip_source_t* zipsrc = zip_source_filep(handle->zip, handle->pipe_read, 0, -1);
   if (zip_file_add_custom(handle->zip, XML_FOLDER_XL XML_FOLDER_WORKSHEETS XML_FILENAME_XL_WORKSHEET1, zipsrc) < 0) {
     zip_source_free(zipsrc);
@@ -475,7 +527,6 @@ void* thread_proc (void* arg)
 #ifdef ZIP_RDONLY
   zip_file_set_mtime(handle->zip, zip_get_num_entries(handle->zip, 0) - 1, time(NULL), 0);
 #endif
-
   //close zip file (processes all data, will block until pipe is closed)
   if (zip_close(handle->zip) != 0) {
     int ze, se;
@@ -489,6 +540,7 @@ void* thread_proc (void* arg)
     fprintf(stderr, "zip_close failed (%i,%i)\n", ze, se);/////
     fprintf(stderr, "can't close zip archive : %s\n", zip_strerror(handle->zip));
   }
+#endif
   handle->zip = NULL;
   handle->pipe_read = NULL;
 #ifdef USE_WINTHREADS
@@ -583,7 +635,11 @@ DLL_EXPORT_XLSXIO int xlsxiowrite_close (xlsxiowriter handle)
   free(handle->filename);
   free(handle->sheetname);
   if (handle->zip)
+#ifdef USE_MINIZIP
+    zipClose(handle->zip, NULL);
+#else
     zip_close(handle->zip);
+#endif
   if (handle->pipe_read)
     fclose(handle->pipe_read);
   free(handle);
