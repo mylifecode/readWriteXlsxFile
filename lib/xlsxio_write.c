@@ -313,12 +313,12 @@ int zip_add_content_buffer (ZIPFILETYPE* zip, const char* filename, const char* 
   zip_fileinfo zipinfo;
   time_t now = time(NULL);
   struct tm* newtm = localtime(&now);
-  zipinfo.tmz_date.tm_sec = newtm->tm_sec;            /* seconds after the minute - [0,59] */
-  zipinfo.tmz_date.tm_min = newtm->tm_min;            /* minutes after the hour - [0,59] */
-  zipinfo.tmz_date.tm_hour = newtm->tm_hour;           /* hours since midnight - [0,23] */
-  zipinfo.tmz_date.tm_mday = newtm->tm_mday;           /* day of the month - [1,31] */
-  zipinfo.tmz_date.tm_mon = newtm->tm_mon;            /* months since January - [0,11] */
-  zipinfo.tmz_date.tm_year = newtm->tm_year;           /* years - [1980..2044] */
+  zipinfo.tmz_date.tm_sec = newtm->tm_sec;
+  zipinfo.tmz_date.tm_min = newtm->tm_min;
+  zipinfo.tmz_date.tm_hour = newtm->tm_hour;
+  zipinfo.tmz_date.tm_mday = newtm->tm_mday;
+  zipinfo.tmz_date.tm_mon = newtm->tm_mon;
+  zipinfo.tmz_date.tm_year = newtm->tm_year;
   zipinfo.dosDate = 0;
   zipinfo.internal_fa = 0;
   zipinfo.external_fa = 0;
@@ -511,6 +511,7 @@ void* thread_proc (void* arg)
   //add sheet content file with pipe data
 #ifdef USE_MINIZIP
 #define MINIZIP_PIPE_BUFFER_SIZE 1024
+//#error TO DO:
   if (zipOpenNewFileInZip(handle->zip, XML_FOLDER_XL XML_FOLDER_WORKSHEETS XML_FILENAME_XL_WORKSHEET1, NULL, NULL, 0, NULL, 0, NULL, Z_DEFLATED, 9) != ZIP_OK) {
     fprintf(stdout, "Error adding file");
   } else {
@@ -527,8 +528,9 @@ void* thread_proc (void* arg)
       }
       free(buf);
     }
-    zipCloseFileInZip(handle->zip);
     fclose(handle->pipe_read);
+    zipCloseFileInZip(handle->zip);
+    zipClose(handle->zip, NULL);
   }
 #else
   zip_source_t* zipsrc = zip_source_filep(handle->zip, handle->pipe_read, 0, -1);
