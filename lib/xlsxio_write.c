@@ -310,7 +310,19 @@ zip_int64_t zip_file_add_custom (ZIPFILETYPE* zip, const char* filename, zip_sou
 int zip_add_content_buffer (ZIPFILETYPE* zip, const char* filename, const char* buf, size_t buflen, int mustfree)
 {
 #ifdef USE_MINIZIP
-  if (zipOpenNewFileInZip(zip, filename, NULL, NULL, 0, NULL, 0, NULL, Z_DEFLATED, 9) != ZIP_OK) {
+  zip_fileinfo zipinfo;
+  time_t now = time(NULL);
+  struct tm* newtm = localtime(&now);
+  zipinfo.tmz_date.tm_sec = newtm->tm_sec;            /* seconds after the minute - [0,59] */
+  zipinfo.tmz_date.tm_min = newtm->tm_min;            /* minutes after the hour - [0,59] */
+  zipinfo.tmz_date.tm_hour = newtm->tm_hour;           /* hours since midnight - [0,23] */
+  zipinfo.tmz_date.tm_mday = newtm->tm_mday;           /* day of the month - [1,31] */
+  zipinfo.tmz_date.tm_mon = newtm->tm_mon;            /* months since January - [0,11] */
+  zipinfo.tmz_date.tm_year = newtm->tm_year;           /* years - [1980..2044] */
+  zipinfo.dosDate = 0;
+  zipinfo.internal_fa = 0;
+  zipinfo.external_fa = 0;
+  if (zipOpenNewFileInZip(zip, filename, &zipinfo, NULL, 0, NULL, 0, NULL, Z_DEFLATED, 9) != ZIP_OK) {
     fprintf(stderr, "Error creating file \"%s\" inside zip file\n", filename);/////
     return 1;
   }
