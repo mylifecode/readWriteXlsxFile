@@ -1,5 +1,9 @@
 0.2.12
 
+2018-03-14  Brecht Sanders  https://github.com/brechtsanders/
+
+  * added support for minizip and made this the default instead of libzip
+
 2018-02-03  Brecht Sanders  https://github.com/brechtsanders/
 
   * modified Makefile to support WIDE=1 parameter to built UTF-16 library (libxlsxio_readw)
