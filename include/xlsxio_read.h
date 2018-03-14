@@ -101,13 +101,16 @@ typedef struct xlsxio_read_struct* xlsxioreader;
  */
 DLL_EXPORT_XLSXIO xlsxioreader xlsxioread_open (const char* filename);
 
+#ifdef USE_LIBZIP
 /*! \brief open .xlsx file
  * \param  filehandle    file handle of .xlsx file opened with read access in binary mode
  * \return read handle for .xlsx object or NULL on error
  * \sa     xlsxioread_close()
  */
 DLL_EXPORT_XLSXIO xlsxioreader xlsxioread_open_filehandle (int filehandle);
+#endif
 
+#ifdef USE_LIBZIP
 /*! \brief open .xlsx from memory buffer
  * \param  data          memory buffer containing .xlsx file (data must remain valid as long as any xlsxioread_ functions are called)
  * \param  datalen       size of memory buffer containing .xlsx file
@@ -116,6 +119,7 @@ DLL_EXPORT_XLSXIO xlsxioreader xlsxioread_open_filehandle (int filehandle);
  * \sa     xlsxioread_close()
  */
 DLL_EXPORT_XLSXIO xlsxioreader xlsxioread_open_memory (const void* data, uint64_t datalen, int freedata);
+#endif
 
 /*! \brief close .xlsx file
  * \param  handle        read handle for .xlsx object

@@ -5,6 +5,23 @@
 #include <stdlib.h>
 #include <inttypes.h>
 #include <string.h>
+#include <expat.h>
+
+#ifdef USE_MINIZIP
+#include <minizip/unzip.h>
+#define ZIPFILETYPE unzFile
+#define ZIPFILEENTRYTYPE unzFile
+#else
+#if (defined(STATIC) || defined(BUILD_XLSXIO_STATIC) || defined(BUILD_XLSXIO_STATIC_DLL) || (defined(BUILD_XLSXIO) && !defined(BUILD_XLSXIO_DLL) && !defined(BUILD_XLSXIO_SHARED))) && !defined(ZIP_STATIC)
+#define ZIP_STATIC
+#endif
+#include <zip.h>
+#define ZIPFILETYPE zip_t
+#define ZIPFILEENTRYTYPE zip_file_t
+#ifndef USE_LIBZIP
+#define USE_LIBZIP
+#endif
+#endif
 
 #if defined(_MSC_VER)
 #undef DLL_EXPORT_XLSXIO
@@ -15,7 +32,19 @@
 
 //UTF-8 version
 #define XML_Char_dupchar strdup
-#define XML_Char_zip_fopen(z,fn,fl) zip_fopen(z, fn, fl)
+
+static ZIPFILEENTRYTYPE* XML_Char_zip_fopen (ZIPFILETYPE* archive, const XML_Char* filename, int flags)
+{
+#ifdef USE_MINIZIP
+  if (unzLocateFile(archive, filename, 0) != UNZ_OK)
+    return NULL;
+  if (unzOpenCurrentFile(archive) != UNZ_OK)
+    return NULL;
+  return archive;
+#else
+  return zip_fopen(archive, filename, flags);
+#endif
+}
 
 #else
 
@@ -50,13 +79,22 @@ static char* chardupXML_Char(const XML_Char* s)
   return result;
 }
 
-static zip_file_t* XML_Char_zip_fopen (struct zip* archive, const XML_Char* filename, int flags)
+static ZIPFILEENTRYTYPE* XML_Char_zip_fopen (ZIPFILETYPE* archive, const XML_Char* filename, int flags)
 {
-  zip_file_t* result;
+  ZIPFILEENTRYTYPE* result;
   char* s;
   if ((s = chardupXML_Char(filename)) == NULL)
     return NULL;
+#ifdef USE_MINIZIP
+  if (unzLocateFile(archive, s, 0) != UNZ_OK)
+    result = NULL;
+  else if (unzOpenCurrentFile(archive) != UNZ_OK)
+    result = NULL;
+  else
+    result = archive;
+#else
   result = zip_fopen(archive, s, flags);
+#endif
   free(s);
   return result;
 }
@@ -85,9 +123,9 @@ DLL_EXPORT_XLSXIO const XLSXIOCHAR* xlsxioread_get_version_string ()
 //#define BUFFER_SIZE 4
 
 //process XML file contents
-int expat_process_zip_file (zip_t* zip, const XML_Char* filename, XML_StartElementHandler start_handler, XML_EndElementHandler end_handler, XML_CharacterDataHandler data_handler, void* callbackdata, XML_Parser* xmlparser)
+int expat_process_zip_file (ZIPFILETYPE* zip, const XML_Char* filename, XML_StartElementHandler start_handler, XML_EndElementHandler end_handler, XML_CharacterDataHandler data_handler, void* callbackdata, XML_Parser* xmlparser)
 {
-  zip_file_t* zipfile;
+  ZIPFILEENTRYTYPE* zipfile;
   XML_Parser parser;
   char buf[BUFFER_SIZE];
   zip_int64_t buflen;
@@ -101,20 +139,30 @@ int expat_process_zip_file (zip_t* zip, const XML_Char* filename, XML_StartEleme
   XML_SetCharacterDataHandler(parser, data_handler);
   if (xmlparser)
     *xmlparser = parser;
+#ifdef USE_MINIZIP
+  while ((buflen = unzReadCurrentFile(zip, buf, sizeof(buf))) >= 0) {
+#else
   while ((buflen = zip_fread(zipfile, buf, sizeof(buf))) >= 0) {
+#endif
     if ((status = XML_Parse(parser, buf, (int)buflen, (buflen < sizeof(buf) ? 1 : 0))) == XML_STATUS_ERROR) {
       break;
     }
     if (xmlparser && status == XML_STATUS_SUSPENDED)
       return 0;
+    if (buflen < sizeof(buf))
+      break;
   }
   XML_ParserFree(parser);
+#ifdef USE_MINIZIP
+  unzCloseCurrentFile(zip);
+#else
   zip_fclose(zipfile);
+#endif
   //return (status == XML_STATUS_ERROR != XML_ERROR_FINISHED ? 1 : 0);
   return 0;
 }
 
-XML_Parser expat_process_zip_file_suspendable (zip_file_t* zipfile, XML_StartElementHandler start_handler, XML_EndElementHandler end_handler, XML_CharacterDataHandler data_handler, void* callbackdata)
+XML_Parser expat_process_zip_file_suspendable (ZIPFILEENTRYTYPE* zipfile, XML_StartElementHandler start_handler, XML_EndElementHandler end_handler, XML_CharacterDataHandler data_handler, void* callbackdata)
 {
   XML_Parser result;
   if ((result = XML_ParserCreate(NULL)) != NULL) {
@@ -125,7 +173,7 @@ XML_Parser expat_process_zip_file_suspendable (zip_file_t* zipfile, XML_StartEle
   return result;
 }
 
-enum XML_Status expat_process_zip_file_resume (zip_file_t* zipfile, XML_Parser xmlparser)
+enum XML_Status expat_process_zip_file_resume (ZIPFILEENTRYTYPE* zipfile, XML_Parser xmlparser)
 {
   enum XML_Status status;
   status = XML_ResumeParser(xmlparser);
@@ -135,11 +183,17 @@ enum XML_Status expat_process_zip_file_resume (zip_file_t* zipfile, XML_Parser x
     return status;
   char buf[BUFFER_SIZE];
   zip_int64_t buflen;
-  while ((buflen = zip_fread(zipfile, buf, sizeof(buf))) > 0) {
+#ifdef USE_MINIZIP
+  while ((buflen = unzReadCurrentFile(zipfile, buf, sizeof(buf))) >= 0) {
+#else
+  while ((buflen = zip_fread(zipfile, buf, sizeof(buf))) >= 0) {
+#endif
     if ((status = XML_Parse(xmlparser, buf, (int)buflen, (buflen < sizeof(buf) ? 1 : 0))) == XML_STATUS_ERROR)
       return status;
     if (status == XML_STATUS_SUSPENDED)
       return status;
+    if (buflen < sizeof(buf))
+      break;
   }
   return status;
 }
@@ -238,14 +292,18 @@ size_t get_row_nr (const XML_Char* A1col)
 ////////////////////////////////////////////////////////////////////////
 
 struct xlsxio_read_struct {
-  zip_t* zip;
+  ZIPFILETYPE* zip;
 };
 
 DLL_EXPORT_XLSXIO xlsxioreader xlsxioread_open (const char* filename)
 {
   xlsxioreader result;
   if ((result = (xlsxioreader)malloc(sizeof(struct xlsxio_read_struct))) != NULL) {
+#ifdef USE_MINIZIP
+    if ((result->zip = unzOpen(filename)) == NULL) {
+#else
     if ((result->zip = zip_open(filename, ZIP_RDONLY, NULL)) == NULL) {
+#endif
       free(result);
       return NULL;
     }
@@ -253,6 +311,7 @@ DLL_EXPORT_XLSXIO xlsxioreader xlsxioread_open (const char* filename)
   return result;
 }
 
+#ifdef USE_LIBZIP
 DLL_EXPORT_XLSXIO xlsxioreader xlsxioread_open_filehandle (int filehandle)
 {
   xlsxioreader result;
@@ -264,7 +323,9 @@ DLL_EXPORT_XLSXIO xlsxioreader xlsxioread_open_filehandle (int filehandle)
   }
   return result;
 }
+#endif
 
+#ifdef USE_LIBZIP
 DLL_EXPORT_XLSXIO xlsxioreader xlsxioread_open_memory (const void* data, uint64_t datalen, int freedata)
 {
   xlsxioreader result;
@@ -281,12 +342,17 @@ DLL_EXPORT_XLSXIO xlsxioreader xlsxioread_open_memory (const void* data, uint64_
   }
   return result;
 }
+#endif
 
 DLL_EXPORT_XLSXIO void xlsxioread_close (xlsxioreader handle)
 {
   if (handle) {
     //note: no need to call zip_source_free() after successful use in zip_open_from_source()
+#ifdef USE_MINIZIP
+    unzClose(handle->zip);
+#else
     zip_close(handle->zip);
+#endif
     free(handle);
   }
 }
@@ -294,10 +360,10 @@ DLL_EXPORT_XLSXIO void xlsxioread_close (xlsxioreader handle)
 ////////////////////////////////////////////////////////////////////////
 
 //callback function definition for use with iterate_files_by_contenttype
-typedef void (*contenttype_file_callback_fn)(zip_t* zip, const XML_Char* filename, const XML_Char* contenttype, void* callbackdata);
+typedef void (*contenttype_file_callback_fn)(ZIPFILETYPE* zip, const XML_Char* filename, const XML_Char* contenttype, void* callbackdata);
 
 struct iterate_files_by_contenttype_callback_data {
-  zip_t* zip;
+  ZIPFILETYPE* zip;
   const XML_Char* contenttype;
   contenttype_file_callback_fn filecallbackfn;
   void* filecallbackdata;
@@ -326,11 +392,32 @@ void iterate_files_by_contenttype_expat_callback_element_start (void* callbackda
       if ((extension = get_expat_attr_by_name(atts, X("Extension"))) != NULL) {
         XML_Char* filename;
         size_t filenamelen;
+        size_t extensionlen = XML_Char_len(extension);
+#ifdef USE_MINIZIP
+#define UNZIP_FILENAME_BUFFER_STEP 32
+        char* buf;
+        size_t buflen;
+        int status;
+        buf = (char*)malloc(buflen = UNZIP_FILENAME_BUFFER_STEP);
+        status = unzGoToFirstFile(data->zip);
+        while (status == UNZ_OK) {
+          buf[buflen - 1] = 0;
+          while (unzGetCurrentFileInfo(data->zip, NULL, buf, buflen, NULL, 0, NULL, 0) == UNZ_OK && buf[buflen - 1] != 0) {
+            buflen += UNZIP_FILENAME_BUFFER_STEP;
+            buf = (char*)realloc(buf, buflen);
+            buf[buflen - 1] = 0;
+          }
+          filename = XML_Char_dupchar(buf);
+          free(buf);
+          status = unzGoToNextFile(data->zip);
+#else
+
+
         zip_int64_t i;
         zip_int64_t zipnumfiles = zip_get_num_entries(data->zip, 0);
-        size_t extensionlen = XML_Char_len(extension);
         for (i = 0; i < zipnumfiles; i++) {
           filename = XML_Char_dupchar(zip_get_name(data->zip, i, ZIP_FL_ENC_GUESS));
+#endif
           filenamelen = XML_Char_len(filename);
           if (filenamelen > extensionlen && filename[filenamelen - extensionlen - 1] == '.' && XML_Char_icmp(filename + filenamelen - extensionlen, extension) == 0) {
             data->filecallbackfn(data->zip, filename, contenttype, data->filecallbackdata);
@@ -343,7 +430,7 @@ void iterate_files_by_contenttype_expat_callback_element_start (void* callbackda
 }
 
 //list file names by content type
-int iterate_files_by_contenttype (zip_t* zip, const XML_Char* contenttype, contenttype_file_callback_fn filecallbackfn, void* filecallbackdata, XML_Parser* xmlparser)
+int iterate_files_by_contenttype (ZIPFILETYPE* zip, const XML_Char* contenttype, contenttype_file_callback_fn filecallbackfn, void* filecallbackdata, XML_Parser* xmlparser)
 {
   struct iterate_files_by_contenttype_callback_data callbackdata = {
     .zip = zip,
@@ -389,7 +476,7 @@ void main_sheet_list_expat_callback_element_start (void* callbackdata, const XML
 }
 
 //process contents each sheet listed in main sheet
-void xlsxioread_list_sheets_callback (zip_t* zip, const XML_Char* filename, const XML_Char* contenttype, void* callbackdata)
+void xlsxioread_list_sheets_callback (ZIPFILETYPE* zip, const XML_Char* filename, const XML_Char* contenttype, void* callbackdata)
 {
   //get sheet information from file
   expat_process_zip_file(zip, filename, main_sheet_list_expat_callback_element_start, NULL, NULL, callbackdata, &((struct main_sheet_list_callback_data*)callbackdata)->xmlparser);
@@ -472,7 +559,7 @@ void main_sheet_get_sheetfile_expat_callback_element_start (void* callbackdata, 
 }
 
 //determine the file name for a specified sheet name
-void main_sheet_get_sheetfile_callback (zip_t* zip, const XML_Char* filename, const XML_Char* contenttype, void* callbackdata)
+void main_sheet_get_sheetfile_callback (ZIPFILETYPE* zip, const XML_Char* filename, const XML_Char* contenttype, void* callbackdata)
 {
   struct main_sheet_get_rels_callback_data* data = (struct main_sheet_get_rels_callback_data*)callbackdata;
   if (!data->sheetrelid) {
@@ -868,7 +955,7 @@ void data_sheet_expat_callback_value_data (void* callbackdata, const XML_Char* b
 
 struct xlsxio_read_sheet_struct {
   xlsxioreader handle;
-  zip_file_t* zipfile;
+  ZIPFILEENTRYTYPE* zipfile;
   struct data_sheet_callback_data processcallbackdata;
   size_t lastrownr;
   size_t paddingrow;
@@ -933,7 +1020,7 @@ DLL_EXPORT_XLSXIO int xlsxioread_process (xlsxioreader handle, const XLSXIOCHAR*
 
 struct xlsxio_read_sheetlist_struct {
   xlsxioreader handle;
-  zip_file_t* zipfile;
+  ZIPFILEENTRYTYPE* zipfile;
   struct main_sheet_list_callback_data sheetcallbackdata;
   XML_Parser xmlparser;
   XML_Char* nextsheetname;
@@ -948,7 +1035,7 @@ int xlsxioread_list_sheets_resumable_callback (const XLSXIOCHAR* name, void* cal
   return 0;
 }
 
-void xlsxioread_find_main_sheet_file_callback (zip_t* zip, const XML_Char* filename, const XML_Char* contenttype, void* callbackdata)
+void xlsxioread_find_main_sheet_file_callback (ZIPFILETYPE* zip, const XML_Char* filename, const XML_Char* contenttype, void* callbackdata)
 {
   XML_Char** data = (XML_Char**)callbackdata;
   *data = XML_Char_dup(filename);
@@ -985,7 +1072,11 @@ DLL_EXPORT_XLSXIO void xlsxioread_sheetlist_close (xlsxioreadersheetlist sheetli
   if (sheetlisthandle->xmlparser)
     XML_ParserFree(sheetlisthandle->xmlparser);
   if (sheetlisthandle->zipfile)
+#ifdef USE_MINIZIP
+    unzCloseCurrentFile(sheetlisthandle->zipfile);
+#else
     zip_fclose(sheetlisthandle->zipfile);
+#endif
   free(sheetlisthandle->nextsheetname);
   free(sheetlisthandle);
 
@@ -1029,7 +1120,11 @@ DLL_EXPORT_XLSXIO void xlsxioread_sheet_close (xlsxioreadersheet sheethandle)
     XML_ParserFree(sheethandle->processcallbackdata.xmlparser);
   data_sheet_callback_data_cleanup(&sheethandle->processcallbackdata);
   if (sheethandle->zipfile)
+#ifdef USE_MINIZIP
+    unzCloseCurrentFile(sheethandle->zipfile);
+#else
     zip_fclose(sheethandle->zipfile);
+#endif
   free(sheethandle);
 }
 
