@@ -49,12 +49,22 @@ OSALIAS := win32
 endif
 endif
 
+ifdef WITH_LIBZIP
+ZIPLIB_LDFLAGS = -lzip
+ZIPLIB_DEPS_LDFLAGS = -Wl,--as-needed -lz -lbz2 -lcrypto -lgdi32
+CFLAGS += -DUSE_LIBZIP
+else
+ZIPLIB_LDFLAGS = -lminizip
+ZIPLIB_DEPS_LDFLAGS = -Wl,--as-needed -lz
+CFLAGS += -DUSE_MINIZIP
+endif
+
 XLSXIOREAD_OBJ = lib/xlsxio_read.o lib/xlsxio_read_sharedstrings.o
-XLSXIOREAD_LDFLAGS = -lzip -lexpat
-XLSXIOREADW_LDFLAGS = -lzip -lexpatw
+XLSXIOREAD_LDFLAGS = $(ZIPLIB_LDFLAGS) -lexpat
+XLSXIOREADW_LDFLAGS = $(ZIPLIB_LDFLAGS) -lexpatw
 XLSXIOREAD_SHARED_LDFLAGS =
 XLSXIOWRITE_OBJ = lib/xlsxio_write.o
-XLSXIOWRITE_LDFLAGS = -lzip
+XLSXIOWRITE_LDFLAGS = $(ZIPLIB_LDFLAGS)
 XLSXIOWRITE_SHARED_LDFLAGS =
 ifneq ($(OS),Windows_NT)
 SHARED_CFLAGS += -fPIC
@@ -76,9 +86,9 @@ ifdef STATICDLL
 ifeq ($(OS),Windows_NT)
 # lines below to compile Windows DLLs with no dependancies
 CFLAGS += -DZIP_STATIC
-XLSXIOREAD_LDFLAGS += -static -lz -lbz2
-XLSXIOREADW_LDFLAGS += -static -lz -lbz2
-XLSXIOWRITE_LDFLAGS += -static -lz -lbz2
+XLSXIOREAD_LDFLAGS += -static $(ZIPLIB_DEPS_LDFLAGS)
+XLSXIOREADW_LDFLAGS += -static $(ZIPLIB_DEPS_LDFLAGS)
+XLSXIOWRITE_LDFLAGS += -static $(ZIPLIB_DEPS_LDFLAGS)
 endif
 endif
 
@@ -113,13 +123,13 @@ static-lib: $(LIBLIST:%=$(LIBPREFIX)%$(LIBEXT))
 shared-lib: $(LIBLIST:%=$(LIBPREFIX)%$(SOEXT))
 
 $(LIBPREFIX)xlsxio_read$(LIBEXT): $(XLSXIOREAD_OBJ:%.o=%.static.o)
-	$(AR) cru $@ $^
+	$(AR) cr $@ $^
 
 $(LIBPREFIX)xlsxio_read$(SOEXT): $(XLSXIOREAD_OBJ:%.o=%.shared.o)
 	$(CC) -o $@ $(OS_LINK_FLAGS) $^ $(XLSXIOREAD_SHARED_LDFLAGS) $(XLSXIOREAD_LDFLAGS) $(LDFLAGS) $(LIBS)
 
 $(LIBPREFIX)xlsxio_write$(LIBEXT): $(XLSXIOWRITE_OBJ:%.o=%.static.o)
-	$(AR) cru $@ $^
+	$(AR) cr $@ $^
 
 $(LIBPREFIX)xlsxio_write$(SOEXT): $(XLSXIOWRITE_OBJ:%.o=%.shared.o)
 	$(CC) -o $@ $(OS_LINK_FLAGS) $^ $(XLSXIOWRITE_SHARED_LDFLAGS) $(XLSXIOWRITE_LDFLAGS) $(LDFLAGS) $(LIBS)
@@ -133,7 +143,7 @@ $(LIBPREFIX)xlsxio_write$(SOEXT): $(XLSXIOWRITE_OBJ:%.o=%.shared.o)
 	$(CC) -c -o $@ $< $(SHARED_CFLAGS) $(CFLAGS_W)
 
 $(LIBPREFIX)xlsxio_readw$(LIBEXT): $(XLSXIOREAD_OBJ:%.o=%.wstatic.o)
-	$(AR) cru $@ $^
+	$(AR) cr $@ $^
 
 $(LIBPREFIX)xlsxio_readw$(SOEXT): $(XLSXIOREAD_OBJ:%.o=%.wshared.o)
 	$(CC) -o $@ $(OS_LINK_FLAGS) $^ $(XLSXIOREAD_SHARED_LDFLAGS) $(XLSXIOREADW_LDFLAGS) $(LDFLAGS) $(LIBS)
