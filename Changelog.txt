@@ -1,8 +1,9 @@
 0.2.12
 
-2018-03-14  Brecht Sanders  https://github.com/brechtsanders/
+2018-03-15  Brecht Sanders  https://github.com/brechtsanders/
 
   * added support for minizip and made this the default instead of libzip
+  * xlsxioread_open_memory() parameter data is no longer const void* but void* to allow free()
 
 2018-02-03  Brecht Sanders  https://github.com/brechtsanders/
 

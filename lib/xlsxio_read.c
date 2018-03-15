@@ -343,7 +343,7 @@ uLong ZCALLBACK minizip_io_filehandle_write_file_fn (voidpf opaque, voidpf strea
 
 int ZCALLBACK minizip_io_filehandle_close_file_fn (voidpf opaque, voidpf stream)
 {
-  if (stream);
+  if (stream)
     close(*(int*)stream);
   free(opaque);
   return 0;
@@ -481,12 +481,12 @@ long ZCALLBACK minizip_io_memory_seek_file_fn (voidpf opaque, voidpf stream, uLo
 {
   switch (origin) {
     case ZLIB_FILEFUNC_SEEK_CUR :
-      if (offset < 0) {
+      /*if (offset < 0) {
         if (((struct minizip_io_memory_handle*)stream)->pos < -offset)
           ((struct minizip_io_memory_handle*)stream)->pos = 0;
         else
           ((struct minizip_io_memory_handle*)stream)->pos += offset;
-      } else {
+      } else*/ {
         if (((struct minizip_io_memory_handle*)stream)->pos + offset > ((struct minizip_io_memory_data*)opaque)->datalen)
           ((struct minizip_io_memory_handle*)stream)->pos = ((struct minizip_io_memory_data*)opaque)->datalen;
         else
@@ -494,19 +494,19 @@ long ZCALLBACK minizip_io_memory_seek_file_fn (voidpf opaque, voidpf stream, uLo
       }
       break;
     case ZLIB_FILEFUNC_SEEK_END :
-      if (offset < 0) {
+      /*if (offset < 0) {
         if (((struct minizip_io_memory_data*)opaque)->datalen < -offset)
           ((struct minizip_io_memory_handle*)stream)->pos = 0;
         else
           ((struct minizip_io_memory_handle*)stream)->pos = ((struct minizip_io_memory_data*)opaque)->datalen + offset;
-      } else {
+      } else*/ {
         ((struct minizip_io_memory_handle*)stream)->pos = ((struct minizip_io_memory_data*)opaque)->datalen;
       }
       break;
     case ZLIB_FILEFUNC_SEEK_SET :
-      if (offset < 0) {
+      /*if (offset < 0) {
         ((struct minizip_io_memory_handle*)stream)->pos = 0;
-      } else {
+      } else*/ {
         if (offset > ((struct minizip_io_memory_data*)opaque)->datalen)
           ((struct minizip_io_memory_handle*)stream)->pos = ((struct minizip_io_memory_data*)opaque)->datalen;
         else
