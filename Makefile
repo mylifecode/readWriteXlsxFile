@@ -85,7 +85,9 @@ endif
 ifdef STATICDLL
 ifeq ($(OS),Windows_NT)
 # lines below to compile Windows DLLs with no dependancies
+ifdef WITH_LIBZIP
 CFLAGS += -DZIP_STATIC
+endif
 XLSXIOREAD_LDFLAGS += -static $(ZIPLIB_DEPS_LDFLAGS)
 XLSXIOREADW_LDFLAGS += -static $(ZIPLIB_DEPS_LDFLAGS)
 XLSXIOWRITE_LDFLAGS += -static $(ZIPLIB_DEPS_LDFLAGS)

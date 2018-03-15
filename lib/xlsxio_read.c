@@ -34,7 +34,7 @@
 //UTF-8 version
 #define XML_Char_dupchar strdup
 
-static ZIPFILEENTRYTYPE* XML_Char_zip_fopen (ZIPFILETYPE* archive, const XML_Char* filename, int flags)
+static ZIPFILEENTRYTYPE* XML_Char_openzip (ZIPFILETYPE* archive, const XML_Char* filename, int flags)
 {
 #ifdef USE_MINIZIP
   if (unzLocateFile(archive, filename, 0) != UNZ_OK)
@@ -80,7 +80,7 @@ static char* chardupXML_Char(const XML_Char* s)
   return result;
 }
 
-static ZIPFILEENTRYTYPE* XML_Char_zip_fopen (ZIPFILETYPE* archive, const XML_Char* filename, int flags)
+static ZIPFILEENTRYTYPE* XML_Char_openzip (ZIPFILETYPE* archive, const XML_Char* filename, int flags)
 {
   ZIPFILEENTRYTYPE* result;
   char* s;
@@ -131,7 +131,7 @@ int expat_process_zip_file (ZIPFILETYPE* zip, const XML_Char* filename, XML_Star
   char buf[BUFFER_SIZE];
   zip_int64_t buflen;
   enum XML_Status status = XML_STATUS_ERROR;
-  if ((zipfile = XML_Char_zip_fopen(zip, filename, 0)) == NULL) {
+  if ((zipfile = XML_Char_openzip(zip, filename, 0)) == NULL) {
     return -1;
   }
   parser = XML_ParserCreate(NULL);
@@ -1217,7 +1217,7 @@ DLL_EXPORT_XLSXIO int xlsxioread_process (xlsxioreader handle, const XLSXIOCHAR*
     //use simplified interface by suspending the XML parser when data is found
     xlsxioreadersheet sheethandle = (xlsxioreadersheet)callbackdata;
     data_sheet_callback_data_initialize(&sheethandle->processcallbackdata, sharedstrings, flags, NULL, NULL, sheethandle);
-    if ((sheethandle->zipfile = XML_Char_zip_fopen(sheethandle->handle->zip, getrelscallbackdata.sheetfile, 0)) == NULL) {
+    if ((sheethandle->zipfile = XML_Char_openzip(sheethandle->handle->zip, getrelscallbackdata.sheetfile, 0)) == NULL) {
       result = 1;
     }
     if ((sheethandle->processcallbackdata.xmlparser = expat_process_zip_file_suspendable(sheethandle->zipfile, data_sheet_expat_callback_find_worksheet_start, NULL, NULL, &sheethandle->processcallbackdata)) == NULL) {
@@ -1275,7 +1275,7 @@ DLL_EXPORT_XLSXIO xlsxioreadersheetlist xlsxioread_sheetlist_open (xlsxioreader 
   result->sheetcallbackdata.callback = xlsxioread_list_sheets_resumable_callback;
   result->sheetcallbackdata.callbackdata = result;
   result->nextsheetname = NULL;
-  if ((result->zipfile = XML_Char_zip_fopen(handle->zip, mainsheetfile, 0)) != NULL) {
+  if ((result->zipfile = XML_Char_openzip(handle->zip, mainsheetfile, 0)) != NULL) {
     result->xmlparser = expat_process_zip_file_suspendable(result->zipfile, main_sheet_list_expat_callback_element_start, NULL, NULL, &result->sheetcallbackdata);
   }
   //clean up
