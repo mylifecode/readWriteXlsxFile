@@ -4,6 +4,8 @@
 
   * added support for minizip and made this the default instead of libzip
   * xlsxioread_open_memory() parameter data is no longer const void* but void* to allow free()
+  * fixed Doxygen warnings
+  * fixed CMake issues with Windows static libraries
 
 2018-02-03  Brecht Sanders  https://github.com/brechtsanders/
 

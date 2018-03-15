@@ -235,27 +235,27 @@ typedef struct xlsxio_read_sheet_struct* xlsxioreadersheet;
 DLL_EXPORT_XLSXIO xlsxioreadersheet xlsxioread_sheet_open (xlsxioreader handle, const XLSXIOCHAR* sheetname, unsigned int flags);
 
 /*! \brief close worksheet
- * \param  handle        read handle for worksheet object
+ * \param  sheethandle   read handle for worksheet object
  * \sa     xlsxioread_sheet_open()
  */
 DLL_EXPORT_XLSXIO void xlsxioread_sheet_close (xlsxioreadersheet sheethandle);
 
 /*! \brief get next row from worksheet (to be called before each row)
- * \param  handle        read handle for worksheet object
+ * \param  sheethandle   read handle for worksheet object
  * \return non-zero if a new row is available
  * \sa     xlsxioread_sheet_open()
  */
 DLL_EXPORT_XLSXIO int xlsxioread_sheet_next_row (xlsxioreadersheet sheethandle);
 
 /*! \brief get next cell from worksheet
- * \param  handle        read handle for worksheet object
+ * \param  sheethandle   read handle for worksheet object
  * \return value (caller must free the result) or NULL if no more cells are available in the current row
  * \sa     xlsxioread_sheet_open()
  */
 DLL_EXPORT_XLSXIO XLSXIOCHAR* xlsxioread_sheet_next_cell (xlsxioreadersheet sheethandle);
 
 /*! \brief get next cell from worksheet as a string
- * \param  handle        read handle for worksheet object
+ * \param  sheethandle   read handle for worksheet object
  * \param  pvalue        pointer where string will be stored if data is available (caller must free the result)
  * \return non-zero if a new cell was available in the current row
  * \sa     xlsxioread_sheet_open()
@@ -264,7 +264,7 @@ DLL_EXPORT_XLSXIO XLSXIOCHAR* xlsxioread_sheet_next_cell (xlsxioreadersheet shee
 DLL_EXPORT_XLSXIO int xlsxioread_sheet_next_cell_string (xlsxioreadersheet sheethandle, XLSXIOCHAR** pvalue);
 
 /*! \brief get next cell from worksheet as an integer
- * \param  handle        read handle for worksheet object
+ * \param  sheethandle   read handle for worksheet object
  * \param  pvalue        pointer where integer will be stored if data is available
  * \return non-zero if a new cell was available in the current row
  * \sa     xlsxioread_sheet_open()
@@ -273,7 +273,7 @@ DLL_EXPORT_XLSXIO int xlsxioread_sheet_next_cell_string (xlsxioreadersheet sheet
 DLL_EXPORT_XLSXIO int xlsxioread_sheet_next_cell_int (xlsxioreadersheet sheethandle, int64_t* pvalue);
 
 /*! \brief get next cell from worksheet as a floating point value
- * \param  handle        read handle for worksheet object
+ * \param  sheethandle   read handle for worksheet object
  * \param  pvalue        pointer where floating point value will be stored if data is available
  * \return non-zero if a new cell was available in the current row
  * \sa     xlsxioread_sheet_open()
@@ -282,7 +282,7 @@ DLL_EXPORT_XLSXIO int xlsxioread_sheet_next_cell_int (xlsxioreadersheet sheethan
 DLL_EXPORT_XLSXIO int xlsxioread_sheet_next_cell_float (xlsxioreadersheet sheethandle, double* pvalue);
 
 /*! \brief get next cell from worksheet as date and time data
- * \param  handle        read handle for worksheet object
+ * \param  sheethandle   read handle for worksheet object
  * \param  pvalue        pointer where date and time data will be stored if data is available
  * \return non-zero if a new cell was available in the current row
  * \sa     xlsxioread_sheet_open()
