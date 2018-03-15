@@ -8,9 +8,6 @@
 #include <unistd.h>
 #include <expat.h>
 
-#include <sys/stat.h>
-#include <fcntl.h>
-
 #ifdef USE_MINIZIP
 #include <minizip/unzip.h>
 #define ZIPFILETYPE unzFile
@@ -380,26 +377,12 @@ long ZCALLBACK minizip_io_filehandle_seek_file_fn (voidpf opaque, voidpf stream,
     default :
       return -1;
   }
-  return lseek(*(int*)stream, offset, whence);
+  return (lseek(*(int*)stream, offset, whence) >= 0 ? 0 : -1);
 }
 #endif
 
 DLL_EXPORT_XLSXIO xlsxioreader xlsxioread_open_filehandle (int filehandle)
 {
-#if 1/////
-  void* buf;
-  struct stat fileinfo;
-  if (fstat(filehandle, &fileinfo) == 0) {
-    if ((buf = malloc(fileinfo.st_size)) != NULL) {
-      if (fileinfo.st_size > 0 && read(filehandle, buf, fileinfo.st_size) == fileinfo.st_size) {
-        close(filehandle);
-        return xlsxioread_open_memory(buf, fileinfo.st_size, 1);
-      }
-    }
-  }
-  close(filehandle);
-  return NULL;
-#else/////
   xlsxioreader result;
   if ((result = (xlsxioreader)malloc(sizeof(struct xlsxio_read_struct))) != NULL) {
 #ifdef USE_MINIZIP
@@ -428,7 +411,6 @@ DLL_EXPORT_XLSXIO xlsxioreader xlsxioread_open_filehandle (int filehandle)
 #endif
   }
   return result;
-#endif/////
 }
 
 #ifdef USE_MINIZIP
