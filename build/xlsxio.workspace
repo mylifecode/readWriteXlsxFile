@@ -14,7 +14,7 @@
 		<Project filename="libxlsxio_read_shared.cbp" />
 		<Project filename="libxlsxio_read_minizip_shared.cbp" />
 		<Project filename="example_xlsxio_read.cbp">
-			<Depends filename="libxlsxio_read_shared.cbp" />
+			<Depends filename="libxlsxio_read_minizip_shared.cbp" />
 		</Project>
 		<Project filename="example_xlsxio_read_advanced.cbp">
 			<Depends filename="libxlsxio_read_shared.cbp" />

@@ -1,4 +1,5 @@
-//#define PROCESS_FROM_FILEHANDLE
+//#define PROCESS_FROM_MEMORY
+#define PROCESS_FROM_FILEHANDLE
 /*****************************************************************************
 Copyright (C)  2016  Brecht Sanders  All Rights Reserved
 

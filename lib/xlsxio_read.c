@@ -5,7 +5,11 @@
 #include <stdlib.h>
 #include <inttypes.h>
 #include <string.h>
+#include <unistd.h>
 #include <expat.h>
+
+#include <sys/stat.h>
+#include <fcntl.h>
 
 #ifdef USE_MINIZIP
 #include <minizip/unzip.h>
@@ -311,24 +315,256 @@ DLL_EXPORT_XLSXIO xlsxioreader xlsxioread_open (const char* filename)
   return result;
 }
 
-#ifdef USE_LIBZIP
+#ifdef USE_MINIZIP
+struct minizip_io_filehandle_data {
+  int filehandle;
+};
+
+voidpf ZCALLBACK minizip_io_filehandle_open_file_fn (voidpf opaque, const char* filename, int mode)
+{
+  if (!opaque || ((struct minizip_io_filehandle_data*)opaque)->filehandle < 0)
+    return NULL;
+  return &((struct minizip_io_filehandle_data*)opaque)->filehandle;
+}
+
+uLong ZCALLBACK minizip_io_filehandle_read_file_fn (voidpf opaque, voidpf stream, void* buf, uLong size)
+{
+  ssize_t len;
+  if (!opaque || !stream || !buf || size == 0)
+    return 0;
+  if ((len = read(*(int*)stream, buf, size)) < 0)
+    return 0;
+  return len;
+}
+
+/*
+uLong ZCALLBACK minizip_io_filehandle_write_file_fn (voidpf opaque, voidpf stream, const void* buf, uLong size)
+{
+  return 0;
+}
+*/
+
+int ZCALLBACK minizip_io_filehandle_close_file_fn (voidpf opaque, voidpf stream)
+{
+  if (stream);
+    close(*(int*)stream);
+  free(opaque);
+  return 0;
+}
+
+int ZCALLBACK minizip_io_filehandle_testerror_file_fn (voidpf opaque, voidpf stream)
+{
+  return 0;
+}
+
+long ZCALLBACK minizip_io_filehandle_tell_file_fn (voidpf opaque, voidpf stream)
+{
+  return lseek(*(int*)stream, 0, SEEK_CUR);
+}
+
+long ZCALLBACK minizip_io_filehandle_seek_file_fn (voidpf opaque, voidpf stream, uLong offset, int origin)
+{
+  int whence;
+  if (!opaque || !stream)
+    return -1;
+  switch (origin) {
+    case ZLIB_FILEFUNC_SEEK_CUR :
+      whence = SEEK_CUR;
+      break;
+    case ZLIB_FILEFUNC_SEEK_END :
+      whence = SEEK_END;
+      break;
+    case ZLIB_FILEFUNC_SEEK_SET :
+      whence = SEEK_SET;
+      break;
+    default :
+      return -1;
+  }
+  return lseek(*(int*)stream, offset, whence);
+}
+#endif
+
 DLL_EXPORT_XLSXIO xlsxioreader xlsxioread_open_filehandle (int filehandle)
 {
+#if 1/////
+  void* buf;
+  struct stat fileinfo;
+  if (fstat(filehandle, &fileinfo) == 0) {
+    if ((buf = malloc(fileinfo.st_size)) != NULL) {
+      if (fileinfo.st_size > 0 && read(filehandle, buf, fileinfo.st_size) == fileinfo.st_size) {
+        close(filehandle);
+        return xlsxioread_open_memory(buf, fileinfo.st_size, 1);
+      }
+    }
+  }
+  close(filehandle);
+  return NULL;
+#else/////
   xlsxioreader result;
   if ((result = (xlsxioreader)malloc(sizeof(struct xlsxio_read_struct))) != NULL) {
+#ifdef USE_MINIZIP
+    zlib_filefunc_def minizip_io_filehandle_functions;
+    if ((minizip_io_filehandle_functions.opaque = malloc(sizeof(struct minizip_io_filehandle_data))) == NULL) {
+      free(result);
+      return NULL;
+    }
+    minizip_io_filehandle_functions.zopen_file = minizip_io_filehandle_open_file_fn;
+    minizip_io_filehandle_functions.zread_file = minizip_io_filehandle_read_file_fn;
+    minizip_io_filehandle_functions.zwrite_file = /*minizip_io_filehandle_write_file_fn*/NULL;
+    minizip_io_filehandle_functions.ztell_file = minizip_io_filehandle_tell_file_fn;
+    minizip_io_filehandle_functions.zseek_file = minizip_io_filehandle_seek_file_fn;
+    minizip_io_filehandle_functions.zclose_file = minizip_io_filehandle_close_file_fn;
+    minizip_io_filehandle_functions.zerror_file = minizip_io_filehandle_testerror_file_fn;
+    ((struct minizip_io_filehandle_data*)minizip_io_filehandle_functions.opaque)->filehandle = filehandle;
+    if ((result->zip = unzOpen2(NULL, &minizip_io_filehandle_functions)) == NULL) {
+      free(result);
+      return NULL;
+    }
+#else
     if ((result->zip = zip_fdopen(filehandle, ZIP_RDONLY, NULL)) == NULL) {
       free(result);
       return NULL;
     }
+#endif
+  }
+  return result;
+#endif/////
+}
+
+#ifdef USE_MINIZIP
+struct minizip_io_memory_data {
+  void* data;
+  uint64_t datalen;
+  int freedata;
+};
+
+struct minizip_io_memory_handle {
+  uint64_t pos;
+};
+
+voidpf ZCALLBACK minizip_io_memory_open_file_fn (voidpf opaque, const char* filename, int mode)
+{
+  struct minizip_io_memory_handle* result;
+  if (!opaque || !((struct minizip_io_memory_data*)opaque)->data)
+    return NULL;
+  if ((result = (struct minizip_io_memory_handle*)malloc(sizeof(struct minizip_io_memory_handle))) != NULL) {
+    result->pos = 0;
   }
   return result;
 }
+
+uLong ZCALLBACK minizip_io_memory_read_file_fn (voidpf opaque, voidpf stream, void* buf, uLong size)
+{
+  uLong len;
+  if (!opaque || !stream || !buf || size == 0)
+    return 0;
+  if (((struct minizip_io_memory_handle*)stream)->pos + size <= ((struct minizip_io_memory_data*)opaque)->datalen)
+    len = size;
+  else
+    len = ((struct minizip_io_memory_data*)opaque)->datalen - ((struct minizip_io_memory_handle*)stream)->pos;
+  memcpy(buf, ((struct minizip_io_memory_data*)opaque)->data + ((struct minizip_io_memory_handle*)stream)->pos, len);
+  ((struct minizip_io_memory_handle*)stream)->pos += len;
+  return len;
+}
+
+/*
+uLong ZCALLBACK minizip_io_memory_write_file_fn (voidpf opaque, voidpf stream, const void* buf, uLong size)
+{
+  return 0;
+}
+*/
+
+int ZCALLBACK minizip_io_memory_close_file_fn (voidpf opaque, voidpf stream)
+{
+  free(stream);
+  if (opaque && ((struct minizip_io_memory_data*)opaque)->freedata)
+    free(((struct minizip_io_memory_data*)opaque)->data);
+  free(opaque);
+  return 0;
+}
+
+int ZCALLBACK minizip_io_memory_testerror_file_fn (voidpf opaque, voidpf stream)
+{
+  return 0;
+}
+
+long ZCALLBACK minizip_io_memory_tell_file_fn (voidpf opaque, voidpf stream)
+{
+  if (!opaque || !stream)
+    return 0;
+  return ((struct minizip_io_memory_handle*)stream)->pos;
+}
+
+long ZCALLBACK minizip_io_memory_seek_file_fn (voidpf opaque, voidpf stream, uLong offset, int origin)
+{
+  switch (origin) {
+    case ZLIB_FILEFUNC_SEEK_CUR :
+      if (offset < 0) {
+        if (((struct minizip_io_memory_handle*)stream)->pos < -offset)
+          ((struct minizip_io_memory_handle*)stream)->pos = 0;
+        else
+          ((struct minizip_io_memory_handle*)stream)->pos += offset;
+      } else {
+        if (((struct minizip_io_memory_handle*)stream)->pos + offset > ((struct minizip_io_memory_data*)opaque)->datalen)
+          ((struct minizip_io_memory_handle*)stream)->pos = ((struct minizip_io_memory_data*)opaque)->datalen;
+        else
+          ((struct minizip_io_memory_handle*)stream)->pos += offset;
+      }
+      break;
+    case ZLIB_FILEFUNC_SEEK_END :
+      if (offset < 0) {
+        if (((struct minizip_io_memory_data*)opaque)->datalen < -offset)
+          ((struct minizip_io_memory_handle*)stream)->pos = 0;
+        else
+          ((struct minizip_io_memory_handle*)stream)->pos = ((struct minizip_io_memory_data*)opaque)->datalen + offset;
+      } else {
+        ((struct minizip_io_memory_handle*)stream)->pos = ((struct minizip_io_memory_data*)opaque)->datalen;
+      }
+      break;
+    case ZLIB_FILEFUNC_SEEK_SET :
+      if (offset < 0) {
+        ((struct minizip_io_memory_handle*)stream)->pos = 0;
+      } else {
+        if (offset > ((struct minizip_io_memory_data*)opaque)->datalen)
+          ((struct minizip_io_memory_handle*)stream)->pos = ((struct minizip_io_memory_data*)opaque)->datalen;
+        else
+          ((struct minizip_io_memory_handle*)stream)->pos = offset;
+      }
+      ((struct minizip_io_memory_handle*)stream)->pos = offset;
+      break;
+    default :
+      return -1;
+  }
+  return 0;
+}
 #endif
 
-#ifdef USE_LIBZIP
-DLL_EXPORT_XLSXIO xlsxioreader xlsxioread_open_memory (const void* data, uint64_t datalen, int freedata)
+DLL_EXPORT_XLSXIO xlsxioreader xlsxioread_open_memory (void* data, uint64_t datalen, int freedata)
 {
   xlsxioreader result;
+#ifdef USE_MINIZIP
+  if ((result = (xlsxioreader)malloc(sizeof(struct xlsxio_read_struct))) != NULL) {
+    zlib_filefunc_def minizip_io_memory_functions;
+    if ((minizip_io_memory_functions.opaque = malloc(sizeof(struct minizip_io_memory_data))) == NULL) {
+      free(result);
+      return NULL;
+    }
+    minizip_io_memory_functions.zopen_file = minizip_io_memory_open_file_fn;
+    minizip_io_memory_functions.zread_file = minizip_io_memory_read_file_fn;
+    minizip_io_memory_functions.zwrite_file = /*minizip_io_memory_write_file_fn*/NULL;
+    minizip_io_memory_functions.ztell_file = minizip_io_memory_tell_file_fn;
+    minizip_io_memory_functions.zseek_file = minizip_io_memory_seek_file_fn;
+    minizip_io_memory_functions.zclose_file = minizip_io_memory_close_file_fn;
+    minizip_io_memory_functions.zerror_file = minizip_io_memory_testerror_file_fn;
+    ((struct minizip_io_memory_data*)minizip_io_memory_functions.opaque)->data = data;
+    ((struct minizip_io_memory_data*)minizip_io_memory_functions.opaque)->datalen = datalen;
+    ((struct minizip_io_memory_data*)minizip_io_memory_functions.opaque)->freedata = freedata;
+    if ((result->zip = unzOpen2(NULL, &minizip_io_memory_functions)) == NULL) {
+      free(result);
+      return NULL;
+    }
+  }
+#else
   zip_source_t* zipsrc;
   if ((zipsrc = zip_source_buffer_create(data, datalen, freedata, NULL)) == NULL) {
     return NULL;
@@ -340,9 +576,9 @@ DLL_EXPORT_XLSXIO xlsxioreader xlsxioread_open_memory (const void* data, uint64_
       return NULL;
     }
   }
+#endif
   return result;
 }
-#endif
 
 DLL_EXPORT_XLSXIO void xlsxioread_close (xlsxioreader handle)
 {
