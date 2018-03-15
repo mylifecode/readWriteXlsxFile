@@ -224,10 +224,15 @@ int main (int argc, char* argv[])
         }
         //close .xlsx file
         xlsxiowrite_close(xlsxiowrite);
+        //clean up
+        free(value);
       }
       //close CSV file
       fclose(src);
     }
+    //clean up
+    free(filename);
+    free(sheetname);
   }
   return 0;
 }

@@ -14,7 +14,7 @@ The library was written with the following goals in mind:
 - simple interface
 - small footprint
 - portable across different platforms (Windows, *nix)
-- minimal dependancies: only depends on expat (only for reading) and libzip (which in turn depends on zlib)
+- minimal dependancies: only depends on expat (only for reading) and minizip or libzip (which in turn depend on zlib)
 - separate library for reading and writing .xlsx files
 
 Reading .xlsx files:
@@ -45,8 +45,11 @@ Some command line utilities are included:
 Dependancies
 ------------
 This project has the following depencancies:
-- [libzip](http://www.nih.at/libzip/) (libxlsxio_read and libxlsxio_write)
 - [expat](http://www.libexpat.org/) (only for libxlsxio_read)
+and
+- [minizip](http://www.winimage.com/zLibDll/minizip.html) (libxlsxio_read and libxlsxio_write)
+or
+- [libzip](http://www.nih.at/libzip/) (libxlsxio_read and libxlsxio_write)
 
 License
 -------
