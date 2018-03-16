@@ -15,7 +15,11 @@
 
 //UTF-8 version
 #define X(s) s
+#ifdef _WIN32
+#define XML_Char_icmp stricmp
+#else
 #define XML_Char_icmp strcasecmp
+#endif
 #define XML_Char_len strlen
 #define XML_Char_dup strdup
 #define XML_Char_cpy strcpy

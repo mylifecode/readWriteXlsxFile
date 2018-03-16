@@ -29,6 +29,9 @@
 #define DLL_EXPORT_XLSXIO
 #endif
 
+#define PARSE_BUFFER_SIZE 256
+//#define PARSE_BUFFER_SIZE 4
+
 #if !defined(XML_UNICODE_WCHAR_T) && !defined(XML_UNICODE)
 
 //UTF-8 version
@@ -120,16 +123,14 @@ DLL_EXPORT_XLSXIO const XLSXIOCHAR* xlsxioread_get_version_string ()
 
 ////////////////////////////////////////////////////////////////////////
 
-#define BUFFER_SIZE 256
-//#define BUFFER_SIZE 4
-
 //process XML file contents
 int expat_process_zip_file (ZIPFILETYPE* zip, const XML_Char* filename, XML_StartElementHandler start_handler, XML_EndElementHandler end_handler, XML_CharacterDataHandler data_handler, void* callbackdata, XML_Parser* xmlparser)
 {
   ZIPFILEENTRYTYPE* zipfile;
   XML_Parser parser;
-  char buf[BUFFER_SIZE];
+  void* buf;
   zip_int64_t buflen;
+  int done;
   enum XML_Status status = XML_STATUS_ERROR;
   if ((zipfile = XML_Char_openzip(zip, filename, 0)) == NULL) {
     return -1;
@@ -140,19 +141,22 @@ int expat_process_zip_file (ZIPFILETYPE* zip, const XML_Char* filename, XML_Star
   XML_SetCharacterDataHandler(parser, data_handler);
   if (xmlparser)
     *xmlparser = parser;
+  buf = XML_GetBuffer(parser, PARSE_BUFFER_SIZE);
 #ifdef USE_MINIZIP
-  while ((buflen = unzReadCurrentFile(zip, buf, sizeof(buf))) >= 0) {
+    while (buf && (buflen = unzReadCurrentFile(zip, buf, PARSE_BUFFER_SIZE)) >= 0) {
 #else
-  while ((buflen = zip_fread(zipfile, buf, sizeof(buf))) >= 0) {
+    while (buf && (buflen = zip_fread(zipfile, buf, PARSE_BUFFER_SIZE)) >= 0) {
 #endif
-    if ((status = XML_Parse(parser, buf, (int)buflen, (buflen < sizeof(buf) ? 1 : 0))) == XML_STATUS_ERROR) {
-      break;
+      done = buflen < PARSE_BUFFER_SIZE;
+      if ((status = XML_ParseBuffer(parser, (int)buflen, (done ? 1 : 0))) == XML_STATUS_ERROR) {
+        break;
+      }
+      if (xmlparser && status == XML_STATUS_SUSPENDED)
+        return 0;
+      if (done)
+        break;
+      buf = XML_GetBuffer(parser, PARSE_BUFFER_SIZE);
     }
-    if (xmlparser && status == XML_STATUS_SUSPENDED)
-      return 0;
-    if (buflen < sizeof(buf))
-      break;
-  }
   XML_ParserFree(parser);
 #ifdef USE_MINIZIP
   unzCloseCurrentFile(zip);
@@ -182,20 +186,25 @@ enum XML_Status expat_process_zip_file_resume (ZIPFILEENTRYTYPE* zipfile, XML_Pa
     return status;
   if (status == XML_STATUS_ERROR && XML_GetErrorCode(xmlparser) != XML_ERROR_NOT_SUSPENDED)
     return status;
-  char buf[BUFFER_SIZE];
+  void* buf;
   zip_int64_t buflen;
+  int done;
+  buf = XML_GetBuffer(xmlparser, PARSE_BUFFER_SIZE);
 #ifdef USE_MINIZIP
-  while ((buflen = unzReadCurrentFile(zipfile, buf, sizeof(buf))) >= 0) {
+  while (buf && (buflen = unzReadCurrentFile(zipfile, buf, PARSE_BUFFER_SIZE)) >= 0) {
 #else
-  while ((buflen = zip_fread(zipfile, buf, sizeof(buf))) >= 0) {
+  while (buf && (buflen = zip_fread(zipfile, buf, PARSE_BUFFER_SIZE)) >= 0) {
 #endif
-    if ((status = XML_Parse(xmlparser, buf, (int)buflen, (buflen < sizeof(buf) ? 1 : 0))) == XML_STATUS_ERROR)
+    done = buflen < PARSE_BUFFER_SIZE;
+    if ((status = XML_ParseBuffer(xmlparser, (int)buflen, (done ? 1 : 0))) == XML_STATUS_ERROR)
       return status;
     if (status == XML_STATUS_SUSPENDED)
       return status;
-    if (buflen < sizeof(buf))
+    if (done)
       break;
+    buf = XML_GetBuffer(xmlparser, PARSE_BUFFER_SIZE);
   }
+  //XML_ParserFree(xmlparser);
   return status;
 }
 

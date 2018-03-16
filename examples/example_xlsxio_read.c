@@ -70,6 +70,9 @@ int main (int argc, char* argv[])
   SetConsoleOutputCP(CP_UTF8);
 #endif
 
+  if (argc > 1)
+    filename = argv[1];
+
   xlsxioreader xlsxioread;
 
   XML_Char_printf(X("XLSX I/O library version %s\n"), xlsxioread_get_version_string());

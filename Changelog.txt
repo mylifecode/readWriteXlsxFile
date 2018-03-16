@@ -89,7 +89,7 @@
 2016-05-11  Brecht Sanders  https://github.com/brechtsanders/
 
   * fixed CMake build to use proper static/shared defines
-  * reintriduce DLL_EXPORT_XLSXIO in .c files except for Visual C
+  * reintroduce DLL_EXPORT_XLSXIO in .c files except for Visual C
 
 0.2.2
 
