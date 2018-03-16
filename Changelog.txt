@@ -3,7 +3,7 @@
 2018-03-16  Brecht Sanders  https://github.com/brechtsanders/
 
   * fixed hang on Windows when building release version with MinGW-64 (fixed by using stricmp instead of strcasecmp)
-  * added CMake option WITH_WIDE to build UTF-16 library (libxlsxio_readw)
+  * added CMake option WITH_WIDE to build UTF-16 library (xlsxio_readw) - experimental, only tested on Windows
 
 0.2.12
 
