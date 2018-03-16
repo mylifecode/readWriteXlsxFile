@@ -1,3 +1,10 @@
+0.2.13
+
+2018-03-16  Brecht Sanders  https://github.com/brechtsanders/
+
+  * fixed hang on Windows when building release version with MinGW-64 (fixed by using stricmp instead of strcasecmp)
+  * added CMake option WITH_WIDE to build UTF-16 library (libxlsxio_readw)
+
 0.2.12
 
 2018-03-15  Brecht Sanders  https://github.com/brechtsanders/
@@ -9,7 +16,7 @@
 
 2018-02-03  Brecht Sanders  https://github.com/brechtsanders/
 
-  * modified Makefile to support WIDE=1 parameter to built UTF-16 library (libxlsxio_readw)
+  * modified Makefile to support WIDE=1 parameter to build UTF-16 library (libxlsxio_readw)
 
 0.2.11
 

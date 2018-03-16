@@ -37,6 +37,8 @@ THE SOFTWARE.
 #include <string.h>
 #if _WIN32
 #include <windows.h>
+#else
+#define O_BINARY 0
 #endif
 #ifdef PROCESS_FROM_MEMORY
 #include <stdio.h>
@@ -44,7 +46,7 @@ THE SOFTWARE.
 #include <fcntl.h>
 #endif
 #ifdef PROCESS_FROM_FILEHANDLE
-#include <io.h>
+//#include <io.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
