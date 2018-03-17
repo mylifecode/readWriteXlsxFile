@@ -1,0 +1,8 @@
+title: XLSX I/O
+description: XLSX I/O - C library for reading and writing .xlsx files
+google_analytics: UA-74858315-1
+show_downloads: true
+theme: jekyll-theme-slate
+
+gems:
+  - jekyll-mentions
