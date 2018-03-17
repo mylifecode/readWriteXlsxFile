@@ -94,13 +94,13 @@ XLSXIOWRITE_LDFLAGS += -static $(ZIPLIB_DEPS_LDFLAGS)
 endif
 endif
 
-LIBLIST := xlsxio_read xlsxio_write
-
-CFLAGS_W = $(CFLAGS) -DXML_UNICODE
-
+LIBLIST = xlsxio_read xlsxio_write
 TOOLS_BIN = xlsxio_xlsx2csv$(BINEXT) xlsxio_csv2xlsx$(BINEXT)
 EXAMPLES_BIN = example_xlsxio_write_getversion$(BINEXT) example_xlsxio_write$(BINEXT) example_xlsxio_read$(BINEXT) example_xlsxio_read_advanced$(BINEXT)
+
 ifdef WIDE
+CFLAGS_W = $(CFLAGS) -DXML_UNICODE
+LIBLIST += xlsxio_readw
 EXAMPLES_BIN += example_xlsxio_readw$(BINEXT)
 endif
 
@@ -147,7 +147,7 @@ $(LIBPREFIX)xlsxio_readw$(LIBEXT): $(XLSXIOREAD_OBJ:%.o=%.wstatic.o)
 	$(AR) cr $@ $^
 
 $(LIBPREFIX)xlsxio_readw$(SOEXT): $(XLSXIOREAD_OBJ:%.o=%.wshared.o)
-	$(CC) -o $@ $(OS_LINK_FLAGS) $^ $(XLSXIOREAD_SHARED_LDFLAGS) $(XLSXIOREADW_LDFLAGS) $(LDFLAGS) $(LIBS)
+	$(CC) -o $@ $(OS_LINK_FLAGS) $^ $(XLSXIOREAD_SHARED_LDFLAGS) $(XLSXIOREADW_LDFLAGS) $(LIBS)
 endif
 
 examples: $(EXAMPLES_BIN)
