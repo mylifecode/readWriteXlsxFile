@@ -44,7 +44,7 @@ Requirements:
 - the dependancy libraries (see Dependancies)
 - a shell environment, on Windows MSYS is supported
 - the make command
-- CMake (optional, but preferred)
+- CMake version 2.6 or higher (optional, but preferred)
 
 There are 2 methods to build XLSX I/O:
 - using the basic Makefile included
@@ -59,13 +59,13 @@ Building with make
 
 Building with CMake (preferred method)
 - configure by running `cmake -G"Unix Makefiles"` (or `cmake -G"MSYS Makefiles"` on Windows) optionally followed by:
-  + `-DCMAKE_INSTALL_PREFIX:PATH=<path>`	Base path were files will be installed
-  + `-DBUILD_STATIC:BOOL=OFF`	Don't build static libraries
-  + `-DBUILD_SHARED:BOOL=OFF`	Don't build shared libraries
-  + `-DBUILD_TOOLS:BOOL=OFF`	Don't build tools (only libraries)
-  + `-DBUILD_EXAMPLES:BOOL=OFF`	Don't build examples
-  + `-DWITH_LIBZIP:BOOL=ON`	Use libzip instead of Minizip
-  + `-DWITH_WIDE:BOOL=ON`	Also build UTF-16 library (libxlsxio_readw)
+  + `-DCMAKE_INSTALL_PREFIX:PATH=<path>`  Base path were files will be installed
+  + `-DBUILD_STATIC:BOOL=OFF`             Don't build static libraries
+  + `-DBUILD_SHARED:BOOL=OFF`             Don't build shared libraries
+  + `-DBUILD_TOOLS:BOOL=OFF`              Don't build tools (only libraries)
+  + `-DBUILD_EXAMPLES:BOOL=OFF`           Don't build examples
+  + `-DWITH_LIBZIP:BOOL=ON`               Use libzip instead of Minizip
+  + `-DWITH_WIDE:BOOL=ON`                 Also build UTF-16 library (libxlsxio_readw)
 - build and install by running `make install` (or `make install/strip` to strip symbols)
 
 For Windows prebuilt binaries are also available for download (both 32-bit and 64-bit)
