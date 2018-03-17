@@ -4,6 +4,7 @@
 
   * fixed Makefile issues, now properly builds with WIDE=1
   * added build instructions to README.md
+  * added example code to README.md
 
 0.2.13
 

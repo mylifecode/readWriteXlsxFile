@@ -62,6 +62,8 @@ or
 
 Note that minizip is preferred, as there have been reports that .xlsx files generated with XLSX I/O built against libzip can't be opened with LibreOffice.
 
+There is no dependancy on Microsoft(R) Excel(TM).
+
 Building from source
 --------------------
 Requirements:
