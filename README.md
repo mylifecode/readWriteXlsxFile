@@ -64,7 +64,6 @@ Note that minizip is preferred, as there have been reports that .xlsx files gene
 
 Building from source
 --------------------
-
 Requirements:
 - a C compiler like gcc or clang, on Windows MinGW and MinGW-w64 are supported
 - the dependancy libraries (see Dependancies)
@@ -98,7 +97,6 @@ For Windows prebuilt binaries are also available for download (both 32-bit and 6
 
 Example
 -------
-
 ```c
   xlsxioreader xlsxioread;
 
@@ -139,5 +137,7 @@ Example
 License
 -------
 XLSX I/O is released under the terms of the MIT License (MIT), see LICENSE.txt.
+
 This means you are free to use XLSX I/O in any of your projects, from open source to commercial.
+
 This library does not require Microsoft(R) Excel(TM) to be installed.
