@@ -63,7 +63,7 @@ or
 Note that minizip is preferred, as there have been reports that .xlsx files generated with XLSX I/O built against libzip can't be opened with LibreOffice.
 
 There is no dependancy on Microsoft(R) Excel(TM).
-XLSX I/O was written with cross-platform portability in mind and works on multiple operating systems, including Windows, macOS and Linux.
+XLSX I/O was written with cross-platform portability in mind and works on multiple operating systems, including Microsoft(R) Windows(R), Apple(R) Mac OS(R) and Linux.
 
 Building from source
 --------------------
