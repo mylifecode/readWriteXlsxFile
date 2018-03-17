@@ -16,6 +16,7 @@ The library was written with the following goals in mind:
 - portable across different platforms (Windows, *nix)
 - minimal dependancies: only depends on expat (only for reading) and minizip or libzip (which in turn depend on zlib)
 - separate library for reading and writing .xlsx files
+- does not require Microsoft(R) Excel(TM) to be installed
 
 Reading .xlsx files:
 - intended to process .xlsx files as a data table, which assumes the following:
@@ -59,6 +60,8 @@ and
 or
 - [libzip](http://www.nih.at/libzip/) (libxlsxio_read and libxlsxio_write)
 
+Note that minizip is preferred, as there have been reports that .xlsx files generated with XLSX I/O built against libzip can't be opened with LibreOffice.
+
 Building from source
 --------------------
 
@@ -93,6 +96,48 @@ Building with CMake (preferred method)
 
 For Windows prebuilt binaries are also available for download (both 32-bit and 64-bit)
 
+Example
+-------
+
+```c
+  xlsxioreader xlsxioread;
+
+    //open .xlsx file for reading
+  if ((xlsxioread = xlsxioread_open(filename)) == NULL) {
+    fprintf(stderr, "Error opening .xlsx file\n");
+    return 1;
+  }
+
+  //list available sheets
+  xlsxioreadersheetlist sheetlist;
+  const char* sheetname;
+  printf("Available sheets:\n");
+  if ((sheetlist = xlsxioread_sheetlist_open(xlsxioread)) != NULL) {
+    while ((sheetname = xlsxioread_sheetlist_next(sheetlist)) != NULL) {
+      printf(" - %s\n", sheetname);
+    }
+    xlsxioread_sheetlist_close(sheetlist);
+  }
+
+  //read values from first sheet
+  char* value;
+  printf("Contents of first sheet:\n");
+  xlsxioreadersheet sheet = xlsxioread_sheet_open(xlsxioread, NULL, XLSXIOREAD_SKIP_EMPTY_ROWS);
+  while (xlsxioread_sheet_next_row(sheet)) {
+    while ((value = xlsxioread_sheet_next_cell(sheet)) != NULL) {
+      printf("%s\t", value);
+      free(value);
+    }
+    printf("\n");
+  }
+  xlsxioread_sheet_close(sheet);
+
+  //clean up
+  xlsxioread_close(xlsxioread);
+```
+
 License
 -------
 XLSX I/O is released under the terms of the MIT License (MIT), see LICENSE.txt.
+This means you are free to use XLSX I/O in any of your projects, from open source to commercial.
+This library does not require Microsoft(R) Excel(TM) to be installed.
