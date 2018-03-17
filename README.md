@@ -98,40 +98,40 @@ For Windows prebuilt binaries are also available for download (both 32-bit and 6
 Example
 -------
 ```c
-  xlsxioreader xlsxioread;
+xlsxioreader xlsxioread;
 
-    //open .xlsx file for reading
-  if ((xlsxioread = xlsxioread_open(filename)) == NULL) {
-    fprintf(stderr, "Error opening .xlsx file\n");
-    return 1;
+//open .xlsx file for reading
+if ((xlsxioread = xlsxioread_open(filename)) == NULL) {
+  fprintf(stderr, "Error opening .xlsx file\n");
+  return 1;
+}
+
+//list available sheets
+xlsxioreadersheetlist sheetlist;
+const char* sheetname;
+printf("Available sheets:\n");
+if ((sheetlist = xlsxioread_sheetlist_open(xlsxioread)) != NULL) {
+  while ((sheetname = xlsxioread_sheetlist_next(sheetlist)) != NULL) {
+    printf(" - %s\n", sheetname);
   }
+  xlsxioread_sheetlist_close(sheetlist);
+}
 
-  //list available sheets
-  xlsxioreadersheetlist sheetlist;
-  const char* sheetname;
-  printf("Available sheets:\n");
-  if ((sheetlist = xlsxioread_sheetlist_open(xlsxioread)) != NULL) {
-    while ((sheetname = xlsxioread_sheetlist_next(sheetlist)) != NULL) {
-      printf(" - %s\n", sheetname);
-    }
-    xlsxioread_sheetlist_close(sheetlist);
+//read values from first sheet
+char* value;
+printf("Contents of first sheet:\n");
+xlsxioreadersheet sheet = xlsxioread_sheet_open(xlsxioread, NULL, XLSXIOREAD_SKIP_EMPTY_ROWS);
+while (xlsxioread_sheet_next_row(sheet)) {
+  while ((value = xlsxioread_sheet_next_cell(sheet)) != NULL) {
+    printf("%s\t", value);
+    free(value);
   }
+  printf("\n");
+}
+xlsxioread_sheet_close(sheet);
 
-  //read values from first sheet
-  char* value;
-  printf("Contents of first sheet:\n");
-  xlsxioreadersheet sheet = xlsxioread_sheet_open(xlsxioread, NULL, XLSXIOREAD_SKIP_EMPTY_ROWS);
-  while (xlsxioread_sheet_next_row(sheet)) {
-    while ((value = xlsxioread_sheet_next_cell(sheet)) != NULL) {
-      printf("%s\t", value);
-      free(value);
-    }
-    printf("\n");
-  }
-  xlsxioread_sheet_close(sheet);
-
-  //clean up
-  xlsxioread_close(xlsxioread);
+//clean up
+xlsxioread_close(xlsxioread);
 ```
 
 License
