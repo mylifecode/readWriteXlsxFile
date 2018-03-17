@@ -95,12 +95,11 @@ Building with CMake (preferred method)
 
 For Windows prebuilt binaries are also available for download (both 32-bit and 64-bit)
 
-Example
--------
+Example C program
+-----------------
 ```c
-xlsxioreader xlsxioread;
-
 //open .xlsx file for reading
+xlsxioreader xlsxioread;
 if ((xlsxioread = xlsxioread_open(filename)) == NULL) {
   fprintf(stderr, "Error opening .xlsx file\n");
   return 1;
