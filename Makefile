@@ -1,3 +1,9 @@
+# parameters:
+#   PREFIX=<path>       Path were install places files (defaults to /usr/local)
+#   WITH_LIBZIP=1       Use libzip instead of minizip
+#   WIDE=1              Also build UTF-16 library (xlsxio_readw) - experimental, only tested on Windows
+#   STATICDLL=1         Build a static DLL (= doesn't depend on any other DLLs) - only supported on Windows
+
 ifeq ($(OS),)
 OS = $(shell uname -s)
 endif

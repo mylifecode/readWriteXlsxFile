@@ -36,6 +36,29 @@ Writing .xlsx files:
 - on the fly file generation without the need to buffer data in memory
 - no support for shared strings (all values are written as inline strings)
 
+Libraries
+---------
+
+The following libraries are provided:
+- `-lxlsxio_read` - library for reading .xlsx files, requires `#include <xlsxio_read.h>`
+- `-lxlsxio_write` - library for writing .xlsx files, requires `#include <xlsxio_write.h>`
+- `-lxlsxio_readw` - experimental library for reading .xlsx files, linked with -lexpatw, requires `#define XML_UNICODE` before `#include <xlsxio_read.h>`
+
+Command line utilities
+----------------------
+Some command line utilities are included:
+- xlsxio_xlsx2csv: converts all sheets in all specified .xlsx files to individual CSV (Comma Separated Values) files.
+- xlsxio_csv2xlsx: converts all specified CSV (Comma Separated Values) files to .xlsx files.
+
+Dependancies
+------------
+This project has the following depencancies:
+- [expat](http://www.libexpat.org/) (only for libxlsxio_read)
+and
+- [minizip](http://www.winimage.com/zLibDll/minizip.html) (libxlsxio_read and libxlsxio_write)
+or
+- [libzip](http://www.nih.at/libzip/) (libxlsxio_read and libxlsxio_write)
+
 Building from source
 --------------------
 
@@ -69,21 +92,6 @@ Building with CMake (preferred method)
 - build and install by running `make install` (or `make install/strip` to strip symbols)
 
 For Windows prebuilt binaries are also available for download (both 32-bit and 64-bit)
-
-Command line utilities
-----------------------
-Some command line utilities are included:
-- xlsxio_xlsx2csv: converts all sheets in all specified .xlsx files to individual CSV (Comma Separated Values) files.
-- xlsxio_csv2xlsx: converts all specified CSV (Comma Separated Values) files to .xlsx files.
-
-Dependancies
-------------
-This project has the following depencancies:
-- [expat](http://www.libexpat.org/) (only for libxlsxio_read)
-and
-- [minizip](http://www.winimage.com/zLibDll/minizip.html) (libxlsxio_read and libxlsxio_write)
-or
-- [libzip](http://www.nih.at/libzip/) (libxlsxio_read and libxlsxio_write)
 
 License
 -------

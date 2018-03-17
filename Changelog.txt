@@ -3,6 +3,7 @@
 2018-03-16  Brecht Sanders  https://github.com/brechtsanders/
 
   * fixed Makefile issues, now properly builds with WIDE=1
+  * added build instructions to README.md
 
 0.2.13
 
