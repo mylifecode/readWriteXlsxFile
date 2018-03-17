@@ -95,14 +95,14 @@ endif
 endif
 
 LIBLIST := xlsxio_read xlsxio_write
-ifdef WIDE
-LIBLIST += xlsxio_readw
-endif
 
 CFLAGS_W = $(CFLAGS) -DXML_UNICODE
 
 TOOLS_BIN = xlsxio_xlsx2csv$(BINEXT) xlsxio_csv2xlsx$(BINEXT)
 EXAMPLES_BIN = example_xlsxio_write_getversion$(BINEXT) example_xlsxio_write$(BINEXT) example_xlsxio_read$(BINEXT) example_xlsxio_read_advanced$(BINEXT)
+ifdef WIDE
+EXAMPLES_BIN += example_xlsxio_readw$(BINEXT)
+endif
 
 COMMON_PACKAGE_FILES = README.md LICENSE.txt Changelog.txt
 SOURCE_PACKAGE_FILES = $(COMMON_PACKAGE_FILES) Makefile CMakeLists.txt CMake/ doc/Doxyfile include/*.h lib/*.c lib/*.h src/*.c examples/*.c build/*.cbp
@@ -136,8 +136,7 @@ $(LIBPREFIX)xlsxio_write$(LIBEXT): $(XLSXIOWRITE_OBJ:%.o=%.static.o)
 $(LIBPREFIX)xlsxio_write$(SOEXT): $(XLSXIOWRITE_OBJ:%.o=%.shared.o)
 	$(CC) -o $@ $(OS_LINK_FLAGS) $^ $(XLSXIOWRITE_SHARED_LDFLAGS) $(XLSXIOWRITE_LDFLAGS) $(LDFLAGS) $(LIBS)
 
-#wide: $(LIBPREFIX)xlsxio_readw$(LIBEXT) $(LIBPREFIX)xlsxio_readw$(SOEXT)
-
+ifdef WIDE
 %.wstatic.o: %.c
 	$(CC) -c -o $@ $< $(STATIC_CFLAGS) $(CFLAGS_W) 
 
@@ -149,6 +148,7 @@ $(LIBPREFIX)xlsxio_readw$(LIBEXT): $(XLSXIOREAD_OBJ:%.o=%.wstatic.o)
 
 $(LIBPREFIX)xlsxio_readw$(SOEXT): $(XLSXIOREAD_OBJ:%.o=%.wshared.o)
 	$(CC) -o $@ $(OS_LINK_FLAGS) $^ $(XLSXIOREAD_SHARED_LDFLAGS) $(XLSXIOREADW_LDFLAGS) $(LDFLAGS) $(LIBS)
+endif
 
 examples: $(EXAMPLES_BIN)
 
@@ -163,6 +163,11 @@ example_xlsxio_read$(BINEXT): examples/example_xlsxio_read.static.o $(LIBPREFIX)
 
 example_xlsxio_read_advanced$(BINEXT): examples/example_xlsxio_read_advanced.static.o $(LIBPREFIX)xlsxio_read$(LIBEXT)
 	$(CC) -o $@ examples/$(@:%$(BINEXT)=%.static.o) $(LIBPREFIX)xlsxio_read$(LIBEXT) $(XLSXIOREAD_LDFLAGS) $(LDFLAGS)
+
+ifdef WIDE
+example_xlsxio_readw$(BINEXT): examples/example_xlsxio_read.wstatic.o $(LIBPREFIX)xlsxio_readw$(LIBEXT)
+	$(CC) -o $@ examples/$(@:%w$(BINEXT)=%.wstatic.o) $(LIBPREFIX)xlsxio_readw$(LIBEXT) $(XLSXIOREADW_LDFLAGS) $(LDFLAGS)
+endif
 
 tools: $(TOOLS_BIN)
 
