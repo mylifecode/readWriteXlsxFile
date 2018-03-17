@@ -55,7 +55,7 @@ Dependancies
 ------------
 This project has the following depencancies:
 - [expat](http://www.libexpat.org/) (only for libxlsxio_read)
-- [minizip](http://www.winimage.com/zLibDll/minizip.html) (libxlsxio_read and libxlsxio_write) or [libzip](http://www.nih.at/libzip/) (libxlsxio_read and libxlsxio_write)
+- [minizip](http://www.winimage.com/zLibDll/minizip.html) or [libzip](http://www.nih.at/libzip/) (libxlsxio_read and libxlsxio_write)
 
 Note that minizip is preferred, as there have been reports that .xlsx files generated with XLSX I/O built against libzip can't be opened with LibreOffice.
 
