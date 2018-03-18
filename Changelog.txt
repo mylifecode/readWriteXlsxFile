@@ -3,6 +3,7 @@
 2018-03-17  Brecht Sanders  https://github.com/brechtsanders/
 
   * removed "OPTIONAL_LINE_BREAK" from sheet1.xml in libxlsxio_write
+  * added row and cell coordinate reference to fix problems opening with Gnumeric
 
 0.2.14
 

@@ -40,6 +40,7 @@ typedef struct zip_source zip_source_t;
 #if defined(_MSC_VER)
 #undef DLL_EXPORT_XLSXIO
 #define DLL_EXPORT_XLSXIO
+#define va_copy(dst,src) ((dst) = (src))
 #endif
 
 #ifdef _WIN32
@@ -427,6 +428,72 @@ char* fix_xml_special_chars (char** s)
 	return *s;
 }
 
+/*
+//add data to a null-terminated buffer and update the length counter
+int vappend_data (char** pdata, size_t* pdatalen, const char* format, va_list args)
+{
+  int len;
+  va_list args2;
+  va_copy(args2, args);
+  //va_start(args, format);
+  if ((len = vsnprintf(NULL, 0, format, args)) < 0)
+    return -1;
+  va_end(args);
+  if ((*pdata = (char*)realloc(*pdata, *pdatalen + len + 1)) == NULL)
+    return -1;
+  vsnprintf(*pdata + *pdatalen, len + 1, format, args2);
+  va_end(args2);
+  *pdatalen += len;
+  return len;
+}
+
+//add formatted data to a null-terminated buffer and update the length counter
+int append_data (char** pdata, size_t* pdatalen, const char* format, ...)
+{
+  int result;
+  va_list args;
+  va_start(args, format);
+  result = vappend_data(pdata, pdatalen, format, args);
+  va_end(args);
+  return result;
+}
+*/
+
+//add formatted data to a null-terminated buffer and update the length counter
+int append_data (char** pdata, size_t* pdatalen, const char* format, ...)
+{
+  int len;
+  va_list args;
+  va_start(args, format);
+  len = vsnprintf(NULL, 0, format, args);
+  va_end(args);
+  if (len < 0)
+    return -1;
+  if ((*pdata = (char*)realloc(*pdata, *pdatalen + len + 1)) == NULL)
+    return -1;
+  va_start(args, format);
+  vsnprintf(*pdata + *pdatalen, len + 1, format, args);
+  va_end(args);
+  *pdatalen += len;
+  return len;
+}
+
+#ifndef NO_COLUMN_NUMBERS
+char* get_A1col (uint64_t col)
+{
+  char* result = NULL;
+  size_t resultlen = 0;
+  if (col > 0) {
+    col--;
+    do {
+      append_data(&result, &resultlen, "%c", 'A' + col % 26);
+      col /= 26;
+    } while (col > 0);
+  }
+  return result;
+}
+#endif
+
 ////////////////////////////////////////////////////////////////////////
 
 struct column_info_struct {
@@ -455,7 +522,22 @@ struct xlsxio_write_struct {
   int freezetop;
   int sheetopen;
   int rowopen;
+#ifndef NO_ROW_NUMBERS
+  size_t rownr;
+#ifndef NO_COLUMN_NUMBERS
+  size_t colnr;
+#endif
+#endif
 };
+
+#ifndef NO_ROW_NUMBERS
+#define ROWNRTAG " r=\"%" PRIu64 "\""
+#define ROWNRPARAM(handle) , (uint64_t)handle->rownr
+#ifndef NO_COLUMN_NUMBERS
+#define COLNRTAG " r=\"%s%" PRIu64 "\""
+#define COLNRPARAM(handle) , get_A1col(handle->colnr), handle->rownr
+#endif
+#endif
 
 //thread function used for creating .xlsx file from pipe
 #ifdef USE_WINTHREADS
@@ -588,6 +670,12 @@ DLL_EXPORT_XLSXIO xlsxiowriter xlsxiowrite_open (const char* filename, const cha
     handle->freezetop = 0;
     handle->sheetopen = 0;
     handle->rowopen = 0;
+#ifndef NO_ROW_NUMBERS
+    handle->rownr = 0;
+#ifndef NO_COLUMN_NUMBERS
+    handle->colnr = 0;
+#endif
+#endif
     //create pipe
     if (pipe(pipefd) != 0) {
       fprintf(stderr, "Error creating pipe\n");/////
@@ -667,48 +755,25 @@ DLL_EXPORT_XLSXIO int xlsxiowrite_close (xlsxiowriter handle)
 #define STYLE_ATTR(style) ""
 #endif
 
-//add data to a null-terminated buffer and update the length counter
-int vappend_data (char** pdata, size_t* pdatalen, const char* format, va_list args)
-{
-  int len;
-  //va_start(args, format);
-  va_list args2;
-  va_copy(args2, args);
-  if ((len = vsnprintf(NULL, 0, format, args)) < 0)
-    return -1;
-  va_end(args);
-  if ((*pdata = (char*)realloc(*pdata, *pdatalen + len + 1)) == NULL)
-    return -1;
-  vsnprintf(*pdata + *pdatalen, len + 1, format, args2);
-  va_end(args2);
-  *pdatalen += len;
-  return len;
-}
-
-//add formatted data to a null-terminated buffer and update the length counter
-int append_data (char** pdata, size_t* pdatalen, const char* format, ...)
-{
-  int result;
-  va_list args;
-  va_start(args, format);
-  result = vappend_data(pdata, pdatalen, format, args);
-  va_end(args);
-  return result;
-}
-
 //output start of row
 void write_row_start (xlsxiowriter handle, const char* rowattr)
 {
+#ifndef NO_ROW_NUMBERS
+  handle->rownr++;
+#ifndef NO_COLUMN_NUMBERS
+  handle->colnr = 0;
+#endif
+#endif
   if (handle->sheetopen) {
     if (!handle->rowheight)
-      fprintf(handle->pipe_write, "<row%s>", (rowattr ? rowattr : ""));
+      fprintf(handle->pipe_write, "<row%s" ROWNRTAG ">", (rowattr ? rowattr : "") ROWNRPARAM(handle));
     else
-      fprintf(handle->pipe_write, "<row ht=\"%.6G\" customHeight=\"1\"%s>", CALCULATE_COLUMN_HEIGHT(handle->rowheight), (rowattr ? rowattr : ""));
+      fprintf(handle->pipe_write, "<row ht=\"%.6G\" customHeight=\"1\"%s" ROWNRTAG ">", CALCULATE_COLUMN_HEIGHT(handle->rowheight), (rowattr ? rowattr : "") ROWNRPARAM(handle));
   } else {
     if (!handle->rowheight)
-      append_data(&handle->buf, &handle->buflen, "<row%s>", (rowattr ? rowattr : ""));
+      append_data(&handle->buf, &handle->buflen, "<row%s" ROWNRTAG ">", (rowattr ? rowattr : "") ROWNRPARAM(handle));
     else
-      append_data(&handle->buf, &handle->buflen, "<row ht=\"%.6G\" customHeight=\"1\"%s>",  CALCULATE_COLUMN_HEIGHT(handle->rowheight), (rowattr ? rowattr : ""));
+      append_data(&handle->buf, &handle->buflen, "<row ht=\"%.6G\" customHeight=\"1\"%s" ROWNRTAG ">",  CALCULATE_COLUMN_HEIGHT(handle->rowheight), (rowattr ? rowattr : "") ROWNRPARAM(handle));
   }
   handle->rowopen = 1;
 }
@@ -717,6 +782,9 @@ void write_row_start (xlsxiowriter handle, const char* rowattr)
 void write_cell_data (xlsxiowriter handle, const char* rowattr, const char* prefix, const char* suffix, const char* format, ...)
 {
   va_list args;
+#if !defined(NO_ROW_NUMBERS) && !defined(NO_COLUMN_NUMBERS)
+  char* cellcoord;
+#endif
   if (!handle)
     return;
   //start new row if needed
@@ -737,23 +805,27 @@ void write_cell_data (xlsxiowriter handle, const char* rowattr, const char* pref
     datalen = 0;
   }
   va_end(args);
+  //determine cell coordinate
+#if !defined(NO_ROW_NUMBERS) && !defined(NO_COLUMN_NUMBERS)
+  cellcoord = get_A1col(++handle->colnr);
+#endif
   //add cell data
   if (handle->sheetopen) {
     //write cell data
     if (prefix)
-      fprintf(handle->pipe_write, "%s", prefix);
+      fprintf(handle->pipe_write, prefix COLNRPARAM(handle));
     if (data)
       fprintf(handle->pipe_write, "%s", data);
     if (suffix)
-      fprintf(handle->pipe_write, "%s", suffix);
+      fprintf(handle->pipe_write, suffix);
   } else {
     //add cell data to buffer
     if (prefix)
-      append_data(&handle->buf, &handle->buflen, "%s", prefix);
+      append_data(&handle->buf, &handle->buflen, prefix COLNRPARAM(handle));
     if (data)
       append_data(&handle->buf, &handle->buflen, "%s", data);
     if (suffix)
-      append_data(&handle->buf, &handle->buflen, "%s", suffix);
+      append_data(&handle->buf, &handle->buflen, suffix);
     //collect cell information
     if (!handle->sheetopen) {
       if (!*handle->pcurrentcolumn) {
@@ -780,6 +852,9 @@ void write_cell_data (xlsxiowriter handle, const char* rowattr, const char* pref
       handle->pcurrentcolumn = &(*handle->pcurrentcolumn)->next;
     }
   }
+#if !defined(NO_ROW_NUMBERS) && !defined(NO_COLUMN_NUMBERS)
+  free(cellcoord);
+#endif
   free(data);
 }
 
@@ -853,9 +928,9 @@ DLL_EXPORT_XLSXIO void xlsxiowrite_add_column (xlsxiowriter handle, const char* 
 {
   struct column_info_struct** pcolinfo = handle->pcurrentcolumn;
   if (value)
-    write_cell_data(handle, STYLE_ATTR(STYLE_HEADER), "<c t=\"inlineStr\"" STYLE_ATTR(STYLE_HEADER) "><is><t>", "</t></is></c>", "%s", value);
+    write_cell_data(handle, STYLE_ATTR(STYLE_HEADER), "<c t=\"inlineStr\"" STYLE_ATTR(STYLE_HEADER) COLNRTAG "><is><t>", "</t></is></c>", "%s", value);
   else
-    write_cell_data(handle, STYLE_ATTR(STYLE_HEADER), "<c" STYLE_ATTR(STYLE_HEADER) "/>", NULL, NULL);
+    write_cell_data(handle, STYLE_ATTR(STYLE_HEADER), "<c" STYLE_ATTR(STYLE_HEADER) COLNRTAG "/>", NULL, NULL);
   if (*pcolinfo)
     (*pcolinfo)->width = width;
   if (handle->freezetop == 0)
@@ -865,25 +940,25 @@ DLL_EXPORT_XLSXIO void xlsxiowrite_add_column (xlsxiowriter handle, const char* 
 DLL_EXPORT_XLSXIO void xlsxiowrite_add_cell_string (xlsxiowriter handle, const char* value)
 {
   if (value)
-    write_cell_data(handle, NULL, "<c t=\"inlineStr\"" STYLE_ATTR(STYLE_TEXT) "><is><t>", "</t></is></c>", "%s", value);
+    write_cell_data(handle, NULL, "<c t=\"inlineStr\"" STYLE_ATTR(STYLE_TEXT) COLNRTAG "><is><t>", "</t></is></c>", "%s", value);
   else
-    write_cell_data(handle, NULL, "<c" STYLE_ATTR(STYLE_TEXT) "/>", NULL, NULL);
+    write_cell_data(handle, NULL, "<c" STYLE_ATTR(STYLE_TEXT) COLNRTAG "/>", NULL, NULL);
 }
 
 DLL_EXPORT_XLSXIO void xlsxiowrite_add_cell_int (xlsxiowriter handle, int64_t value)
 {
-  write_cell_data(handle, NULL, "<c" STYLE_ATTR(STYLE_INTEGER) "><v>", "</v></c>", "%" PRIi64, value);
+  write_cell_data(handle, NULL, "<c" STYLE_ATTR(STYLE_INTEGER) COLNRTAG "><v>", "</v></c>", "%" PRIi64, value);
 }
 
 DLL_EXPORT_XLSXIO void xlsxiowrite_add_cell_float (xlsxiowriter handle, double value)
 {
-  write_cell_data(handle, NULL, "<c" STYLE_ATTR(STYLE_GENERAL) "><v>", "</v></c>", "%.32G", value);
+  write_cell_data(handle, NULL, "<c" STYLE_ATTR(STYLE_GENERAL) COLNRTAG "><v>", "</v></c>", "%.32G", value);
 }
 
 DLL_EXPORT_XLSXIO void xlsxiowrite_add_cell_datetime (xlsxiowriter handle, time_t value)
 {
   double timestamp = ((double)(value) + .499) / 86400 + 25569; //conversion from Unix to Excel timestamp
-  write_cell_data(handle, NULL, "<c" STYLE_ATTR(STYLE_DATETIME) "><v>", "</v></c>", "%.16G", timestamp);
+  write_cell_data(handle, NULL, "<c" STYLE_ATTR(STYLE_DATETIME) COLNRTAG "><v>", "</v></c>", "%.16G", timestamp);
 }
 /*
 Windows (And Mac Office 2011+):
