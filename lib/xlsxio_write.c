@@ -164,60 +164,63 @@ const char* rels_xml =
 #ifndef WITHOUT_XLSX_STYLES
 const char* styles_xml =
   XML_HEADER
-  "<styleSheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\">\r\n"
-  "<fonts count=\"2\">\r\n"
-  "<font>\r\n"
-  "<sz val=\"10\"/>\r\n"
-  //"<color theme=\"1\"/>\r\n"
-  "<name val=\"Consolas\"/>\r\n"
-  "<family val=\"2\"/>\r\n"
-  //"<scheme val=\"minor\"/>\r\n"
-  "</font>\r\n"
-  "<font>\r\n"
+  "<styleSheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\">" OPTIONAL_LINE_BREAK
+  "<fonts count=\"2\">" OPTIONAL_LINE_BREAK
+  "<font>" OPTIONAL_LINE_BREAK
+  "<sz val=\"10\"/>" OPTIONAL_LINE_BREAK
+  //"<color theme=\"1\"/>" OPTIONAL_LINE_BREAK
+  "<name val=\"Consolas\"/>" OPTIONAL_LINE_BREAK
+  "<family val=\"2\"/>" OPTIONAL_LINE_BREAK
+  //"<scheme val=\"minor\"/>" OPTIONAL_LINE_BREAK
+  "</font>" OPTIONAL_LINE_BREAK
+  "<font>" OPTIONAL_LINE_BREAK
   "<b/><u/>"
-  "<sz val=\"10\"/>\r\n"
-  //"<color theme=\"1\"/>\r\n"
-  "<name val=\"Consolas\"/>\r\n"
-  "<family val=\"2\"/>\r\n"
-  //"<scheme val=\"minor\"/>\r\n"
-  "</font>\r\n"
-  "</fonts>\r\n"
-  "<fills count=\"1\">\r\n"
-  "<fill/>\r\n"
-  //"<fill><patternFill patternType=\"none\"/></fill>\r\n"
-  "</fills>\r\n"
-  "<borders count=\"2\">\r\n"
-  "<border>\r\n"
-  //"<left/>\r\n"
-  //"<right/>\r\n"
-  //"<top/>\r\n"
-  //"<bottom/>\r\n"
-  //"<diagonal/>\r\n"
-  "</border>\r\n"
-  "<border><bottom style=\"thin\"><color indexed=\"64\"/></bottom></border>\r\n"
-  "</borders>\r\n"
-  //"<cellStyleXfs count=\"1\">\r\n"
-  //"<xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\"/>\r\n"
-  //"</cellStyleXfs>\r\n"
-  "<cellXfs count=\"6\">\r\n"
-  "<xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\"/>\r\n"
+  "<sz val=\"10\"/>" OPTIONAL_LINE_BREAK
+  //"<color theme=\"1\"/>" OPTIONAL_LINE_BREAK
+  "<name val=\"Consolas\"/>" OPTIONAL_LINE_BREAK
+  "<family val=\"2\"/>" OPTIONAL_LINE_BREAK
+  //"<scheme val=\"minor\"/>" OPTIONAL_LINE_BREAK
+  "</font>" OPTIONAL_LINE_BREAK
+  "</fonts>" OPTIONAL_LINE_BREAK
+  "<fills count=\"1\">" OPTIONAL_LINE_BREAK
+  "<fill/>" OPTIONAL_LINE_BREAK
+  //"<fill><patternFill patternType=\"none\"/></fill>" OPTIONAL_LINE_BREAK
+  "</fills>" OPTIONAL_LINE_BREAK
+  "<borders count=\"2\">" OPTIONAL_LINE_BREAK
+  "<border>" OPTIONAL_LINE_BREAK
+  //"<left/>" OPTIONAL_LINE_BREAK
+  //"<right/>" OPTIONAL_LINE_BREAK
+  //"<top/>" OPTIONAL_LINE_BREAK
+  //"<bottom/>" OPTIONAL_LINE_BREAK
+  //"<diagonal/>" OPTIONAL_LINE_BREAK
+  "</border>" OPTIONAL_LINE_BREAK
+  "<border><bottom style=\"thin\"><color indexed=\"64\"/></bottom></border>" OPTIONAL_LINE_BREAK
+  "</borders>" OPTIONAL_LINE_BREAK
+  "<cellStyleXfs count=\"1\">" OPTIONAL_LINE_BREAK
+  //"<xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\"/>" OPTIONAL_LINE_BREAK
+  "<xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\">" OPTIONAL_LINE_BREAK
+  "<alignment horizontal=\"general\" vertical=\"top\" wrapText=\"0\" shrinkToFit=\"0\" textRotation=\"0\" indent=\"0\"/>" OPTIONAL_LINE_BREAK
+  "</xf>" OPTIONAL_LINE_BREAK
+  "</cellStyleXfs>" OPTIONAL_LINE_BREAK
+  "<cellXfs count=\"6\">" OPTIONAL_LINE_BREAK
+  "<xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\"/>" OPTIONAL_LINE_BREAK
 #define STYLE_HEADER 1
-  "<xf numFmtId=\"0\" fontId=\"1\" fillId=\"0\" borderId=\"1\" xfId=\"0\" applyFont=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><alignment vertical=\"top\"/></xf>\r\n"
+  "<xf numFmtId=\"0\" fontId=\"1\" fillId=\"0\" borderId=\"1\" xfId=\"0\" applyFont=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><alignment vertical=\"top\"/></xf>" OPTIONAL_LINE_BREAK
 #define STYLE_GENERAL 2
-  "<xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\" applyAlignment=\"1\"><alignment vertical=\"top\"/></xf>\r\n"
+  "<xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\" applyAlignment=\"1\"><alignment vertical=\"top\"/></xf>" OPTIONAL_LINE_BREAK
 #define STYLE_TEXT 3
-  "<xf numFmtId=\"49\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\" applyNumberFormat=\"1\" applyAlignment=\"1\"><alignment vertical=\"top\" wrapText=\"1\"/></xf>\r\n"
+  "<xf numFmtId=\"49\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\" applyNumberFormat=\"1\" applyAlignment=\"1\"><alignment vertical=\"top\" wrapText=\"1\"/></xf>" OPTIONAL_LINE_BREAK
 #define STYLE_INTEGER 4
-  "<xf numFmtId=\"1\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\" applyNumberFormat=\"1\" applyAlignment=\"1\"><alignment vertical=\"top\"/></xf>\r\n"
+  "<xf numFmtId=\"1\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\" applyNumberFormat=\"1\" applyAlignment=\"1\"><alignment vertical=\"top\"/></xf>" OPTIONAL_LINE_BREAK
 #define STYLE_DATETIME 5
-  "<xf numFmtId=\"22\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\" applyNumberFormat=\"1\" applyAlignment=\"1\"><alignment horizontal=\"center\" vertical=\"top\"/></xf>\r\n"
-  "</cellXfs>\r\n"
-  //"<cellStyles count=\"2\">\r\n"
-  //"<cellStyle name=\"Normal\" xfId=\"0\" builtinId=\"0\"/>\r\n"
-  //"</cellStyles>\r\n"
-  "<dxfs count=\"0\"/>\r\n"
-  //"<tableStyles count=\"0\" defaultTableStyle=\"TableStyleMedium9\" defaultPivotStyle=\"PivotStyleLight16\"/>\r\n"
-  "</styleSheet>\r\n";
+  "<xf numFmtId=\"22\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\" applyNumberFormat=\"1\" applyAlignment=\"1\"><alignment horizontal=\"center\" vertical=\"top\"/></xf>" OPTIONAL_LINE_BREAK
+  "</cellXfs>" OPTIONAL_LINE_BREAK
+  //"<cellStyles count=\"2\">" OPTIONAL_LINE_BREAK
+  //"<cellStyle name=\"Normal\" xfId=\"0\" builtinId=\"0\"/>" OPTIONAL_LINE_BREAK
+  //"</cellStyles>" OPTIONAL_LINE_BREAK
+  "<dxfs count=\"0\"/>" OPTIONAL_LINE_BREAK
+  //"<tableStyles count=\"0\" defaultTableStyle=\"TableStyleMedium9\" defaultPivotStyle=\"PivotStyleLight16\"/>" OPTIONAL_LINE_BREAK
+  "</styleSheet>" OPTIONAL_LINE_BREAK;
 #endif
 
 #ifndef WITHOUT_XLSX_THEMES
