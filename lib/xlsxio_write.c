@@ -526,16 +526,16 @@ struct xlsxio_write_struct {
   int sheetopen;
   int rowopen;
 #ifndef NO_ROW_NUMBERS
-  size_t rownr;
+  uint64_t rownr;
 #ifndef NO_COLUMN_NUMBERS
-  size_t colnr;
+  uint64_t colnr;
 #endif
 #endif
 };
 
 #ifndef NO_ROW_NUMBERS
 #define ROWNRTAG " r=\"%" PRIu64 "\""
-#define ROWNRPARAM(handle) , (uint64_t)handle->rownr
+#define ROWNRPARAM(handle) , handle->rownr
 #ifndef NO_COLUMN_NUMBERS
 #define COLNRTAG " r=\"%s%" PRIu64 "\""
 #define COLNRPARAM(handle) , get_A1col(handle->colnr), handle->rownr

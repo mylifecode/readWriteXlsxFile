@@ -213,15 +213,15 @@ package: version
 
 .PHONY: package
 binarypackage: version
-	$(MAKE) PREFIX=binarypackage_temp install STATICDLL=1 WIDE=1
+	$(MAKE) PREFIX=binpkg_$(OSALIAS)_temp install STATICDLL=1 WIDE=1
 ifneq ($(OS),Windows_NT)
-	tar cfJ "xlsxio-$(shell cat version)-$(OSALIAS).tar.xz" --transform="s?^binarypackage_temp/??" $(COMMON_PACKAGE_FILES) binarypackage_temp/*
+	tar cfJ "xlsxio-$(shell cat version)-$(OSALIAS).tar.xz" --transform="s?^binpkg_$(OSALIAS)_temp/??" $(COMMON_PACKAGE_FILES) binpkg_$(OSALIAS)_temp/*
 else
 	rm -f xlsxio-$(shell cat version)-$(OSALIAS).zip
-	cp -f $(COMMON_PACKAGE_FILES) binarypackage_temp/
-	cd binarypackage_temp && zip -r -9 "../xlsxio-$(shell cat version)-binary-$(OSALIAS).zip" $(COMMON_PACKAGE_FILES) * && cd ..
+	cp -f $(COMMON_PACKAGE_FILES) binpkg_$(OSALIAS)_temp/
+	cd binpkg_$(OSALIAS)_temp && zip -r -9 "../xlsxio-$(shell cat version)-binary-$(OSALIAS).zip" $(COMMON_PACKAGE_FILES) * && cd ..
 endif
-	rm -rf binarypackage_temp
+	rm -rf binpkg_$(OSALIAS)_temp
 
 .PHONY: clean
 clean:
