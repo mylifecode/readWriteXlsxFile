@@ -1,3 +1,9 @@
+0.2.15
+
+2018-03-17  Brecht Sanders  https://github.com/brechtsanders/
+
+  * removed "OPTIONAL_LINE_BREAK" from sheet1.xml in libxlsxio_write
+
 0.2.14
 
 2018-03-16  Brecht Sanders  https://github.com/brechtsanders/
@@ -11,7 +17,7 @@
 2018-03-16  Brecht Sanders  https://github.com/brechtsanders/
 
   * fixed hang on Windows when building release version with MinGW-64 (fixed by using stricmp instead of strcasecmp)
-  * added CMake option WITH_WIDE to build UTF-16 library (xlsxio_readw) - experimental, only tested on Windows
+  * added CMake option WITH_WIDE to build UTF-16 library (libxlsxio_readw) - experimental, only tested on Windows
 
 0.2.12
 

@@ -283,7 +283,7 @@ const char* worksheet_xml_start_data =
   "<sheetData>" OPTIONAL_LINE_BREAK;
 
 const char* worksheet_xml_end =
-  "</sheetData> OPTIONAL_LINE_BREAK"
+  "</sheetData>" OPTIONAL_LINE_BREAK
   //"<pageMargins left=\"0.75\" right=\"0.75\" top=\"1\" bottom=\"1\" header=\"0.5\" footer=\"0.5\"/>" OPTIONAL_LINE_BREAK
   "</worksheet>" OPTIONAL_LINE_BREAK;
 
