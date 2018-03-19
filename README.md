@@ -100,7 +100,7 @@ Example C programs
 ------------------
 ### Reading from an .xlsx file
 ```c
-#include "xlsxio_read.h"
+#include <xlsxio_read.h>
 ```
 ```c
 //open .xlsx file for reading
@@ -133,7 +133,7 @@ xlsxioread_close(xlsxioread);
 ```
 ### Listing all worksheets in an .xlsx file
 ```c
-#include "xlsxio_read.h"
+#include <xlsxio_read.h>
 ```
 ```c
 //open .xlsx file for reading
@@ -159,7 +159,7 @@ xlsxioread_close(xlsxioread);
 ```
 ### Writing to an .xlsx file
 ```c
-#include "xlsxio_write.h"
+#include <xlsxio_write.h>
 ```
 ```c
 //open .xlsx file for writing (will overwrite if it already exists)
