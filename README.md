@@ -149,6 +149,32 @@ if ((sheet = xlsxioread_sheet_open(xlsxioread, sheetname, XLSXIOREAD_SKIP_EMPTY_
 //clean up
 xlsxioread_close(xlsxioread);
 ```
+### Writing to an .xlsx file
+```c
+xlsxiowriter handle;
+//open .xlsx file for writing (will overwrite if it already exists)
+if ((handle = xlsxiowrite_open(filename, "MySheet")) == NULL) {
+  fprintf(stderr, "Error creating .xlsx file\n");
+  return 1;
+}
+//set row height
+xlsxiowrite_set_row_height(handle, 1);
+//how many rows to buffer to detect column widths
+xlsxiowrite_set_detection_rows(handle, 10);
+//write column names
+xlsxiowrite_add_column(handle, "Col1", 16);
+xlsxiowrite_add_column(handle, "Col2", 0);
+xlsxiowrite_next_row(handle);
+//write data
+int i;
+for (i = 0; i < 1000; i++) {
+  xlsxiowrite_add_cell_string(handle, "Test");
+  xlsxiowrite_add_cell_int(handle, i);
+  xlsxiowrite_next_row(handle);
+}
+//close .xlsx file
+xlsxiowrite_close(handle);
+```
 
 License
 -------
