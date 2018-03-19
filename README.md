@@ -96,8 +96,9 @@ Building with CMake (preferred method)
 
 For Windows prebuilt binaries are also available for download (both 32-bit and 64-bit)
 
-Example C program
------------------
+Example C programs
+------------------
+### Reading from an .xlsx file
 ```c
 //open .xlsx file for reading
 xlsxioreader xlsxioread;
