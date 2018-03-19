@@ -100,6 +100,9 @@ Example C programs
 ------------------
 ### Listing worksheets in an .xlsx file
 ```c
+#include "xlsxio_read.h"
+```
+```c
 //open .xlsx file for reading
 xlsxioreader xlsxioread;
 if ((xlsxioread = xlsxioread_open(filename)) == NULL) {
@@ -122,6 +125,9 @@ if ((sheetlist = xlsxioread_sheetlist_open(xlsxioread)) != NULL) {
 xlsxioread_close(xlsxioread);
 ```
 ### Reading from an .xlsx file
+```c
+#include "xlsxio_read.h"
+```
 ```c
 //open .xlsx file for reading
 xlsxioreader xlsxioread;
