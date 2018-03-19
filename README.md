@@ -98,7 +98,7 @@ For Windows prebuilt binaries are also available for download (both 32-bit and 6
 
 Example C programs
 ------------------
-### Reading from an .xlsx file
+### Listing worksheets in an .xlsx file
 ```c
 //open .xlsx file for reading
 xlsxioreader xlsxioread;
@@ -118,18 +118,33 @@ if ((sheetlist = xlsxioread_sheetlist_open(xlsxioread)) != NULL) {
   xlsxioread_sheetlist_close(sheetlist);
 }
 
+//clean up
+xlsxioread_close(xlsxioread);
+```
+### Reading from an .xlsx file
+```c
+//open .xlsx file for reading
+xlsxioreader xlsxioread;
+if ((xlsxioread = xlsxioread_open(filename)) == NULL) {
+  fprintf(stderr, "Error opening .xlsx file\n");
+  return 1;
+}
+
 //read values from first sheet
 char* value;
+xlsxioreadersheet sheet;
+const char* sheetname = NULL;
 printf("Contents of first sheet:\n");
-xlsxioreadersheet sheet = xlsxioread_sheet_open(xlsxioread, NULL, XLSXIOREAD_SKIP_EMPTY_ROWS);
-while (xlsxioread_sheet_next_row(sheet)) {
-  while ((value = xlsxioread_sheet_next_cell(sheet)) != NULL) {
-    printf("%s\t", value);
-    free(value);
+if ((sheet = xlsxioread_sheet_open(xlsxioread, sheetname, XLSXIOREAD_SKIP_EMPTY_ROWS)) != NULL) {
+  while (xlsxioread_sheet_next_row(sheet)) {
+    while ((value = xlsxioread_sheet_next_cell(sheet)) != NULL) {
+      printf("%s\t", value);
+      free(value);
+    }
+    printf("\n");
   }
-  printf("\n");
+  xlsxioread_sheet_close(sheet);
 }
-xlsxioread_sheet_close(sheet);
 
 //clean up
 xlsxioread_close(xlsxioread);
