@@ -43,7 +43,7 @@ Libraries
 The following libraries are provided:
 - `-lxlsxio_read` - library for reading .xlsx files, requires `#include <xlsxio_read.h>`
 - `-lxlsxio_write` - library for writing .xlsx files, requires `#include <xlsxio_write.h>`
-- `-lxlsxio_readw` - experimental library for reading .xlsx files, linked with -lexpatw, requires `#define XML_UNICODE` before `#include <xlsxio_read.h>`
+- `-lxlsxio_readw` - experimental library for reading .xlsx files, linked with `-lexpatw`, requires `#define XML_UNICODE` before `#include <xlsxio_read.h>`
 
 Command line utilities
 ----------------------
