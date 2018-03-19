@@ -151,19 +151,16 @@ xlsxioread_close(xlsxioread);
 ```
 ### Writing to an .xlsx file
 ```c
-xlsxiowriter handle;
 //open .xlsx file for writing (will overwrite if it already exists)
+xlsxiowriter handle;
 if ((handle = xlsxiowrite_open(filename, "MySheet")) == NULL) {
   fprintf(stderr, "Error creating .xlsx file\n");
   return 1;
 }
-//set row height
-xlsxiowrite_set_row_height(handle, 1);
-//how many rows to buffer to detect column widths
-xlsxiowrite_set_detection_rows(handle, 10);
+
 //write column names
 xlsxiowrite_add_column(handle, "Col1", 16);
-xlsxiowrite_add_column(handle, "Col2", 0);
+xlsxiowrite_add_column(handle, "Col2", 4);
 xlsxiowrite_next_row(handle);
 //write data
 int i;
