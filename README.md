@@ -98,32 +98,6 @@ For Windows prebuilt binaries are also available for download (both 32-bit and 6
 
 Example C programs
 ------------------
-### Listing worksheets in an .xlsx file
-```c
-#include "xlsxio_read.h"
-```
-```c
-//open .xlsx file for reading
-xlsxioreader xlsxioread;
-if ((xlsxioread = xlsxioread_open(filename)) == NULL) {
-  fprintf(stderr, "Error opening .xlsx file\n");
-  return 1;
-}
-
-//list available sheets
-xlsxioreadersheetlist sheetlist;
-const char* sheetname;
-printf("Available sheets:\n");
-if ((sheetlist = xlsxioread_sheetlist_open(xlsxioread)) != NULL) {
-  while ((sheetname = xlsxioread_sheetlist_next(sheetlist)) != NULL) {
-    printf(" - %s\n", sheetname);
-  }
-  xlsxioread_sheetlist_close(sheetlist);
-}
-
-//clean up
-xlsxioread_close(xlsxioread);
-```
 ### Reading from an .xlsx file
 ```c
 #include "xlsxio_read.h"
@@ -152,6 +126,32 @@ if ((sheet = xlsxioread_sheet_open(xlsxioread, sheetname, XLSXIOREAD_SKIP_EMPTY_
     printf("\n");
   }
   xlsxioread_sheet_close(sheet);
+}
+
+//clean up
+xlsxioread_close(xlsxioread);
+```
+### Listing all worksheets in an .xlsx file
+```c
+#include "xlsxio_read.h"
+```
+```c
+//open .xlsx file for reading
+xlsxioreader xlsxioread;
+if ((xlsxioread = xlsxioread_open(filename)) == NULL) {
+  fprintf(stderr, "Error opening .xlsx file\n");
+  return 1;
+}
+
+//list available sheets
+xlsxioreadersheetlist sheetlist;
+const char* sheetname;
+printf("Available sheets:\n");
+if ((sheetlist = xlsxioread_sheetlist_open(xlsxioread)) != NULL) {
+  while ((sheetname = xlsxioread_sheetlist_next(sheetlist)) != NULL) {
+    printf(" - %s\n", sheetname);
+  }
+  xlsxioread_sheetlist_close(sheetlist);
 }
 
 //clean up
