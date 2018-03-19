@@ -151,6 +151,9 @@ xlsxioread_close(xlsxioread);
 ```
 ### Writing to an .xlsx file
 ```c
+#include "xlsxio_write.h"
+```
+```c
 //open .xlsx file for writing (will overwrite if it already exists)
 xlsxiowriter handle;
 if ((handle = xlsxiowrite_open(filename, "MySheet")) == NULL) {
@@ -160,7 +163,7 @@ if ((handle = xlsxiowrite_open(filename, "MySheet")) == NULL) {
 
 //write column names
 xlsxiowrite_add_column(handle, "Col1", 16);
-xlsxiowrite_add_column(handle, "Col2", 4);
+xlsxiowrite_add_column(handle, "Col2", 0);
 xlsxiowrite_next_row(handle);
 
 //write data
