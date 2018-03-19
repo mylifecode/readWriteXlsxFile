@@ -162,6 +162,7 @@ if ((handle = xlsxiowrite_open(filename, "MySheet")) == NULL) {
 xlsxiowrite_add_column(handle, "Col1", 16);
 xlsxiowrite_add_column(handle, "Col2", 4);
 xlsxiowrite_next_row(handle);
+
 //write data
 int i;
 for (i = 0; i < 1000; i++) {
@@ -169,6 +170,7 @@ for (i = 0; i < 1000; i++) {
   xlsxiowrite_add_cell_int(handle, i);
   xlsxiowrite_next_row(handle);
 }
+
 //close .xlsx file
 xlsxiowrite_close(handle);
 ```
