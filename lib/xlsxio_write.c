@@ -550,20 +550,6 @@ void* thread_proc (void* arg)
 #endif
 {
   xlsxiowriter handle = (xlsxiowriter)arg;
-  //initialize zip file object
-#ifdef USE_MINIZIP
-  if ((handle->zip = zipOpen(handle->filename, 0)) == NULL) {
-#else
-  if ((handle->zip = zip_open(handle->filename, ZIP_CREATE, NULL)) == NULL) {
-#endif
-    free(handle);
-    free(handle->filename);
-#ifdef USE_WINTHREADS
-    return 0;
-#else
-    return NULL;
-#endif
-  }
   //generate required files
   zip_add_static_content_string(handle->zip, XML_FILENAME_CONTENTTYPES, content_types_xml);
   zip_add_static_content_string(handle->zip, XML_FOLDER_DOCPROPS XML_FILENAME_DOCPROPS_CORE, docprops_core_xml);
@@ -679,6 +665,20 @@ DLL_EXPORT_XLSXIO xlsxiowriter xlsxiowrite_open (const char* filename, const cha
     handle->colnr = 0;
 #endif
 #endif
+    //remove filename first if it already exists
+    unlink(filename);
+    //initialize zip file object
+#ifdef USE_MINIZIP
+    if ((handle->zip = zipOpen(handle->filename, 0)) == NULL) {
+#else
+    if ((handle->zip = zip_open(handle->filename, ZIP_CREATE, NULL)) == NULL) {
+#endif
+      fprintf(stderr, "Error writing to file %s\n", filename);/////
+      //unlink(filename);
+      free(handle->filename);
+      free(handle);
+      return NULL;
+    }
     //create pipe
     if (pipe(pipefd) != 0) {
       fprintf(stderr, "Error creating pipe\n");/////
@@ -687,8 +687,6 @@ DLL_EXPORT_XLSXIO xlsxiowriter xlsxiowrite_open (const char* filename, const cha
     }
     handle->pipe_read = fdopen(pipefd[0], "rb");
     handle->pipe_write = fdopen(pipefd[1], "wb");
-    //remove filename first if it already exists
-    unlink(filename);
     //create and start thread that will receive data via pipe
 #ifdef USE_WINTHREADS
     if ((handle->thread = CreateThread(NULL, 0, thread_proc, handle, 0, NULL)) == NULL) {
@@ -696,6 +694,17 @@ DLL_EXPORT_XLSXIO xlsxiowriter xlsxiowrite_open (const char* filename, const cha
     if (pthread_create(&handle->thread, NULL, thread_proc, handle) != 0) {
 #endif
       fprintf(stderr, "Error creating thread\n");/////
+#ifdef USE_MINIZIP
+      zipClose(handle->zip, NULL);
+#else
+      zip_close(handle->zip);
+#endif
+      //unlink(filename);
+      free(handle->filename);
+      fclose(handle->pipe_read);
+      fclose(handle->pipe_write);
+      free(handle);
+      return NULL;
     }
     //write initial worksheet data
     fprintf(handle->pipe_write, "%s", worksheet_xml_begin);
