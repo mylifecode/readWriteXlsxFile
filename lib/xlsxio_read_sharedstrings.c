@@ -79,7 +79,6 @@ const XML_Char* sharedstringlist_get (struct sharedstringlist* sharedstrings, si
 void shared_strings_callback_data_initialize (struct shared_strings_callback_data* data, struct sharedstringlist* sharedstrings)
 {
   data->xmlparser = NULL;
-  data->zipfile = NULL;
   data->sharedstrings = sharedstrings;
   data->insst = 0;
   data->insi = 0;

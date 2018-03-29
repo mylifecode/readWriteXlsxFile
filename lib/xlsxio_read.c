@@ -129,7 +129,11 @@ int expat_process_zip_file (ZIPFILETYPE* zip, const XML_Char* filename, XML_Star
   ZIPFILEENTRYTYPE* zipfile;
   XML_Parser parser;
   void* buf;
+#ifdef USE_MINIZIP
+  int buflen;
+#else
   zip_int64_t buflen;
+#endif
   int done;
   enum XML_Status status = XML_STATUS_ERROR;
   if ((zipfile = XML_Char_openzip(zip, filename, 0)) == NULL) {
@@ -187,7 +191,11 @@ enum XML_Status expat_process_zip_file_resume (ZIPFILEENTRYTYPE* zipfile, XML_Pa
   if (status == XML_STATUS_ERROR && XML_GetErrorCode(xmlparser) != XML_ERROR_NOT_SUSPENDED)
     return status;
   void* buf;
+#ifdef USE_MINIZIP
+  int buflen;
+#else
   zip_int64_t buflen;
+#endif
   int done;
   buf = XML_GetBuffer(xmlparser, PARSE_BUFFER_SIZE);
 #ifdef USE_MINIZIP

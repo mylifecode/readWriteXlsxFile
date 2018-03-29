@@ -2,7 +2,6 @@
 #define INCLUDED_XLSXIO_READ_SHAREDSTRINGS_H
 
 #include <stdint.h>
-#include <zip.h>
 #include <expat.h>
 
 #ifdef __cplusplus
@@ -25,7 +24,6 @@ const XML_Char* sharedstringlist_get (struct sharedstringlist* sharedstrings, si
 
 struct shared_strings_callback_data {
   XML_Parser xmlparser;
-  zip_file_t* zipfile;
   struct sharedstringlist* sharedstrings;
   int insst;
   int insi;
