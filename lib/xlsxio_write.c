@@ -506,9 +506,7 @@ int insert_data (char** pdata, size_t* pdatalen, size_t pos, const char* format,
   *pdatalen += len;
   return len;
 }
-#endif
 
-#ifndef NO_COLUMN_NUMBERS
 char* get_A1col (uint64_t col)
 {
   char* result = NULL;
