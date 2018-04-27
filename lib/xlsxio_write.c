@@ -482,15 +482,42 @@ int append_data (char** pdata, size_t* pdatalen, const char* format, ...)
 }
 
 #ifndef NO_COLUMN_NUMBERS
+//insert formatted data into a null-terminated buffer at the specified position and update the length counter
+int insert_data (char** pdata, size_t* pdatalen, size_t pos, const char* format, ...)
+{
+  int len;
+  va_list args;
+  va_start(args, format);
+  len = vsnprintf(NULL, 0, format, args);
+  va_end(args);
+  if (len < 0)
+    return -1;
+  if ((*pdata = (char*)realloc(*pdata, *pdatalen + len + 1)) == NULL)
+    return -1;
+  if (pos > *pdatalen)
+    pos = *pdatalen;
+  if (pos < *pdatalen)
+    memmove(*pdata + pos + len, *pdata + pos, *pdatalen - pos + 1);
+  else
+    (*pdata)[pos + len] = 0;
+  va_start(args, format);
+  vsnprintf(*pdata + pos, len, format, args);
+  va_end(args);
+  *pdatalen += len;
+  return len;
+}
+#endif
+
+#ifndef NO_COLUMN_NUMBERS
 char* get_A1col (uint64_t col)
 {
   char* result = NULL;
   size_t resultlen = 0;
   if (col > 0) {
-    col--;
     do {
-      append_data(&result, &resultlen, "%c", 'A' + col % 26);
-      col /= 26;
+      col--;
+      insert_data(&result, &resultlen, 0, "%c", 'A' + col % 26);
+      col = col / 26;
     } while (col > 0);
   }
   return result;
