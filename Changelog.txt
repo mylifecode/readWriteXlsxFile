@@ -1,6 +1,6 @@
 0.2.18
 
-2018-03-18  Brecht Sanders  https://github.com/brechtsanders/
+2018-04-27  Brecht Sanders  https://github.com/brechtsanders/
 
   * fixed formatting issue with cell coordinates
   
