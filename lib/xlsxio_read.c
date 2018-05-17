@@ -633,6 +633,8 @@ void iterate_files_by_contenttype_expat_callback_element_start (void* callbackda
         char* buf;
         size_t buflen;
         int status;
+unz_global_info zipglobalinfo;
+unzGetGlobalInfo(data->zip, &zipglobalinfo);
         buf = (char*)malloc(buflen = UNZIP_FILENAME_BUFFER_STEP);
         status = unzGoToFirstFile(data->zip);
         while (status == UNZ_OK) {
@@ -642,6 +644,8 @@ void iterate_files_by_contenttype_expat_callback_element_start (void* callbackda
             buf = (char*)realloc(buf, buflen);
             buf[buflen - 1] = 0;
           }
+          if (status != UNZ_OK)
+            break;
           filename = XML_Char_dupchar(buf);
           status = unzGoToNextFile(data->zip);
 #else
