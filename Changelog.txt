@@ -1,3 +1,9 @@
+0.2.19
+
+2018-05-17  Brecht Sanders  https://github.com/brechtsanders/
+
+  * fixed memory allocation issue when using minizip version of xlsx_read
+
 0.2.18
 
 2018-04-27  Brecht Sanders  https://github.com/brechtsanders/

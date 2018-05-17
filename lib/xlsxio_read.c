@@ -637,17 +637,14 @@ void iterate_files_by_contenttype_expat_callback_element_start (void* callbackda
         status = unzGoToFirstFile(data->zip);
         while (status == UNZ_OK) {
           buf[buflen - 1] = 0;
-          while (unzGetCurrentFileInfo(data->zip, NULL, buf, buflen, NULL, 0, NULL, 0) == UNZ_OK && buf[buflen - 1] != 0) {
+          while ((status = unzGetCurrentFileInfo(data->zip, NULL, buf, buflen, NULL, 0, NULL, 0)) == UNZ_OK && buf[buflen - 1] != 0) {
             buflen += UNZIP_FILENAME_BUFFER_STEP;
             buf = (char*)realloc(buf, buflen);
             buf[buflen - 1] = 0;
           }
           filename = XML_Char_dupchar(buf);
-          free(buf);
           status = unzGoToNextFile(data->zip);
 #else
-
-
         zip_int64_t i;
         zip_int64_t zipnumfiles = zip_get_num_entries(data->zip, 0);
         for (i = 0; i < zipnumfiles; i++) {
@@ -659,6 +656,9 @@ void iterate_files_by_contenttype_expat_callback_element_start (void* callbackda
           }
           free(filename);
         }
+#ifdef USE_MINIZIP
+        free(buf);
+#endif
       }
     }
   }
