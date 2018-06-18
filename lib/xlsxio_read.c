@@ -39,6 +39,8 @@
 
 static ZIPFILEENTRYTYPE* XML_Char_openzip (ZIPFILETYPE* archive, const XML_Char* filename, int flags)
 {
+  if (!filename || !*filename)
+    return NULL;
 #ifdef USE_MINIZIP
   if (unzLocateFile(archive, filename, 0) != UNZ_OK)
     return NULL;
@@ -87,6 +89,8 @@ static ZIPFILEENTRYTYPE* XML_Char_openzip (ZIPFILETYPE* archive, const XML_Char*
 {
   ZIPFILEENTRYTYPE* result;
   char* s;
+  if (!filename || !*filename)
+    return NULL;
   if ((s = chardupXML_Char(filename)) == NULL)
     return NULL;
 #ifdef USE_MINIZIP

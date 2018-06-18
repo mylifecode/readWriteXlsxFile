@@ -1,5 +1,9 @@
 0.2.19
 
+2018-06-18  Brecht Sanders  https://github.com/brechtsanders/
+
+  * fixed crash in xlsx_read.c when XML_Char_openzip is called with empty filename
+  
 2018-05-17  Brecht Sanders  https://github.com/brechtsanders/
 
   * fixed memory allocation issue when using minizip version of xlsx_read
