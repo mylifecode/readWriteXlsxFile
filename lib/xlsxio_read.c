@@ -259,13 +259,19 @@ XML_Char* join_basepath_filename (const XML_Char* basepath, const XML_Char* file
 {
   XML_Char* result = NULL;
   if (filename && *filename) {
-    size_t basepathlen = (basepath ? XML_Char_len(basepath) : 0);
-    size_t filenamelen = XML_Char_len(filename);
-    if ((result = XML_Char_malloc(basepathlen + filenamelen + 1)) != NULL) {
-      if (basepathlen > 0)
-        XML_Char_poscpy(result, 0, basepath, basepathlen);
-      XML_Char_poscpy(result, basepathlen, filename, filenamelen);
-      result[basepathlen + filenamelen] = 0;
+    if (filename[0] == '/' && filename[1]) {
+      //file is absolute: remove leading slash
+      result = XML_Char_dup(filename + 1);
+    } else {
+      //file is relative: prepend base path
+      size_t basepathlen = (basepath ? XML_Char_len(basepath) : 0);
+      size_t filenamelen = XML_Char_len(filename);
+      if ((result = XML_Char_malloc(basepathlen + filenamelen + 1)) != NULL) {
+        if (basepathlen > 0)
+          XML_Char_poscpy(result, 0, basepath, basepathlen);
+        XML_Char_poscpy(result, basepathlen, filename, filenamelen);
+        result[basepathlen + filenamelen] = 0;
+      }
     }
   }
   return result;
@@ -1221,15 +1227,18 @@ DLL_EXPORT_XLSXIO int xlsxioread_process (xlsxioreader handle, const XLSXIOCHAR*
   iterate_files_by_contenttype(handle->zip, X("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"), main_sheet_get_sheetfile_callback, &getrelscallbackdata, NULL);
 
   //process shared strings
-  struct sharedstringlist* sharedstrings = sharedstringlist_create();
-  struct shared_strings_callback_data sharedstringsdata;
-  shared_strings_callback_data_initialize(&sharedstringsdata, sharedstrings);
-  if (expat_process_zip_file(handle->zip, getrelscallbackdata.sharedstringsfile, shared_strings_callback_find_sharedstringtable_start, NULL, NULL, &sharedstringsdata, &sharedstringsdata.xmlparser) != 0) {
-    //no shared strings found
-    sharedstringlist_destroy(sharedstrings);
-    sharedstrings = NULL;
+  struct sharedstringlist* sharedstrings = NULL;
+  if (getrelscallbackdata.sharedstringsfile && getrelscallbackdata.sharedstringsfile[0]) {
+    sharedstrings = sharedstringlist_create();
+    struct shared_strings_callback_data sharedstringsdata;
+    shared_strings_callback_data_initialize(&sharedstringsdata, sharedstrings);
+    if (expat_process_zip_file(handle->zip, getrelscallbackdata.sharedstringsfile, shared_strings_callback_find_sharedstringtable_start, NULL, NULL, &sharedstringsdata, &sharedstringsdata.xmlparser) != 0) {
+      //no shared strings found
+      sharedstringlist_destroy(sharedstrings);
+      sharedstrings = NULL;
+    }
+    shared_strings_callback_data_cleanup(&sharedstringsdata);
   }
-  shared_strings_callback_data_cleanup(&sharedstringsdata);
 
   //process sheet
   if (!(flags & XLSXIOREAD_NO_CALLBACK)) {
