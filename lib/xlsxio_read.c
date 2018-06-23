@@ -220,13 +220,33 @@ enum XML_Status expat_process_zip_file_resume (ZIPFILEENTRYTYPE* zipfile, XML_Pa
   return status;
 }
 
+//compare XML name ignoring case and ignoring namespace (returns 0 on match)
+#ifdef ASSUME_NO_NAMESPACE
+#define XML_Char_icmp_ins XML_Char_icmp
+#else
+int XML_Char_icmp_ins (const XML_Char* value, const XML_Char* name)
+{
+  size_t valuelen = XML_Char_len(value);
+  size_t namelen = XML_Char_len(name);
+  if (valuelen == namelen)
+    return XML_Char_icmp(value, name);
+  if (valuelen > namelen) {
+    if (value[valuelen - namelen - 1] != ':')
+      return 1;
+    return XML_Char_icmp(value + (valuelen - namelen), name);
+  }
+  return -1;
+}
+#endif
+
 //get expat attribute by name, returns NULL if not found
 const XML_Char* get_expat_attr_by_name (const XML_Char** atts, const XML_Char* name)
 {
   const XML_Char** p = atts;
   if (p) {
     while (*p) {
-      if (XML_Char_icmp(*p++, name) == 0)
+      //if (XML_Char_icmp(*p++, name) == 0)
+      if (XML_Char_icmp_ins(*p++, name) == 0)
         return *p;
       p++;
     }
@@ -618,7 +638,7 @@ struct iterate_files_by_contenttype_callback_data {
 void iterate_files_by_contenttype_expat_callback_element_start (void* callbackdata, const XML_Char* name, const XML_Char** atts)
 {
   struct iterate_files_by_contenttype_callback_data* data = (struct iterate_files_by_contenttype_callback_data*)callbackdata;
-  if (XML_Char_icmp(name, X("Override")) == 0) {
+  if (XML_Char_icmp_ins(name, X("Override")) == 0) {
     //explicitly specified file
     const XML_Char* contenttype;
     const XML_Char* partname;
@@ -629,7 +649,7 @@ void iterate_files_by_contenttype_expat_callback_element_start (void* callbackda
         data->filecallbackfn(data->zip, partname, contenttype, data->filecallbackdata);
       }
     }
-  } else if (XML_Char_icmp(name, X("Default")) == 0) {
+  } else if (XML_Char_icmp_ins(name, X("Default")) == 0) {
     //by extension
     const XML_Char* contenttype;
     const XML_Char* extension;
@@ -704,7 +724,7 @@ void main_sheet_list_expat_callback_element_start (void* callbackdata, const XML
 {
   struct main_sheet_list_callback_data* data = (struct main_sheet_list_callback_data*)callbackdata;
   if (data && data->callback) {
-    if (XML_Char_icmp(name, X("sheet")) == 0) {
+    if (XML_Char_icmp_ins(name, X("sheet")) == 0) {
       const XML_Char* sheetname;
       //const XML_Char* relid = get_expat_attr_by_name(atts, X("r:id"));
       if ((sheetname = get_expat_attr_by_name(atts, X("name"))) != NULL) {
@@ -762,9 +782,9 @@ struct main_sheet_get_rels_callback_data {
 void main_sheet_get_relid_expat_callback_element_start (void* callbackdata, const XML_Char* name, const XML_Char** atts)
 {
   struct main_sheet_get_rels_callback_data* data = (struct main_sheet_get_rels_callback_data*)callbackdata;
-  if (XML_Char_icmp(name, X("sheet")) == 0) {
-    const XML_Char* name = get_expat_attr_by_name(atts, X("name"));
-    if (!data->sheetname || XML_Char_icmp(name, data->sheetname) == 0) {
+  if (XML_Char_icmp_ins(name, X("sheet")) == 0) {
+    const XML_Char* sheetname = get_expat_attr_by_name(atts, X("name"));
+    if (!data->sheetname || XML_Char_icmp(sheetname, data->sheetname) == 0) {
       const XML_Char* relid = get_expat_attr_by_name(atts, X("r:id"));
       if (relid && *relid) {
         data->sheetrelid = XML_Char_dup(relid);
@@ -780,7 +800,7 @@ void main_sheet_get_sheetfile_expat_callback_element_start (void* callbackdata, 
 {
   struct main_sheet_get_rels_callback_data* data = (struct main_sheet_get_rels_callback_data*)callbackdata;
   if (data->sheetrelid) {
-    if (XML_Char_icmp(name, X("Relationship")) == 0) {
+    if (XML_Char_icmp_ins(name, X("Relationship")) == 0) {
       const XML_Char* reltype;
       if ((reltype = get_expat_attr_by_name(atts, X("Type"))) != NULL) {
         if (XML_Char_icmp(reltype, X("http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet")) == 0) {
@@ -902,7 +922,7 @@ void data_sheet_callback_data_cleanup (struct data_sheet_callback_data* data)
 void data_sheet_expat_callback_skip_tag_start (void* callbackdata, const XML_Char* name, const XML_Char** atts)
 {
   struct data_sheet_callback_data* data = (struct data_sheet_callback_data*)callbackdata;
-  if (name && XML_Char_icmp(name, data->skiptag) == 0) {
+  if (name && XML_Char_icmp_ins(name, data->skiptag) == 0) {
     //increment nesting level
     data->skiptagcount++;
   }
@@ -911,7 +931,7 @@ void data_sheet_expat_callback_skip_tag_start (void* callbackdata, const XML_Cha
 void data_sheet_expat_callback_skip_tag_end (void* callbackdata, const XML_Char* name)
 {
   struct data_sheet_callback_data* data = (struct data_sheet_callback_data*)callbackdata;
-  if (!name || XML_Char_icmp(name, data->skiptag) == 0) {
+  if (!name || XML_Char_icmp_ins(name, data->skiptag) == 0) {
     if (--data->skiptagcount == 0) {
       //restore handlers when done skipping
       XML_SetElementHandler(data->xmlparser, data->skip_start, data->skip_end);
@@ -936,7 +956,7 @@ void data_sheet_expat_callback_value_data (void* callbackdata, const XML_Char* b
 void data_sheet_expat_callback_find_worksheet_start (void* callbackdata, const XML_Char* name, const XML_Char** atts)
 {
   struct data_sheet_callback_data* data = (struct data_sheet_callback_data*)callbackdata;
-  if (XML_Char_icmp(name, X("worksheet")) == 0) {
+  if (XML_Char_icmp_ins(name, X("worksheet")) == 0) {
     XML_SetElementHandler(data->xmlparser, data_sheet_expat_callback_find_sheetdata_start, NULL);
   }
 }
@@ -944,7 +964,7 @@ void data_sheet_expat_callback_find_worksheet_start (void* callbackdata, const X
 void data_sheet_expat_callback_find_worksheet_end (void* callbackdata, const XML_Char* name)
 {
   struct data_sheet_callback_data* data = (struct data_sheet_callback_data*)callbackdata;
-  if (XML_Char_icmp(name, X("worksheet")) == 0) {
+  if (XML_Char_icmp_ins(name, X("worksheet")) == 0) {
     XML_SetElementHandler(data->xmlparser, data_sheet_expat_callback_find_worksheet_start, NULL);
   }
 }
@@ -952,7 +972,7 @@ void data_sheet_expat_callback_find_worksheet_end (void* callbackdata, const XML
 void data_sheet_expat_callback_find_sheetdata_start (void* callbackdata, const XML_Char* name, const XML_Char** atts)
 {
   struct data_sheet_callback_data* data = (struct data_sheet_callback_data*)callbackdata;
-  if (XML_Char_icmp(name, X("sheetData")) == 0) {
+  if (XML_Char_icmp_ins(name, X("sheetData")) == 0) {
     XML_SetElementHandler(data->xmlparser, data_sheet_expat_callback_find_row_start, data_sheet_expat_callback_find_sheetdata_end);
   }
 }
@@ -960,7 +980,7 @@ void data_sheet_expat_callback_find_sheetdata_start (void* callbackdata, const X
 void data_sheet_expat_callback_find_sheetdata_end (void* callbackdata, const XML_Char* name)
 {
   struct data_sheet_callback_data* data = (struct data_sheet_callback_data*)callbackdata;
-  if (XML_Char_icmp(name, X("sheetData")) == 0) {
+  if (XML_Char_icmp_ins(name, X("sheetData")) == 0) {
     XML_SetElementHandler(data->xmlparser, data_sheet_expat_callback_find_sheetdata_start, data_sheet_expat_callback_find_worksheet_end);
   } else {
     data_sheet_expat_callback_find_worksheet_end(callbackdata, name);
@@ -970,7 +990,7 @@ void data_sheet_expat_callback_find_sheetdata_end (void* callbackdata, const XML
 void data_sheet_expat_callback_find_row_start (void* callbackdata, const XML_Char* name, const XML_Char** atts)
 {
   struct data_sheet_callback_data* data = (struct data_sheet_callback_data*)callbackdata;
-  if (XML_Char_icmp(name, X("row")) == 0) {
+  if (XML_Char_icmp_ins(name, X("row")) == 0) {
     const XML_Char* hidden = get_expat_attr_by_name(atts, X("hidden"));
     if (!hidden || XML_Char_tol(hidden) == 0) {//nesting level for current tag to skip
 //start handler to set after skipping
@@ -994,7 +1014,7 @@ void data_sheet_expat_callback_find_row_start (void* callbackdata, const XML_Cha
 void data_sheet_expat_callback_find_row_end (void* callbackdata, const XML_Char* name)
 {
   struct data_sheet_callback_data* data = (struct data_sheet_callback_data*)callbackdata;
-  if (XML_Char_icmp(name, X("row")) == 0) {
+  if (XML_Char_icmp_ins(name, X("row")) == 0) {
     //determine number of columns based on first row
     if (data->rownr == 1 && data->cols == 0)
       data->cols = data->colnr;
@@ -1033,7 +1053,7 @@ void data_sheet_expat_callback_find_row_end (void* callbackdata, const XML_Char*
 void data_sheet_expat_callback_find_cell_start (void* callbackdata, const XML_Char* name, const XML_Char** atts)
 {
   struct data_sheet_callback_data* data = (struct data_sheet_callback_data*)callbackdata;
-  if (XML_Char_icmp(name, X("c")) == 0) {
+  if (XML_Char_icmp_ins(name, X("c")) == 0) {
     const XML_Char* t = get_expat_attr_by_name(atts, X("r"));
     size_t cellcolnr = get_col_nr(t);
     //skip everything when out of bounds
@@ -1105,7 +1125,7 @@ void data_sheet_expat_callback_find_cell_start (void* callbackdata, const XML_Ch
 void data_sheet_expat_callback_find_cell_end (void* callbackdata, const XML_Char* name)
 {
   struct data_sheet_callback_data* data = (struct data_sheet_callback_data*)callbackdata;
-  if (XML_Char_icmp(name, X("c")) == 0) {
+  if (XML_Char_icmp_ins(name, X("c")) == 0) {
     //determine value
     if (data->celldata) {
       const XML_Char* s = NULL;
@@ -1156,12 +1176,12 @@ void data_sheet_expat_callback_find_cell_end (void* callbackdata, const XML_Char
 void data_sheet_expat_callback_find_value_start (void* callbackdata, const XML_Char* name, const XML_Char** atts)
 {
   struct data_sheet_callback_data* data = (struct data_sheet_callback_data*)callbackdata;
-  if (XML_Char_icmp(name, X("v")) == 0 || XML_Char_icmp(name, X("t")) == 0) {
+  if (XML_Char_icmp_ins(name, X("v")) == 0 || XML_Char_icmp_ins(name, X("t")) == 0) {
     XML_SetElementHandler(data->xmlparser, NULL, data_sheet_expat_callback_find_value_end);
     XML_SetCharacterDataHandler(data->xmlparser, data_sheet_expat_callback_value_data);
-  } else if (XML_Char_icmp(name, X("is")) == 0) {
+  } else if (XML_Char_icmp_ins(name, X("is")) == 0) {
     data->cell_string_type = inline_string;
-  } else if (XML_Char_icmp(name, X("rPh")) == 0) {
+  } else if (XML_Char_icmp_ins(name, X("rPh")) == 0) {
     data->skiptag = XML_Char_dup(name);
     data->skiptagcount = 1;
     data->skip_start = data_sheet_expat_callback_find_value_start;
@@ -1175,10 +1195,10 @@ void data_sheet_expat_callback_find_value_start (void* callbackdata, const XML_C
 void data_sheet_expat_callback_find_value_end (void* callbackdata, const XML_Char* name)
 {
   struct data_sheet_callback_data* data = (struct data_sheet_callback_data*)callbackdata;
-  if (XML_Char_icmp(name, X("v")) == 0 || XML_Char_icmp(name, X("t")) == 0) {
+  if (XML_Char_icmp_ins(name, X("v")) == 0 || XML_Char_icmp_ins(name, X("t")) == 0) {
     XML_SetElementHandler(data->xmlparser, data_sheet_expat_callback_find_value_start, data_sheet_expat_callback_find_cell_end);
     XML_SetCharacterDataHandler(data->xmlparser, NULL);
-  } else if (XML_Char_icmp(name, X("is")) == 0) {
+  } else if (XML_Char_icmp_ins(name, X("is")) == 0) {
     data->cell_string_type = none;
   } else {
     data_sheet_expat_callback_find_row_end(callbackdata, name);
