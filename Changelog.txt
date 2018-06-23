@@ -1,5 +1,9 @@
 0.2.20
 
+2018-06-23  Brecht Sanders  https://github.com/brechtsanders/
+
+  * fixed join_basepath_filename in xlsx_read.c to also support absolute paths (issue reported by Matthew James Briggs)
+
 0.2.19
 
 2018-06-18  Brecht Sanders  https://github.com/brechtsanders/
