@@ -3,7 +3,7 @@
 2018-06-23  Brecht Sanders  https://github.com/brechtsanders/
 
   * fixed join_basepath_filename in xlsx_read.c to also support absolute paths (issue reported by Matthew James Briggs)
-  * added CMake options to specify custom dependancy paths: ZLIB_DIR/MINIZIP_DIR/LIBZIP_DIR/EXPAT_DIR
+  * added CMake options to specify custom dependancy paths: ZLIB_DIR/MINIZIP_DIR/LIBZIP_DIR/EXPAT_DIR (requested by Yann Ducruy)
 
 0.2.19
 
