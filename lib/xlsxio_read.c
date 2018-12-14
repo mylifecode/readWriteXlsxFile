@@ -5,23 +5,31 @@
 #include <stdlib.h>
 #include <inttypes.h>
 #include <string.h>
-#include <unistd.h>
 #include <expat.h>
 
 #ifdef USE_MINIZIP
-#include <minizip/unzip.h>
-#define ZIPFILETYPE unzFile
-#define ZIPFILEENTRYTYPE unzFile
+#  include <minizip/unzip.h>
+#  define ZIPFILETYPE unzFile
+#  define ZIPFILEENTRYTYPE unzFile
+#  if defined(_MSC_VER)
+#    include <io.h>
+#    define IOSIZETYPE int
+#    define IOFN(fn) _##fn
+#  else
+#    include <unistd.h>
+#    define IOSIZETYPE ssize_t
+#    define IOFN(fn) fn
+#  endif
 #else
-#if (defined(STATIC) || defined(BUILD_XLSXIO_STATIC) || defined(BUILD_XLSXIO_STATIC_DLL) || (defined(BUILD_XLSXIO) && !defined(BUILD_XLSXIO_DLL) && !defined(BUILD_XLSXIO_SHARED))) && !defined(ZIP_STATIC)
-#define ZIP_STATIC
-#endif
-#include <zip.h>
-#define ZIPFILETYPE zip_t
-#define ZIPFILEENTRYTYPE zip_file_t
-#ifndef USE_LIBZIP
-#define USE_LIBZIP
-#endif
+#  if (defined(STATIC) || defined(BUILD_XLSXIO_STATIC) || defined(BUILD_XLSXIO_STATIC_DLL) || (defined(BUILD_XLSXIO) && !defined(BUILD_XLSXIO_DLL) && !defined(BUILD_XLSXIO_SHARED))) && !defined(ZIP_STATIC)
+#    define ZIP_STATIC
+#  endif
+#  include <zip.h>
+#  define ZIPFILETYPE zip_t
+#  define ZIPFILEENTRYTYPE zip_file_t
+#  ifndef USE_LIBZIP
+#    define USE_LIBZIP
+#  endif
 #endif
 
 #if defined(_MSC_VER)
@@ -373,10 +381,10 @@ voidpf ZCALLBACK minizip_io_filehandle_open_file_fn (voidpf opaque, const char* 
 
 uLong ZCALLBACK minizip_io_filehandle_read_file_fn (voidpf opaque, voidpf stream, void* buf, uLong size)
 {
-  ssize_t len;
+  IOSIZETYPE len;
   if (!opaque || !stream || !buf || size == 0)
     return 0;
-  if ((len = read(*(int*)stream, buf, size)) < 0)
+  if ((len = IOFN(read)(*(int*)stream, buf, size)) < 0)
     return 0;
   return len;
 }
@@ -403,7 +411,7 @@ int ZCALLBACK minizip_io_filehandle_testerror_file_fn (voidpf opaque, voidpf str
 
 long ZCALLBACK minizip_io_filehandle_tell_file_fn (voidpf opaque, voidpf stream)
 {
-  return lseek(*(int*)stream, 0, SEEK_CUR);
+  return IOFN(lseek)(*(int*)stream, 0, SEEK_CUR);
 }
 
 long ZCALLBACK minizip_io_filehandle_seek_file_fn (voidpf opaque, voidpf stream, uLong offset, int origin)
@@ -424,7 +432,7 @@ long ZCALLBACK minizip_io_filehandle_seek_file_fn (voidpf opaque, voidpf stream,
     default :
       return -1;
   }
-  return (lseek(*(int*)stream, offset, whence) >= 0 ? 0 : -1);
+  return (IOFN(lseek)(*(int*)stream, offset, whence) >= 0 ? 0 : -1);
 }
 #endif
 
