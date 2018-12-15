@@ -3,6 +3,7 @@
 2018-12-14  Brecht Sanders  https://github.com/brechtsanders/
 
   * changes to xlsxio_read.c for better Microsoft Visual C++ support
+  * added generation and installation of .def files when building with MinGW (can be used to generate Microsoft Visual C++ .lib files)
 
 0.2.20
 
