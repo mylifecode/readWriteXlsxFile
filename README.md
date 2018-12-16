@@ -94,7 +94,28 @@ Building with CMake (preferred method)
   + `-DWITH_WIDE:BOOL=ON` - Also build UTF-16 library (libxlsxio_readw)
 - build and install by running `make install` (or `make install/strip` to strip symbols)
 
-For Windows prebuilt binaries are also available for download (both 32-bit and 64-bit)
+Prebuilt binaries
+-----------------
+Prebuilt binaries are also available for download for the following platforms:
+- Windows 32-bit
+- Windows 64-bit
+
+Both Windows versions were built using the MinGW-w64 under an MSYS2 shell.
+To link with the .dll libraries from Microsoft Visual C++ you need a .lib file for each .dll. This file can be generated using the `lib` tool tha t comes with Microsoft Visual C++.
+For 32-bit Windows:
+```bat
+cd lib
+lib /def:libxlsxio_write.def /out:libxlsxio_write.lib /machine:x86
+lib /def:libxlsxio_read.def /out:libxlsxio_read.lib /machine:x86
+lib /def:libxlsxio_readw.def /out:libxlsxio_readw.lib /machine:x86
+```
+For 64-bit Windows:
+```bat
+cd lib
+lib /def:libxlsxio_write.def /out:libxlsxio_write.lib /machine:x64
+lib /def:libxlsxio_read.def /out:libxlsxio_read.lib /machine:x64
+lib /def:libxlsxio_readw.def /out:libxlsxio_readw.lib /machine:x64
+```
 
 Example C programs
 ------------------
