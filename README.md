@@ -101,7 +101,8 @@ Prebuilt binaries are also available for download for the following platforms:
 - Windows 64-bit
 
 Both Windows versions were built using the MinGW-w64 under an MSYS2 shell.
-To link with the .dll libraries from Microsoft Visual C++ you need a .lib file for each .dll. This file can be generated using the `lib` tool tha t comes with Microsoft Visual C++.
+To link with the .dll libraries from Microsoft Visual C++ you need a .lib file for each .dll. This file can be generated using the `lib` tool that comes with Microsoft Visual C++.
+
 For 32-bit Windows:
 ```bat
 cd lib

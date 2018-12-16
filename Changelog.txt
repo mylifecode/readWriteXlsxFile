@@ -4,6 +4,7 @@
 
   * changes to xlsxio_read.c for better Microsoft Visual C++ support
   * added generation and installation of .def files when building with MinGW (can be used to generate Microsoft Visual C++ .lib files)
+  * added information README.md about creating .lib files when using Microsoft Visual C++
 
 0.2.20
 
