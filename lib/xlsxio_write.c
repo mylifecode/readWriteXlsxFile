@@ -405,11 +405,15 @@ char* fix_xml_special_chars (char** s)
 	while (*s && (*s)[pos]) {
 		switch ((*s)[pos]) {
 			case '&' :
-        str_replace(s, pos, 1, "&amp;");
+				str_replace(s, pos, 1, "&amp;");
 				pos += 5;
 				break;
 			case '\"' :
 				str_replace(s, pos, 1, "&quot;");
+				pos += 6;
+				break;
+			case '\'' :
+				str_replace(s, pos, 1, "&apos;");
 				pos += 6;
 				break;
 			case '<' :
