@@ -79,6 +79,8 @@ int xlsx_list_sheets_callback (const char* name, void* callbackdata)
   if ((filename = (char*)malloc(strlen(data->filename) + strlen(name) + 6)) == NULL ){
     fprintf(stderr, "Memory allocation error\n");
   } else {
+    char *p = filename;
+    //determine export filename
     strcpy(filename, data->filename);
     strcat(filename, ".");
     strcat(filename, name);
