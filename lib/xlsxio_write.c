@@ -613,7 +613,7 @@ void* thread_proc (void* arg)
 #define MINIZIP_PIPE_BUFFER_SIZE 1024
 //#error TO DO:
   if (zipOpenNewFileInZip(handle->zip, XML_FOLDER_XL XML_FOLDER_WORKSHEETS XML_FILENAME_XL_WORKSHEET1, NULL, NULL, 0, NULL, 0, NULL, Z_DEFLATED, 9) != ZIP_OK) {
-    fprintf(stdout, "Error adding file");
+    fprintf(stderr, "Error adding file");
   } else {
     char* buf;
     size_t buflen;
@@ -636,7 +636,7 @@ void* thread_proc (void* arg)
   zip_source_t* zipsrc = zip_source_filep(handle->zip, handle->pipe_read, 0, -1);
   if (zip_file_add_custom(handle->zip, XML_FOLDER_XL XML_FOLDER_WORKSHEETS XML_FILENAME_XL_WORKSHEET1, zipsrc) < 0) {
     zip_source_free(zipsrc);
-    fprintf(stdout, "Error adding file");
+    fprintf(stderr, "Error adding file");
   }
 #ifdef ZIP_RDONLY
   zip_file_set_mtime(handle->zip, zip_get_num_entries(handle->zip, 0) - 1, time(NULL), 0);
